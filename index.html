@@ -411,7 +411,7 @@ body.multi .node.sel .rz{display:none}
   <p class="note">Anyone with the link joins this board in real time and you see each other's cursors. Peer-to-peer — the board is not stored on a server.</p>
   <label>Your name<input id="myName" class="fld" spellcheck="false" maxlength="24"></label>
   <div id="sOff"><button class="btn pri" id="sStart" style="width:100%;height:38px">Start live session</button></div>
-  <div id="sOn" style="display:none"><label>Invite link<input id="sLink" class="fld" readonly></label><div id="sPeers"></div>
+  <div id="sOn" style="display:none"><p id="sWait" class="note" style="color:var(--accent);margin:0 0 10px">Waiting for others to open the link… connecting can take up to ~20 seconds.</p><label>Invite link<input id="sLink" class="fld" readonly></label><div id="sPeers"></div>
     <div class="row"><button class="btn" id="sLeave">Leave session</button><span class="sp"></span><button class="btn pri" id="sCopy">Copy link</button></div></div>
   <div class="row"><span class="sp"></span><button class="btn" id="sClose">Close</button></div>
 </div></div>
@@ -1638,28 +1638,28 @@ function paintRemoteSel(){
   document.querySelectorAll('.node.psel').forEach(el=>{el.classList.remove('psel');el.removeAttribute('data-pn')});
   peers.forEach(p=>(p.sel||[]).forEach(id=>{const el=els.get(id);if(el){el.classList.add('psel');el.style.setProperty('--pc',p.color);el.dataset.pn=p.name}}));
 }
-function removePeer(id){const p=peers.get(id);if(p?.el)p.el.remove();peers.delete(id);paintRemoteSel();updPeers()}
+function removePeer(id){toast((peers.get(id)?.name||'Someone')+' left');const p=peers.get(id);if(p?.el)p.el.remove();peers.delete(id);paintRemoteSel();updPeers()}
 function shareLink(){return location.href.split('#')[0]+'#room='+collab.roomId}
 function updPeers(){
   const on=!!collab;
   $('#peers').innerHTML=on?[[me.name,me.color],...[...peers.values()].map(p=>[p.name,p.color])].map(([n,c])=>`<div class="pav" title="${esc(n)}" style="background:${c}">${esc((n[0]||'?').toUpperCase())}</div>`).join(''):'';
-  const b=$('#bShare');b.textContent=on?`● Live · ${peers.size+1}`:'Share';b.classList.toggle('live',on);
+  const b=$('#bShare');b.textContent=on?(peers.size?`● Live · ${peers.size+1}`:'● Waiting…'):'Share';b.classList.toggle('live',on);
   $('#sOff').style.display=on?'none':'block';$('#sOn').style.display=on?'block':'none';
-  if(on){$('#sLink').value=shareLink();$('#sPeers').innerHTML=[['You · '+me.name,me.color],...[...peers.values()].map(p=>[p.name,p.color])].map(([n,c])=>`<div class="pr"><i style="background:${c}"></i>${esc(n)}</div>`).join('')}
+  if(on){$('#sWait').style.display=peers.size?'none':'block';$('#sLink').value=shareLink();$('#sPeers').innerHTML=[['You · '+me.name,me.color],...[...peers.values()].map(p=>[p.name,p.color])].map(([n,c])=>`<div class="pr"><i style="background:${c}"></i>${esc(n)}</div>`).join('')}
 }
 async function connect(roomId){
   if(collab)await disconnect(true);
   let m;try{m=await import(TRYS)}catch(e){toast('Could not reach the sync network');return}
   selfId=m.selfId;me.color=pickColor();
-  const room=m.joinRoom({appId:APPID},roomId);
+  const room=m.joinRoom({appId:APPID,relayRedundancy:7},roomId);
   const [sendOps,getOps]=room.makeAction('ops'),[sendState,getState]=room.makeAction('state'),[sendCur,getCur]=room.makeAction('cur');
   collab={room,roomId,sendOps,sendCur};
   baseline();
-  room.onPeerJoin(id=>{if(!peers.has(id))peers.set(id,{name:'Guest',color:'#999',sel:[]});sendState(packAll(),id);sendPresence(id);updPeers()});
+  room.onPeerJoin(id=>{toast('Someone joined');if(!peers.has(id))peers.set(id,{name:'Guest',color:'#999',sel:[]});sendState(packAll(),id);sendPresence(id);updPeers()});
   room.onPeerLeave(removePeer);
   getState(d=>applyState(d));getOps((d,id)=>applyOps(d));getCur((d,id)=>applyCur(d,id));
   clearInterval(tickT);tickT=setInterval(tick,100);
-  S.room=roomId;save();updPeers();
+  S.room=roomId;save();updPeers();toast('Live — waiting for others (can take ~20 s to connect)');
   history.replaceState(null,'','#room='+roomId);
 }
 async function disconnect(keepRoom){
@@ -1677,7 +1677,7 @@ $('#bShare').onclick=()=>{$('#myName').value=me.name;updPeers();$('#smodal').cla
 $('#sClose').onclick=closeModal;
 $('#smodal').addEventListener('pointerdown',e=>{if(e.target.id==='smodal')closeModal()});
 $('#myName').addEventListener('input',e=>{me.name=e.target.value.trim()||'Guest';localStorage.setItem('affinity-name',me.name);sendPresence();updPeers()});
-$('#sStart').onclick=async()=>{await connect(Math.random().toString(36).slice(2,10));if(collab){try{await navigator.clipboard.writeText(shareLink());toast('Live — invite link copied')}catch{toast('Live session started')}}};
+$('#sStart').onclick=async()=>{await connect(Math.random().toString(36).slice(2,10));if(collab){try{await navigator.clipboard.writeText(shareLink());toast('Invite link copied — send it to your team')}catch{}}};
 $('#sCopy').onclick=async()=>{try{await navigator.clipboard.writeText(shareLink());toast('Link copied')}catch{$('#sLink').select()}};
 $('#sLeave').onclick=async()=>{await disconnect();toast('Left the session')};
 async function joinFromHash(){
