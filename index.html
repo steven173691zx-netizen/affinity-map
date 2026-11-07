@@ -414,7 +414,7 @@ body.multi .node.sel .rz{display:none}
   <button class="mi dis" id="bRedo"><span>Redo</span><kbd>⇧⌘Z</kbd></button>
   <div class="msep"></div>
   <button class="mi" data-add="label"><span>Heading</span><kbd>L</kbd></button>
-  <button class="mi" id="mCluster"><span>Auto-cluster notes</span><kbd>J</kbd></button>
+  <button class="mi" id="mCluster"><span>Auto-cluster blocks</span><kbd>J</kbd></button>
   <button class="mi" data-tool="area"><span>Export area to PDF</span><kbd>E</kbd></button>
   <button class="mi" id="bSnap"><span>Snap to grid</span><kbd>G</kbd></button>
   <div class="msep"></div>
@@ -1463,36 +1463,61 @@ async function clusterAI(ns){
   return groups;
 }
 async function autoCluster(){
-  const ok=n=>n&&(n.type==='text'||n.type==='sticky')&&n.text?.trim();
-  let all=[...sel].map(byId).filter(Boolean),ns=all.filter(ok);
-  if(ns.length<3){ns=S.nodes.filter(ok);all=ns.slice()}
-  if(ns.length<3){toast('Need at least 3 text notes');return}
-  const media=all.filter(n=>n.type==='image'||n.type==='draw'),oldCv=all.filter(n=>n.type==='canvas');
-  toast(aiReady()?'Clustering with AI…':'Clustering…');
-  let groups=null;
-  if(aiReady()){try{groups=await clusterAI(ns)}catch(e){toast('AI failed — using local clustering')}}
-  if(!groups)groups=clusterLocal(ns);
-  if(media.length)groups.push({title:'Visuals',idx:media.map((_,i)=>ns.length+i)});
-  const members=[...ns,...media];
-  pushHist();
-  const oldIds=new Set(oldCv.map(c=>c.id));
-  const x0=Math.min(...[...members,...oldCv].map(n=>n.x)),y0=Math.min(...[...members,...oldCv].map(n=>n.y)),PAD=28,TOP=64,GAP=60,MAXW=1900;
-  oldIds.forEach(id=>{els.get(id)?.remove();els.delete(id)});
-  S.nodes=S.nodes.filter(n=>!oldIds.has(n.id));S.edges=S.edges.filter(e=>!oldIds.has(e.from)&&!oldIds.has(e.to));
-  let cx=x0,cy=y0,rowH=0;const moves=[],cvs=[];
-  groups.forEach(g=>{
-    const mem=g.idx.map(i=>members[i]),k=mem.length,cols=Math.min(3,Math.ceil(Math.sqrt(k)));
-    const cw=Math.max(...mem.map(n=>n.w))+20,ch=Math.max(...mem.map(n=>n.h))+20,rows=Math.ceil(k/cols);
-    const W=cols*cw+PAD*2-20,H=rows*ch+TOP+PAD-20;
-    if(cx>x0&&cx+W>x0+MAXW){cx=x0;cy+=rowH+GAP;rowH=0}
-    mem.forEach((n,j)=>moves.push({n,x:cx+PAD+(j%cols)*cw,y:cy+TOP+Math.floor(j/cols)*ch}));
-    cvs.push({x:cx,y:cy,w:W,h:H,title:g.title});cx+=W+GAP;rowH=Math.max(rowH,H);
+  let tg=[...sel].map(byId).filter(Boolean);
+  if(!tg.length)tg=S.nodes.slice();
+  if(!tg.length){toast('Nothing to cluster');return}
+  // blocks inside a targeted canvas travel with it
+  const cvs=tg.filter(n=>n.type==='canvas'),ride=new Map();
+  const carried=new Set();
+  cvs.forEach(c=>{const kids=S.nodes.filter(n=>n.type!=='canvas'&&inside(n,c));ride.set(c.id,kids);kids.forEach(k=>carried.add(k.id))});
+  const units=tg.filter(n=>!carried.has(n.id));
+  const isTxt=n=>(n.type==='text'||n.type==='sticky')&&n.text?.trim();
+  const txt=units.filter(isTxt),rest=units.filter(n=>!isTxt(n));
+  toast(aiReady()&&txt.length>1?'Clustering with AI…':'Clustering…');
+  let groups=[];
+  if(txt.length){
+    let g=null;
+    if(aiReady()&&txt.length>1){try{g=await clusterAI(txt)}catch(e){toast('AI failed — using local clustering')}}
+    groups=(g||clusterLocal(txt)).map(x=>({members:x.idx.map(i=>txt[i])}));
+  }
+  // attach every other block to the cluster it is wired to, else the nearest one
+  const cOf=new Map();groups.forEach((g,gi)=>g.members.forEach(n=>cOf.set(n.id,gi)));
+  const ctr=n=>[n.x+n.w/2,n.y+n.h/2];
+  const orphans=[];
+  rest.forEach(n=>{
+    const nb=S.edges.filter(e=>e.from===n.id||e.to===n.id).map(e=>e.from===n.id?e.to:e.from);
+    const cnt={};nb.forEach(id=>{if(cOf.has(id))cnt[cOf.get(id)]=(cnt[cOf.get(id)]||0)+1});
+    let gi=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+    if(gi===undefined&&groups.length){let best=1e18;const [cx,cy]=ctr(n);groups.forEach((g,i)=>g.members.forEach(m=>{if(!cOf.has(m.id))return;const [mx,my]=ctr(m),d=(mx-cx)**2+(my-cy)**2;if(d<best){best=d;gi=i}}))}
+    if(gi===undefined)orphans.push(n);else{groups[+gi].members.push(n);cOf.set(n.id,+gi)}
   });
-  cvs.forEach(c=>{const n=addNode('canvas',0,0,{w:c.w,h:c.h,title:c.title},{noHist:true,keepSel:true});Object.assign(n,{x:c.x,y:c.y,w:c.w,h:c.h});sync(n)});
+  if(orphans.length){ // nothing to attach to: group by kind
+    const by={};orphans.forEach(n=>(by[n.type]=by[n.type]||[]).push(n));
+    Object.values(by).forEach(list=>groups.push({members:list}));
+  }
+  const rank=n=>n.type==='label'?0:(isTxt(n)?1:n.type==='combine'?3:2);
+  const x0=Math.min(...units.map(n=>n.x)),y0=Math.min(...units.map(n=>n.y));
+  const IN=22,GAP=110,MAXW=Math.max(1400,Math.sqrt(units.length)*520);
+  pushHist();
+  let cx=x0,cy=y0,rowH=0;const moves=[];
+  groups.filter(g=>g.members.length).forEach(g=>{
+    const mem=g.members.sort((a,b)=>rank(a)-rank(b)||a.y-b.y||a.x-b.x),k=mem.length,cols=Math.min(4,Math.ceil(Math.sqrt(k)));
+    const cw=Math.max(...mem.map(n=>n.w))+IN,ch=Math.max(...mem.map(n=>n.h))+IN,rows=Math.ceil(k/cols);
+    const W=cols*cw-IN,H=rows*ch-IN;
+    if(cx>x0&&cx+W>x0+MAXW){cx=x0;cy+=rowH+GAP;rowH=0}
+    mem.forEach((n,j)=>moves.push({n,x:cx+(j%cols)*cw,y:cy+Math.floor(j/cols)*ch}));
+    cx+=W+GAP;rowH=Math.max(rowH,H);
+  });
+  // canvases keep their size; their contents move by the same delta
+  const all=[];
+  moves.forEach(mv=>{
+    all.push(mv);
+    if(mv.n.type==='canvas')(ride.get(mv.n.id)||[]).forEach(k=>all.push({n:k,x:k.x+(mv.x-mv.n.x),y:k.y+(mv.y-mv.n.y)}));
+  });
   sel.clear();refreshAll();
-  tweenNodes(moves,750);
+  tweenNodes(all,750);
   setTimeout(()=>fit(),900);
-  toast(`${groups.length} clusters from ${members.length} blocks`);
+  toast(`${groups.filter(g=>g.members.length).length} clusters · ${units.length} blocks`);
 }
 
 /* ---------- markdown outline ---------- */
@@ -1536,7 +1561,7 @@ mini.addEventListener('pointerup',()=>{mini._d=false;save()});
 /* ---------- command palette ---------- */
 const pal=$('#pal'),pin=$('#pin'),plist=$('#plist');let pItems=[],pIdx=0;
 const ACTIONS=[
-  {t:'Auto-cluster notes into canvases',id:'cluster',f:()=>autoCluster()},
+  {t:'Auto-cluster blocks',id:'cluster',f:()=>autoCluster()},
   {t:'Group selection into a canvas',id:'group',f:()=>groupSel()},
   {t:'Tidy selection into a grid',id:'tidy',f:()=>tidySel()},
   {t:'Toggle format bar (colour, text size, align)',id:'format',f:()=>toggleColors()},
@@ -1745,7 +1770,7 @@ const IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform);
 const KEYDEFS=[
  ['Tools',[['select','Select tool',['V']],['hand','Pan tool',['H']],['area','Export area to PDF',['E']]]],
  ['Add blocks',[['text','Text',['T']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['C']],['combine','Combine',['M']],['label','Heading',['L']]]],
- ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['cluster','Auto-cluster notes',['J']],['del','Delete',['Delete','Backspace']]]],
+ ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['cluster','Auto-cluster blocks',['J']],['del','Delete',['Delete','Backspace']]]],
  ['View',[['fit','Fit all / selection',['Shift+1']],['zoomin','Zoom in',['=','Shift+=']],['zoomout','Zoom out',['-']],['snap','Snap to grid',['G']],['format','Format bar (colour, text)',['K']],['minimap','Minimap',['N']],['themes','Theme',['Shift+D']],['palette','Command palette',['/','Mod+K']],['keys','Keyboard shortcuts',['Shift+/']]]]
 ];
 const PUNCT={Slash:'/',Equal:'=',Minus:'-',Period:'.',Comma:',',Semicolon:';',Quote:"'",BracketLeft:'[',BracketRight:']',Backslash:'\\',Backquote:'`'};
