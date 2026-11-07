@@ -350,6 +350,19 @@ body.multi .node.sel .rz{display:none}
 .tc i{display:block;height:44px;border-radius:9px;position:relative;overflow:hidden}
 .tc i::before{content:"";position:absolute;left:8px;top:9px;width:46%;height:10px;border-radius:5px;background:var(--a)}
 .tc i::after{content:"";position:absolute;left:8px;top:25px;width:68%;height:8px;border-radius:4px;background:var(--f);opacity:.55}
+
+#kmodal{position:fixed;inset:0;z-index:175;display:grid;place-items:center;background:rgba(var(--veil),.5);opacity:0;pointer-events:none;transition:opacity .25s var(--ease)}
+#kmodal.on{opacity:1;pointer-events:auto}
+#kmodal .card{width:480px;max-width:94vw;border-radius:22px;padding:22px;background:rgba(var(--gl),.97);transform:translateY(10px) scale(.97);transition:transform .35s var(--ease)}
+#kmodal.on .card{transform:none}
+#kmodal h3{margin:0 0 4px;font-size:16px}#kmodal .note{color:var(--t3);font-size:12px;margin:0 0 8px}
+#kmodal .row{display:flex;gap:8px;margin-top:12px;align-items:center}
+#klist{max-height:54vh;overflow:auto;padding-right:4px}
+.kh{font-size:10.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);padding:12px 2px 4px}
+.kr{display:flex;align-items:center;gap:8px;padding:3px 2px;font-size:13px;color:var(--t2)}.kr>span{flex:1}
+.kb{all:unset;box-sizing:border-box;min-width:92px;text-align:center;padding:4px 10px;border-radius:8px;background:var(--elev2);border:1px solid var(--line);font-size:12px;color:var(--t1);cursor:pointer;transition:all .15s}
+.kb:hover{border-color:var(--t3)}.kb.rec{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}.kb.none{color:var(--t3)}
+.kx{all:unset;width:22px;height:22px;display:grid;place-items:center;border-radius:6px;color:var(--t3);cursor:pointer;font-size:14px;transition:all .15s}.kx:hover{background:rgba(var(--ovc),.1);color:var(--t1)}
 </style>
 </head>
 <body>
@@ -378,8 +391,8 @@ body.multi .node.sel .rz{display:none}
 <div id="hint">
   <h1>Start mapping</h1>
   <p>Double-click anywhere · drop images · or pick a block below</p>
-  <p style="margin-top:10px"><span class="kbd">/</span> commands &nbsp;<span class="kbd">K</span> format &nbsp;<span class="kbd">J</span> auto-cluster</p>
-  <p style="margin-top:8px"><span class="kbd">T</span> text &nbsp;<span class="kbd">D</span> draw &nbsp;<span class="kbd">C</span> canvas &nbsp;<span class="kbd">M</span> combine</p>
+  <p style="margin-top:10px"><span class="kbd" data-k="palette">/</span> commands &nbsp;<span class="kbd" data-k="format">K</span> format &nbsp;<span class="kbd" data-k="cluster">J</span> auto-cluster</p>
+  <p style="margin-top:8px"><span class="kbd" data-k="text">T</span> text &nbsp;<span class="kbd" data-k="draw">D</span> draw &nbsp;<span class="kbd" data-k="canvas">C</span> canvas &nbsp;<span class="kbd" data-k="combine">M</span> combine</p>
 </div>
 
 <div id="toolbar" class="glass">
@@ -405,7 +418,8 @@ body.multi .node.sel .rz{display:none}
   <button class="mi" data-tool="area"><span>Export area to PDF</span><kbd>E</kbd></button>
   <button class="mi" id="bSnap"><span>Snap to grid</span><kbd>G</kbd></button>
   <div class="msep"></div>
-  <button class="mi" id="mTheme"><span>Switch to day</span></button>
+  <button class="mi" id="mTheme"><span>Theme</span><kbd></kbd></button>
+  <button class="mi" id="mKeys"><span>Keyboard shortcuts</span><kbd></kbd></button>
   <button class="mi" id="bSettings"><span>AI settings</span></button>
   <button class="mi" id="mPal"><span>All commands</span><kbd>/</kbd></button>
 </div>
@@ -436,7 +450,8 @@ body.multi .node.sel .rz{display:none}
     <div class="row"><button class="btn" id="sLeave">Leave session</button><span class="sp"></span><button class="btn pri" id="sCopy">Copy link</button></div></div>
   <div class="row"><span class="sp"></span><button class="btn" id="sClose">Close</button></div>
 </div></div>
-<div id="tmodal"><div class="card glass"><h3>🥚 Secret themes</h3><p class="note">You found them. Saved on this device only.</p><div class="tgrid" id="tgrid"></div></div></div>
+<div id="tmodal"><div class="card glass"><h3>Theme</h3><p class="note">Saved on this device only — everyone picks their own.</p><div class="tgrid" id="tgrid"></div></div></div>
+<div id="kmodal"><div class="card glass"><h3>Keyboard shortcuts</h3><p class="note">Click a shortcut, then press the keys you want. Esc cancels. Saved on this device.</p><div id="klist"></div><div class="row"><button class="btn" id="kReset">Reset all</button><span class="sp"></span><button class="btn pri" id="kClose">Done</button></div></div></div>
 <div id="toast" class="glass"></div>
 <input type="file" id="fileImg" accept="image/*" multiple hidden>
 <input type="file" id="fileJson" accept="application/json,.json" hidden>
@@ -1146,39 +1161,16 @@ addEventListener('keydown',e=>{
   const mod=e.metaKey||e.ctrlKey;
   if(e.key==='Escape'){closeMore();closePal();closeMenu();closeModal();if(area){area=null;updArea();setTool('select')}document.activeElement?.blur();sel.clear();selEdge=null;S.nodes.forEach(sync);drawEdges();return}
   if(editing())return;
+  if($('#kmodal').classList.contains('on'))return;
   if(e.code==='Space'&&!spaceDown){spaceDown=true;vp.classList.add('hand');e.preventDefault();return}
-  if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?doRedo():undo();return}
-  if(mod&&e.key.toLowerCase()==='y'){e.preventDefault();doRedo();return}
-  if(mod&&e.key.toLowerCase()==='d'){e.preventDefault();dupSelected();return}
-  if(mod&&e.key.toLowerCase()==='a'){e.preventDefault();S.nodes.forEach(n=>sel.add(n.id));S.nodes.forEach(sync);return}
-  if(mod&&e.key.toLowerCase()==='c'){copySel(false);return}
-  if(mod&&e.key.toLowerCase()==='x'){copySel(true);return}
-  if(mod&&e.key.toLowerCase()==='g'){e.preventDefault();groupSel();return}
-  if(mod&&e.key.toLowerCase()==='k'){e.preventDefault();openPal();return}
-  if(mod)return;
-  if(e.key==='Delete'||e.key==='Backspace'){
-    e.preventDefault();
-    if(selEdge){pushHist();S.edges=S.edges.filter(x=>x.id!==selEdge);selEdge=null;refreshAll();save()}
-    else if(sel.size)removeNodes([...sel]);return;
+  const lk=e.key.toLowerCase();
+  if(mod&&(lk==='c'||lk==='x')){copySel(lk==='x');return}
+  if(!mod&&e.key.startsWith('Arrow')&&sel.size){
+    e.preventDefault();const st=e.shiftKey?24:4;pushHist();
+    sel.forEach(id=>{const n=byId(id);if(e.key==='ArrowLeft')n.x-=st;if(e.key==='ArrowRight')n.x+=st;if(e.key==='ArrowUp')n.y-=st;if(e.key==='ArrowDown')n.y+=st;sync(n)});drawEdges();save();return;
   }
-  if(e.key.startsWith('Arrow')&&sel.size){
-    e.preventDefault();const s=e.shiftKey?24:4;pushHist();
-    sel.forEach(id=>{const n=byId(id);if(e.key==='ArrowLeft')n.x-=s;if(e.key==='ArrowRight')n.x+=s;if(e.key==='ArrowUp')n.y-=s;if(e.key==='ArrowDown')n.y+=s;sync(n)});drawEdges();save();return;
-  }
-  if(e.key==='!'||(e.shiftKey&&e.code==='Digit1')){fit(sel.size?[...sel].map(byId):null);return}
-  const k=e.key.toLowerCase();
-  if(e.shiftKey&&k==='d'){e.preventDefault();openThemes();return}
-  const map={t:'text',s:'draw',d:'draw',i:'image',c:'canvas',m:'combine',l:'label'};
-  if(map[k]){e.preventDefault();addFromTool(map[k]);return}
-  if(k==='v')setTool('select');if(k==='h')setTool('hand');
-  if(k==='g')$('#bSnap').click();
-  if(k==='k')toggleColors();
-  if(k==='n')toggleMini();
-  if(k==='j')autoCluster();
-  if(k==='a')tidySel();
-  if(k==='/'){e.preventDefault();openPal()}
-  if(k==='e'){setTool('area');if(sel.size){const ns=[...sel].map(byId);const x1=Math.min(...ns.map(n=>n.x))-40,y1=Math.min(...ns.map(n=>n.y))-40,x2=Math.max(...ns.map(n=>n.x+n.w))+40,y2=Math.max(...ns.map(n=>n.y+n.h))+40;area={x:x1,y:y1,w:x2-x1,h:y2-y1};updArea()}}
-  if(k==='='||k==='+')$('#bIn').click();if(k==='-')$('#bOut').click();
+  const c=combo(e),id=c&&KEYMAP[c];
+  if(id&&ACT[id]){e.preventDefault();ACT[id]()}
 });
 addEventListener('keyup',e=>{if(e.code==='Space'){spaceDown=false;if(tool!=='hand')vp.classList.remove('hand')}});
 
@@ -1378,7 +1370,7 @@ const cfgGet=()=>{try{return JSON.parse(localStorage.getItem('affinity-ai')||'{}
 const aiReady=()=>!!cfgGet().key;
 function provUI(){$('#aiBaseL').style.display=$('#aiProv').value==='custom'?'block':'none'}
 function openSettings(){const c=cfgGet();$('#aiProv').value=c.provider||'anthropic';$('#aiBase').value=c.base||'';$('#aiModel').value=c.model||DEFM[$('#aiProv').value];$('#aiKey').value=c.key||'';provUI();$('#modal').classList.add('on')}
-function closeModal(){$('#modal').classList.remove('on');$('#smodal').classList.remove('on');$('#tmodal').classList.remove('on')}
+function closeModal(){rec=null;$('#kmodal').classList.remove('on');$('#modal').classList.remove('on');$('#smodal').classList.remove('on');$('#tmodal').classList.remove('on')}
 $('#bSettings').onclick=openSettings;$('#aiCancel').onclick=closeModal;
 $('#modal').addEventListener('pointerdown',e=>{if(e.target.id==='modal')closeModal()});
 $('#aiProv').onchange=()=>{$('#aiModel').value=DEFM[$('#aiProv').value];provUI()};
@@ -1544,17 +1536,19 @@ mini.addEventListener('pointerup',()=>{mini._d=false;save()});
 /* ---------- command palette ---------- */
 const pal=$('#pal'),pin=$('#pin'),plist=$('#plist');let pItems=[],pIdx=0;
 const ACTIONS=[
-  {t:'Auto-cluster notes into canvases',k:'J',f:()=>autoCluster()},
-  {t:'Group selection into a canvas',k:'⌘G',f:()=>groupSel()},
-  {t:'Tidy selection into a grid',k:'A',f:()=>tidySel()},
-  {t:'Toggle format bar (colour, text size, align)',k:'K',f:()=>toggleColors()},
-  {t:'Toggle minimap',k:'N',f:()=>toggleMini()},
-  {t:'Export outline (Markdown)',k:'',f:()=>exportMd()},
-  {t:'Export area to PDF',k:'E',f:()=>setTool('area')},
-  {t:'Fit all to screen',k:'⇧1',f:()=>fit()},
-  {t:'New file',k:'',f:()=>$('#mNew').click()},
-  {t:'AI summary settings',k:'',f:()=>openSettings()},
-  ...['text','draw','image','canvas','combine','label'].map(t=>({t:'Add '+TITLES[t].toLowerCase()+' block',k:{text:'T',draw:'D',image:'I',canvas:'C',combine:'M',label:'L'}[t],f:()=>addFromTool(t)}))
+  {t:'Auto-cluster notes into canvases',id:'cluster',f:()=>autoCluster()},
+  {t:'Group selection into a canvas',id:'group',f:()=>groupSel()},
+  {t:'Tidy selection into a grid',id:'tidy',f:()=>tidySel()},
+  {t:'Toggle format bar (colour, text size, align)',id:'format',f:()=>toggleColors()},
+  {t:'Toggle minimap',id:'minimap',f:()=>toggleMini()},
+  {t:'Change theme',id:'themes',f:()=>openThemes()},
+  {t:'Keyboard shortcuts',id:'keys',f:()=>openKeys()},
+  {t:'Export outline (Markdown)',f:()=>exportMd()},
+  {t:'Export area to PDF',id:'area',f:()=>ACT.area()},
+  {t:'Fit all to screen',id:'fit',f:()=>fit()},
+  {t:'New file',f:()=>$('#mNew').click()},
+  {t:'AI summary settings',f:()=>openSettings()},
+  ...['text','draw','image','canvas','combine','label'].map(t=>({t:'Add '+TITLES[t].toLowerCase()+' block',id:t,f:()=>addFromTool(t)}))
 ];
 function jumpTo(n){
   const z=Math.max(Math.min(view.z,1.2),.8);
@@ -1568,7 +1562,7 @@ function renderPal(){
   pItems=[...blocks.map(n=>({b:n})),...acts.map(a=>({a}))];pIdx=clamp(pIdx,0,Math.max(0,pItems.length-1));
   let html='',i=0;
   if(blocks.length){html+='<div class="phd">Blocks</div>'+blocks.map(n=>`<div class="pi" data-i="${i++}"><span class="pt">${TITLES[n.type]}</span><span class="tx">${esc(((n.text||n.title||'').trim()).slice(0,80))}</span></div>`).join('')}
-  if(acts.length){html+='<div class="phd">Commands</div>'+acts.map(a=>`<div class="pi" data-i="${i++}"><span class="tx">${esc(a.t)}</span>${a.k?`<span class="pk">${a.k}</span>`:''}</div>`).join('')}
+  if(acts.length){html+='<div class="phd">Commands</div>'+acts.map(a=>`<div class="pi" data-i="${i++}"><span class="tx">${esc(a.t)}</span>${kl(a.id)?`<span class="pk">${kl(a.id)}</span>`:''}</div>`).join('')}
   plist.innerHTML=html||'<div class="phd">No results</div>';
   plist.querySelectorAll('.pi')[pIdx]?.classList.add('on');plist.querySelector('.pi.on')?.scrollIntoView({block:'nearest'});
 }
@@ -1729,7 +1723,7 @@ addEventListener('hashchange',()=>{joinFromHash()});
 const THEMES={night:['#161519','#f29b62','#ffffff'],day:['#f4f1ea','#2f4f45','#1c1b18'],sakura:['#fdf0f2','#d6567a','#3a2128'],mono:['#e8e8e6','#111111','#111111'],ocean:['#0b1826','#5bc0eb','#e6f1ff'],forest:['#101a15','#9bd47f','#e9f5e4'],midnight:['#000000','#a78bfa','#f0eefc'],sunset:['#1a1012','#ff8a5b','#ffeee6']};
 let MM={};
 function readMM(){const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();MM={node:g('--t3'),cv:g('--line2'),acc:g('--accent'),accSoft:g('--accent-soft')}}
-function updThemeUI(){const t=document.documentElement.dataset.theme;$('#mTheme span').textContent=t==='day'?'Switch to night':'Switch to day';
+function updThemeUI(){const t=document.documentElement.dataset.theme;$('#mTheme span').textContent='Theme · '+t[0].toUpperCase()+t.slice(1);
   document.querySelectorAll('.tc').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
 function setTheme(t){
   if(!THEMES[t])t='night';const h=document.documentElement;
@@ -1738,13 +1732,93 @@ function setTheme(t){
   document.querySelector('meta[name=theme-color]')?.setAttribute('content',THEMES[t][0]);
   readMM();updMini();updThemeUI();
 }
-$('#mTheme').onclick=()=>setTheme(document.documentElement.dataset.theme==='day'?'night':'day');
+$('#mTheme').onclick=()=>openThemes();
 $('#tgrid').innerHTML=Object.entries(THEMES).map(([k,[bg,a,ink]])=>`<button class="tc" data-t="${k}"><i style="background:${bg};--a:${a};--f:${ink}"></i>${k}</button>`).join('');
 $('#tgrid').addEventListener('click',e=>{const b=e.target.closest('.tc');if(b)setTheme(b.dataset.t)});
 function openThemes(){updThemeUI();$('#tmodal').classList.add('on')}
 $('#tmodal').addEventListener('pointerdown',e=>{if(e.target.id==='tmodal')closeModal()});
 document.addEventListener('selectstart',e=>{const t=e.target.nodeType===3?e.target.parentElement:e.target;if(t?.closest?.('.edit.on,input,textarea'))return;e.preventDefault()});
 readMM();updThemeUI();
+
+/* ---------- customizable shortcuts ---------- */
+const IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform);
+const KEYDEFS=[
+ ['Tools',[['select','Select tool',['V']],['hand','Pan tool',['H']],['area','Export area to PDF',['E']]]],
+ ['Add blocks',[['text','Text',['T']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['C']],['combine','Combine',['M']],['label','Heading',['L']]]],
+ ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['cluster','Auto-cluster notes',['J']],['del','Delete',['Delete','Backspace']]]],
+ ['View',[['fit','Fit all / selection',['Shift+1']],['zoomin','Zoom in',['=','Shift+=']],['zoomout','Zoom out',['-']],['snap','Snap to grid',['G']],['format','Format bar (colour, text)',['K']],['minimap','Minimap',['N']],['themes','Theme',['Shift+D']],['palette','Command palette',['/','Mod+K']],['keys','Keyboard shortcuts',['Shift+/']]]]
+];
+const PUNCT={Slash:'/',Equal:'=',Minus:'-',Period:'.',Comma:',',Semicolon:';',Quote:"'",BracketLeft:'[',BracketRight:']',Backslash:'\\',Backquote:'`'};
+function combo(e){
+  let k;const c=e.code||'';
+  if(/^Key[A-Z]$/.test(c))k=c[3];else if(/^Digit\d$/.test(c))k=c[5];else if(PUNCT[c])k=PUNCT[c];else if(c==='Space')k='Space';else k=e.key;
+  if(!k||['Meta','Control','Shift','Alt','Dead'].includes(k))return null;
+  if(k.length===1)k=k.toUpperCase();
+  const p=[];if(e.metaKey||e.ctrlKey)p.push('Mod');if(e.altKey)p.push('Alt');if(e.shiftKey)p.push('Shift');
+  return[...p,k].join('+');
+}
+function pretty(c){
+  const parts=c.split('+').map(x=>x==='Mod'?(IS_MAC?'⌘':'Ctrl'):x==='Shift'?(IS_MAC?'⇧':'Shift'):x==='Alt'?(IS_MAC?'⌥':'Alt'):x==='Backspace'?'⌫':x==='Delete'?'Del':x);
+  return parts.join(IS_MAC?'':'+');
+}
+let KEYS={},KEYMAP={};
+function loadKeys(){
+  let ov={};try{ov=JSON.parse(localStorage.getItem('affinity-keys')||'{}')}catch{}
+  KEYS={};KEYDEFS.forEach(([g,l])=>l.forEach(([id,n,d])=>KEYS[id]=Array.isArray(ov[id])?ov[id]:d.slice()));
+  KEYMAP={};Object.entries(KEYS).forEach(([id,cs])=>cs.forEach(c=>KEYMAP[c]=id));
+}
+function saveKeys(){
+  const ov={};KEYDEFS.forEach(([g,l])=>l.forEach(([id,n,d])=>{if(JSON.stringify(KEYS[id])!==JSON.stringify(d))ov[id]=KEYS[id]}));
+  localStorage.setItem('affinity-keys',JSON.stringify(ov));loadKeys();refreshKeyLabels();
+}
+const kl=id=>(id&&KEYS[id]&&KEYS[id][0])?pretty(KEYS[id][0]):'';
+const KEYEL=[['[data-tool=select]','select'],['[data-tool=hand]','hand'],['[data-add=text]','text'],['[data-add=draw]','draw'],['[data-add=image]','image'],['[data-add=canvas]','canvas'],['[data-add=combine]','combine'],['[data-add=label]','label'],['[data-tool=area]','area'],['#bSnap','snap'],['#mCluster','cluster'],['#mPal','palette'],['#bUndo','undo'],['#bRedo','redo'],['#mTheme','themes'],['#mKeys','keys']];
+function refreshKeyLabels(){
+  KEYEL.forEach(([q,id])=>document.querySelectorAll(q).forEach(el=>{
+    const l=kl(id);if(el.dataset.tip!==undefined)el.dataset.tip=el.dataset.tip.split(' · ')[0]+(l?' · '+l:'');
+    const k=el.querySelector('kbd');if(k)k.textContent=l}));
+  document.querySelectorAll('[data-k]').forEach(el=>el.textContent=kl(el.dataset.k)||'—');
+}
+const ACT={
+  select:()=>setTool('select'),hand:()=>setTool('hand'),
+  area:()=>{setTool('area');if(sel.size){const ns=[...sel].map(byId);const x1=Math.min(...ns.map(n=>n.x))-40,y1=Math.min(...ns.map(n=>n.y))-40,x2=Math.max(...ns.map(n=>n.x+n.w))+40,y2=Math.max(...ns.map(n=>n.y+n.h))+40;area={x:x1,y:y1,w:x2-x1,h:y2-y1};updArea()}},
+  text:()=>addFromTool('text'),draw:()=>addFromTool('draw'),image:()=>addFromTool('image'),canvas:()=>addFromTool('canvas'),combine:()=>addFromTool('combine'),label:()=>addFromTool('label'),
+  undo:()=>undo(),redo:()=>doRedo(),dup:()=>dupSelected(),selall:()=>{S.nodes.forEach(n=>sel.add(n.id));S.nodes.forEach(sync)},
+  group:()=>groupSel(),tidy:()=>tidySel(),cluster:()=>autoCluster(),
+  del:()=>{if(selEdge){pushHist();S.edges=S.edges.filter(x=>x.id!==selEdge);selEdge=null;refreshAll();save()}else if(sel.size)removeNodes([...sel])},
+  fit:()=>fit(sel.size?[...sel].map(byId):null),zoomin:()=>$('#bIn').click(),zoomout:()=>$('#bOut').click(),
+  snap:()=>$('#bSnap').click(),format:()=>toggleColors(),minimap:()=>toggleMini(),themes:()=>openThemes(),palette:()=>openPal(),keys:()=>openKeys()
+};
+/* editor */
+let rec=null;
+const KNAME={};KEYDEFS.forEach(([g,l])=>l.forEach(([id,n])=>KNAME[id]=n));
+function renderKeys(){
+  $('#klist').innerHTML=KEYDEFS.map(([g,l])=>`<div class="kh">${g}</div>`+l.map(([id,n,d])=>{
+    const cs=KEYS[id],changed=JSON.stringify(cs)!==JSON.stringify(d);
+    return`<div class="kr"><span>${esc(n)}</span><button class="kb${rec===id?' rec':cs.length?'':' none'}" data-id="${id}">${rec===id?'Press keys…':cs.length?cs.map(pretty).join(' / '):'Unbound'}</button><button class="kx" data-reset="${id}" title="Reset to default" style="visibility:${changed?'visible':'hidden'}">↺</button></div>`}).join('')).join('');
+}
+function openKeys(){rec=null;renderKeys();$('#kmodal').classList.add('on')}
+$('#klist').addEventListener('click',e=>{
+  const b=e.target.closest('.kb'),r=e.target.closest('[data-reset]');
+  if(b){rec=rec===b.dataset.id?null:b.dataset.id;renderKeys()}
+  if(r){KEYS[r.dataset.reset]=KEYDEFS.flatMap(x=>x[1]).find(d=>d[0]===r.dataset.reset)[2].slice();saveKeys();renderKeys()}
+});
+$('#kReset').onclick=()=>{localStorage.removeItem('affinity-keys');loadKeys();refreshKeyLabels();renderKeys();toast('Shortcuts reset')};
+$('#kClose').onclick=closeModal;
+$('#kmodal').addEventListener('pointerdown',e=>{if(e.target.id==='kmodal')closeModal()});
+$('#mKeys').onclick=()=>openKeys();
+addEventListener('keydown',e=>{
+  if(!rec)return;
+  e.preventDefault();e.stopPropagation();
+  if(e.key==='Escape'){rec=null;renderKeys();return}
+  const c=combo(e);if(!c)return;
+  if(['Mod+C','Mod+X','Mod+V'].includes(c)){toast('Reserved for copy / cut / paste');return}
+  let moved='';
+  Object.keys(KEYS).forEach(id=>{if(id!==rec&&KEYS[id].includes(c)){KEYS[id]=KEYS[id].filter(x=>x!==c);moved=KNAME[id]}});
+  KEYS[rec]=[c];saveKeys();rec=null;renderKeys();
+  if(moved)toast(`${pretty(c)} moved from “${moved}”`);
+},true);
+loadKeys();refreshKeyLabels();
 
 /* ---------- boot ---------- */
 (async function boot(){
