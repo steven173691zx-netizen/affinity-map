@@ -754,7 +754,7 @@ function act(n,a){
 
 /* ---------- combine ---------- */
 const inside=(m,c)=>{const x=m.x+m.w/2,y=m.y+m.h/2;return x>c.x&&x<c.x+c.w&&y>c.y&&y<c.y+c.h};
-function innerCanvas(m){let b=null;S.nodes.forEach(c=>{if(c.type==='canvas'&&c.id!==m.id&&inside(m,c)&&(!b||c.w*c.h<b.w*b.h))b=c});return b}
+function innerCanvas(m){let b=null;const ma=m.type==='canvas'?m.w*m.h:0;S.nodes.forEach(c=>{if(c.type==='canvas'&&c.id!==m.id&&c.w*c.h>ma&&inside(m,c)&&(!b||c.w*c.h<b.w*b.h))b=c});return b}
 function itemOf(s){
   if(s.type==='canvas'||s.type==='combine')return null;
   const cv=innerCanvas(s),cvo=cv?{id:cv.id,title:cv.title||'Canvas'}:null;
@@ -1466,58 +1466,73 @@ async function autoCluster(){
   let tg=[...sel].map(byId).filter(Boolean);
   if(!tg.length)tg=S.nodes.slice();
   if(!tg.length){toast('Nothing to cluster');return}
-  // blocks inside a targeted canvas travel with it
-  const cvs=tg.filter(n=>n.type==='canvas'),ride=new Map();
-  const carried=new Set();
-  cvs.forEach(c=>{const kids=S.nodes.filter(n=>n.type!=='canvas'&&inside(n,c));ride.set(c.id,kids);kids.forEach(k=>carried.add(k.id))});
-  const units=tg.filter(n=>!carried.has(n.id));
+  const PAD=28,TOP=64,IN=22,GAP=110;
+  const parentOf=n=>innerCanvas(n);
+  const kidsOf=c=>S.nodes.filter(n=>n.id!==c.id&&parentOf(n)?.id===c.id);
+  // canvases in the selection (and any canvases nested inside them) are laid out from the inside out
+  const active=new Set(tg.filter(n=>n.type==='canvas').map(n=>n.id));
+  for(let grow=true;grow;){grow=false;S.nodes.forEach(n=>{if(n.type==='canvas'&&!active.has(n.id)&&parentOf(n)&&active.has(parentOf(n).id)){active.add(n.id);grow=true}})}
+  const top=tg.filter(n=>!(parentOf(n)&&active.has(parentOf(n).id)));
+  const size=new Map(),subs=new Map(),SZ=n=>size.get(n.id)||[n.w,n.h];
   const isTxt=n=>(n.type==='text'||n.type==='sticky')&&n.text?.trim();
-  const txt=units.filter(isTxt),rest=units.filter(n=>!isTxt(n));
-  toast(aiReady()&&txt.length>1?'Clustering with AI…':'Clustering…');
-  let groups=[];
-  if(txt.length){
-    let g=null;
-    if(aiReady()&&txt.length>1){try{g=await clusterAI(txt)}catch(e){toast('AI failed — using local clustering')}}
-    groups=(g||clusterLocal(txt)).map(x=>({members:x.idx.map(i=>txt[i])}));
-  }
-  // attach every other block to the cluster it is wired to, else the nearest one
-  const cOf=new Map();groups.forEach((g,gi)=>g.members.forEach(n=>cOf.set(n.id,gi)));
-  const ctr=n=>[n.x+n.w/2,n.y+n.h/2];
-  const orphans=[];
-  rest.forEach(n=>{
-    const nb=S.edges.filter(e=>e.from===n.id||e.to===n.id).map(e=>e.from===n.id?e.to:e.from);
-    const cnt={};nb.forEach(id=>{if(cOf.has(id))cnt[cOf.get(id)]=(cnt[cOf.get(id)]||0)+1});
-    let gi=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
-    if(gi===undefined&&groups.length){let best=1e18;const [cx,cy]=ctr(n);groups.forEach((g,i)=>g.members.forEach(m=>{if(!cOf.has(m.id))return;const [mx,my]=ctr(m),d=(mx-cx)**2+(my-cy)**2;if(d<best){best=d;gi=i}}))}
-    if(gi===undefined)orphans.push(n);else{groups[+gi].members.push(n);cOf.set(n.id,+gi)}
-  });
-  if(orphans.length){ // nothing to attach to: group by kind
+  const rank=n=>n.type==='label'?0:(isTxt(n)?1:n.type==='combine'?3:2);
+  toast(aiReady()?'Clustering with AI…':'Clustering…');
+  async function cluster(units,useAI){
+    const txt=units.filter(isTxt),rest=units.filter(n=>!isTxt(n));let groups=[];
+    if(txt.length){
+      let g=null;if(useAI&&aiReady()&&txt.length>1){try{g=await clusterAI(txt)}catch(e){toast('AI failed — using local clustering')}}
+      groups=(g||clusterLocal(txt)).map(x=>({members:x.idx.map(i=>txt[i])}));
+    }
+    const cOf=new Map();groups.forEach((g,gi)=>g.members.forEach(n=>cOf.set(n.id,gi)));
+    const ctr=n=>[n.x+n.w/2,n.y+n.h/2],orphans=[];
+    rest.forEach(n=>{
+      const cnt={};S.edges.filter(e=>e.from===n.id||e.to===n.id).map(e=>e.from===n.id?e.to:e.from).forEach(id=>{if(cOf.has(id))cnt[cOf.get(id)]=(cnt[cOf.get(id)]||0)+1});
+      let gi=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+      if(gi===undefined&&groups.length){let best=1e18;const [cx,cy]=ctr(n);groups.forEach((g,i)=>g.members.forEach(mm=>{if(!txt.includes(mm))return;const [mx,my]=ctr(mm),d=(mx-cx)**2+(my-cy)**2;if(d<best){best=d;gi=i}}))}
+      if(gi===undefined)orphans.push(n);else{groups[+gi].members.push(n);cOf.set(n.id,+gi)}
+    });
     const by={};orphans.forEach(n=>(by[n.type]=by[n.type]||[]).push(n));
     Object.values(by).forEach(list=>groups.push({members:list}));
+    return groups.filter(g=>g.members.length);
   }
-  const rank=n=>n.type==='label'?0:(isTxt(n)?1:n.type==='combine'?3:2);
-  const x0=Math.min(...units.map(n=>n.x)),y0=Math.min(...units.map(n=>n.y));
-  const IN=22,GAP=110,MAXW=Math.max(1400,Math.sqrt(units.length)*520);
+  async function layout(units,depth){
+    if(!units.length)return{items:[],W:0,H:0};
+    for(const c of units.filter(u=>u.type==='canvas'&&active.has(u.id))){
+      const inner=await layout(kidsOf(c),depth+1);
+      size.set(c.id,[Math.max(MIN.canvas[0],inner.W+2*PAD),Math.max(MIN.canvas[1],inner.H+TOP+PAD)]);
+      subs.set(c.id,inner.items.map(i=>({n:i.n,x:i.x+PAD,y:i.y+TOP})));
+    }
+    const groups=await cluster(units,depth===0),maxW=Math.max(900,Math.sqrt(units.length)*500);
+    let cx=0,cy=0,rowH=0,tw=0;const items=[];
+    groups.forEach(g=>{
+      const mem=g.members.sort((a,b)=>rank(a)-rank(b)||a.y-b.y||a.x-b.x),k=mem.length,cols=Math.min(4,Math.ceil(Math.sqrt(k)));
+      const cw=Math.max(...mem.map(n=>SZ(n)[0]))+IN,ch=Math.max(...mem.map(n=>SZ(n)[1]))+IN,rows=Math.ceil(k/cols);
+      const W=cols*cw-IN,H=rows*ch-IN;
+      if(cx>0&&cx+W>maxW){cx=0;cy+=rowH+GAP;rowH=0}
+      mem.forEach((n,j)=>{
+        const x=cx+(j%cols)*cw,y=cy+Math.floor(j/cols)*ch;items.push({n,x,y});
+        (subs.get(n.id)||[]).forEach(si=>items.push({n:si.n,x:x+si.x,y:y+si.y}));
+      });
+      tw=Math.max(tw,cx+W);cx+=W+GAP;rowH=Math.max(rowH,H);
+    });
+    return{items,W:tw,H:cy+rowH};
+  }
+  const x0=Math.min(...top.map(n=>n.x)),y0=Math.min(...top.map(n=>n.y));
+  const res=await layout(top,0);
+  let all=res.items.map(i=>({n:i.n,x:x0+i.x,y:y0+i.y}));
+  // never land on blocks that stay put: if the result would touch one, move everything below them
+  const movingIds=new Set(all.map(m=>m.n.id)),fixed=S.nodes.filter(n=>!movingIds.has(n.id));
+  const hit=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
+  if(fixed.some(f=>all.some(m=>hit({x:m.x,y:m.y,w:SZ(m.n)[0],h:SZ(m.n)[1]},f)))){
+    const dy=Math.max(...fixed.map(f=>f.y+f.h))+GAP-Math.min(...all.map(m=>m.y));
+    all.forEach(m=>m.y+=dy);
+  }
   pushHist();
-  let cx=x0,cy=y0,rowH=0;const moves=[];
-  groups.filter(g=>g.members.length).forEach(g=>{
-    const mem=g.members.sort((a,b)=>rank(a)-rank(b)||a.y-b.y||a.x-b.x),k=mem.length,cols=Math.min(4,Math.ceil(Math.sqrt(k)));
-    const cw=Math.max(...mem.map(n=>n.w))+IN,ch=Math.max(...mem.map(n=>n.h))+IN,rows=Math.ceil(k/cols);
-    const W=cols*cw-IN,H=rows*ch-IN;
-    if(cx>x0&&cx+W>x0+MAXW){cx=x0;cy+=rowH+GAP;rowH=0}
-    mem.forEach((n,j)=>moves.push({n,x:cx+(j%cols)*cw,y:cy+Math.floor(j/cols)*ch}));
-    cx+=W+GAP;rowH=Math.max(rowH,H);
-  });
-  // canvases keep their size; their contents move by the same delta
-  const all=[];
-  moves.forEach(mv=>{
-    all.push(mv);
-    if(mv.n.type==='canvas')(ride.get(mv.n.id)||[]).forEach(k=>all.push({n:k,x:k.x+(mv.x-mv.n.x),y:k.y+(mv.y-mv.n.y)}));
-  });
+  size.forEach(([w,h],id)=>{const c=byId(id);if(c){c.w=w;c.h=h;sync(c)}});
   sel.clear();refreshAll();
   tweenNodes(all,750);
   setTimeout(()=>fit(),900);
-  toast(`${groups.filter(g=>g.members.length).length} clusters · ${units.length} blocks`);
+  toast(`${top.length} ${top.length===1?'block':'blocks'} arranged${active.size?' · canvases resized to fit':''}`);
 }
 
 /* ---------- markdown outline ---------- */
