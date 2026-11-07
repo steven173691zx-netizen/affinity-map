@@ -388,6 +388,12 @@ body.sm #smbar{opacity:1;transform:translateX(-50%);pointer-events:auto;transiti
 #smw.on{max-width:200px;opacity:1;padding:0 8px 0 10px}
 #smw kbd{font:11px var(--font);color:var(--t3);background:var(--elev2);border:1px solid var(--line);border-radius:5px;padding:0 6px}
 #smw .wn{animation:chipin .4s var(--ease)}
+#smfeed{position:fixed;left:20px;top:76px;display:flex;flex-direction:column;gap:7px;z-index:99;pointer-events:none;max-width:320px}
+.fd{display:flex;align-items:center;gap:9px;padding:8px 14px 8px 11px;border-radius:14px;font-size:12.5px;color:var(--t2);pointer-events:auto;cursor:pointer;animation:fdin .55s cubic-bezier(.34,1.4,.64,1);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.fd.out{opacity:0;transform:translateX(-14px)}
+.fd i{width:8px;height:8px;border-radius:50%;flex:none}
+.fd b{color:var(--t1);font-weight:650}.fd em{font-style:normal;color:var(--t1)}
+@keyframes fdin{from{opacity:0;transform:translateX(-18px) scale(.94)}to{opacity:1;transform:none}}
 #smwatch{position:fixed;top:20px;left:50%;transform:translate(-50%,-16px);height:38px;display:flex;align-items:center;gap:10px;padding:0 6px 0 16px;border-radius:99px;z-index:100;font-size:12.5px;font-weight:600;color:var(--t1);opacity:0;pointer-events:none;transition:opacity .45s var(--ease),transform .65s var(--ease)}
 #smwatch.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 body.sm #smwatch{display:none}
@@ -560,7 +566,6 @@ body.sm #smhud{opacity:1;transform:translate(-50%,0);transition-delay:.15s}
   <button class="tb" data-sm="destroy" data-tip="Destruction · 2" data-icon="target"></button>
   <div id="smw"><span class="wn"></span><kbd>R</kbd></div>
   <div class="sep"></div>
-  <button class="tb only-c" data-sm="bubble" data-tip="Hide / show dialogue · H" data-icon="eye"></button>
   <button class="tb" data-sm="keys" data-tip="Shortcuts · /" data-icon="keys"></button>
   <button class="tb" data-sm="sound" data-tip="Sound · M" data-icon="sound"></button>
   <div class="sep"></div>
@@ -575,13 +580,14 @@ body.sm #smhud{opacity:1;transform:translate(-50%,0);transition-delay:.15s}
   <div><span>Fire / swing</span><kbd>Click</kbd><kbd>Space</kbd></div>
   <div><span>New random weapon</span><kbd>R</kbd></div>
   <div><span>Write a comment</span><kbd>Enter</kbd></div>
-  <div><span>Hide / show dialogue</span><kbd>H</kbd></div>
+  <div><span>Close the comment box</span><kbd>H</kbd><kbd>Esc</kbd></div>
   <div><span>Sound on / off</span><kbd>M</kbd></div>
   <div><span>Zoom</span><kbd>Scroll</kbd></div>
   <div><span>Leave stickman mode</span><kbd>Esc</kbd></div>
 </div>
 <div id="smhud"><div class="t glass"><span id="smhs"></span></div><div class="h" id="smhh"></div></div>
 <div id="smwatch" class="glass"><i></i><span></span><button>Watch</button></div>
+<div id="smfeed"></div>
 <div id="smwb"></div>
 <div id="smb"><div class="box"><div class="nm"><i></i><em></em></div><textarea id="smt" rows="1" maxlength="140" placeholder="Say something…" spellcheck="false"></textarea><div class="sp" id="sms"></div><div class="hint">Enter to send · Esc to hide</div><button class="x" id="smx" title="Hide (H)">×</button><i class="tail"></i></div></div>
 <div id="toast" class="glass"></div>
@@ -651,7 +657,7 @@ let view={x:0,y:0,z:1};
 let tool='select', sel=new Set(), selEdge=null, snap=false, zTop=1, spaceDown=false;
 let hist=[], redo=[];
 const els=new Map();
-const SM={on:false,tool:null,x:0,y:0,px:0,py:0,vx:0,vy:0,face:1,ground:null,phase:0,squash:0,keys:new Set(),mx:0,my:0,down:false,weapon:null,cd:0,swing:0,swingHit:false,swingDir:1,bullets:[],parts:[],pops:[],dead:new Map(),hp:new Map(),nshake:new Map(),shake:0,score:0,combo:0,comboT:0,drop:0,last:0,raf:0,muted:localStorage.getItem('affinity-sm-mute')==='1',bubbleOn:false,zoomT:1,ink:'#fff',beam:null,aim:0,hurt:0,flash:0,plats:[],tops:[],plat:null,wordC:new Map(),wordT:0,platDirty:true,slow:0,freeze:0,punch:0,kick:0,dropKey:null,dropY:0,sendT:0,follow:null,looping:false,cs:null,csT:0};
+const SM={on:false,tool:null,x:0,y:0,px:0,py:0,vx:0,vy:0,face:1,ground:null,phase:0,squash:0,keys:new Set(),mx:0,my:0,down:false,weapon:null,cd:0,swing:0,swingHit:false,swingDir:1,bullets:[],parts:[],pops:[],dead:new Map(),hp:new Map(),nshake:new Map(),shake:0,score:0,combo:0,comboT:0,drop:0,last:0,raf:0,muted:localStorage.getItem('affinity-sm-mute')==='1',bubbleOn:false,zoomT:1,ink:'#fff',beam:null,aim:0,hurt:0,flash:0,plats:[],tops:[],plat:null,wordC:new Map(),wordT:0,platDirty:true,slow:0,freeze:0,punch:0,kick:0,dropKey:null,dropY:0,sendT:0,follow:null,lastGround:null,looping:false,cs:null,csT:0};
 const uid=()=>Math.random().toString(36).slice(2,9);
 const byId=id=>S.nodes.find(n=>n.id===id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -2208,6 +2214,14 @@ function watchUI(rdt){
 $('#smwatch button').onclick=()=>{if(SM.follow){SM.follow=null;return}let id=null;peers.forEach((p,k)=>{if(!id&&p.sm)id=k});SM.follow=id};
 vp.addEventListener('pointerdown',()=>{SM.follow=null},true);
 vp.addEventListener('wheel',()=>{SM.follow=null},{capture:true,passive:true});
+const nodeLabel=n=>{const t=(n.text||n.title||'').trim().replace(/\s+/g,' ');return t?(t.length>26?t.slice(0,26)+'…':t):({draw:'a drawing',image:'an image',combine:'a combine block',canvas:'a canvas',label:'a heading'}[n.type]||'a block')};
+function feed(p,html,nid){
+  const box=$('#smfeed'),d=document.createElement('div');d.className='fd glass';
+  d.innerHTML=`<i style="background:${esc(p.color||'#999')}"></i><span><b>${esc(p.name||'Someone')}</b> ${html}</span>`;
+  d.onclick=()=>{const n=nid&&byId(nid);if(!n)return;const el=els.get(n.id);if(el){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')}if(!SM.on)fit([n])};
+  box.appendChild(d);while(box.children.length>4)box.firstChild.remove();
+  setTimeout(()=>{d.classList.add('out');setTimeout(()=>d.remove(),520)},8000);
+}
 function reviveBy(id){const p=peers.get(id);if(p){p.sm=null;p.say=null}[...SM.dead].forEach(([nid,d])=>{if(d.by===id)reviveNode(nid)})}
 function onSm(d,id){
   let p=peers.get(id);if(!p){p={name:'Guest',color:'#999',sel:[]};peers.set(id,p)}
@@ -2217,10 +2231,10 @@ function onSm(d,id){
     Object.assign(m,{tx:d.x,ty:d.y,face:d.f,ground:!!d.g,vx:d.vx,vy:d.vy,tool:d.tl,weapon:d.w?WEAPONS.find(w=>w.id===d.w):null,aim:d.a,swing:d.sw||0,swingDir:d.sd||1,kick:d.k||0,beam:d.bm||null,t:now});
     ensureLoop();
   }else if(d.t==='f'){const w=WEAPONS.find(x=>x.id===d.w);if(w){spawnShot(w,{x:d.x,y:d.y},d.a,true);ensureLoop()}}
-  else if(d.t==='k'){const n=byId(d.id);if(n&&!SM.dead.has(n.id)){destroyNode(n,{x:d.x,y:d.y},id);ensureLoop()}}
-  else if(d.t==='s'){p.say=d.txt?{t:String(d.txt).slice(0,140),at:now}:null}
-  else if(d.t==='x'){reviveBy(id);if(SM.follow===id)SM.follow=null}
-  else if(d.t==='e'){if(!SM.on)toast((p.name||'Someone')+' entered stickman mode');ensureLoop()}
+  else if(d.t==='k'){const n=byId(d.id);if(n&&!SM.dead.has(n.id)){feed(p,`destroyed <em>${esc(nodeLabel(n))}</em>`,n.id);destroyNode(n,{x:d.x,y:d.y},id);ensureLoop()}}
+  else if(d.t==='s'){p.say=d.txt?{t:String(d.txt).slice(0,140),at:now}:null;if(d.txt){const n=d.nid&&byId(d.nid);feed(p,`commented${n?' on <em>'+esc(nodeLabel(n))+'</em>':''}: “${esc(String(d.txt).slice(0,60))}”`,d.nid)}}
+  else if(d.t==='x'){reviveBy(id);if(SM.follow===id)SM.follow=null;feed(p,'left stickman mode')}
+  else if(d.t==='e'){feed(p,'entered stickman mode');ensureLoop()}
 }
 const RESPAWN=22,GRAV=2000,RUN=400,JUMP=720;
 const WEAPONS=[
@@ -2418,17 +2432,19 @@ function smSend(o){if(collab&&collab.sendSm&&SM.on){try{collab.sendSm(o)}catch{}
 function say(text){
   fullMsg=text;shown=0;bub.classList.remove('typing');bub.classList.add('saying');sms.textContent='';smt.blur();
   const box=bub.querySelector('.box');box.style.animation='none';void box.offsetWidth;box.style.animation='';
-  smSend({t:'s',txt:text});
-  const g=SM.ground;if(g){g.cm=(g.cm||[]).slice(-19).concat({id:uid(),t:text,n:me.name,c:me.color,at:Date.now()});renderPin(g);save();pop(g.x+g.w/2,g.y-34,'comment pinned','#8be9a8',13)}
+  let g=SM.ground||(SM.lastGround&&!SM.dead.has(SM.lastGround.id)?SM.lastGround:null);
+  if(!g){let bd=1e18;alive().forEach(n=>{const cx=Math.max(n.x,Math.min(SM.x,n.x+n.w)),cy=Math.max(n.y,Math.min(SM.y-30,n.y+n.h)),d=Math.hypot(cx-SM.x,cy-SM.y+30);if(d<bd){bd=d;g=n}})}
+  smSend({t:'s',txt:text,nid:g?g.id:null});
+  if(g){g.cm=(g.cm||[]).slice(-19).concat({id:uid(),t:text,n:me.name,c:me.color,at:Date.now()});renderPin(g);save();pop(g.x+g.w/2,g.y-34,'comment pinned','#8be9a8',13)}
 }
 smt.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const t=smt.value.trim();if(t)say(t)}
-  else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();hideBubble()}
+  else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeComment()}
   e.stopPropagation();
 });
 smt.addEventListener('input',()=>{smt.style.height='auto';smt.style.height=Math.min(84,smt.scrollHeight)+'px';sfx('blip')});
 sms.addEventListener('click',()=>openBubble());
-$('#smx').onclick=()=>hideBubble();
+$('#smx').onclick=()=>closeComment();
 function renderPin(n){
   const el=els.get(n.id);if(!el)return;
   el.querySelector('.cpin')?.remove();
@@ -2465,7 +2481,7 @@ function smExit(){
   if(!SM.on)return;
   hideBubble();smSend({t:'x'});SM.on=false;cancelAnimationFrame(SM.raf);SM.looping=false;$('#smkeys').classList.remove('on');
   [...SM.dead.keys()].forEach(id=>{els.get(id)?.classList.remove('smdead')});SM.dead.clear();SM.hp.clear();
-  els.forEach(el=>{el.style.translate=''});deadWires();
+  els.forEach(el=>{el.style.translate='';if(!el._pinOpen)el.querySelector('.cpin')?.classList.remove('open')});deadWires();
   document.body.classList.remove('sm');sx.clearRect(0,0,smc.width,smc.height);SM.tool=null;SM.weapon=null;SM.keys.clear();SM.down=false;
   toast(SM.score?`Nice — ${SM.score} destroyed. Everything rebuilt.`:'Back to editing');
   queueBar();
@@ -2479,11 +2495,11 @@ document.querySelectorAll('[data-sm]').forEach(b=>b.addEventListener('click',()=
   if(k==='comment'||k==='destroy')setSmTool(k);
   else if(k==='exit')smExit();
   else if(k==='sound')toggleMute();
-  else if(k==='bubble')toggleBubble();
   else if(k==='keys')$('#smkeys').classList.toggle('on');
 }));
 /* --- input --- */
-function toggleBubble(){if(SM.bubbleOn)hideBubble();else if(SM.tool==='comment')openBubble();else toast('Pick the comment tool first (1)')}
+function closeComment(){if(SM.tool==='comment')setSmTool(null);else hideBubble()}
+function toggleBubble(){if(SM.bubbleOn)closeComment();else setSmTool('comment')}
 function toggleMute(){SM.muted=!SM.muted;localStorage.setItem('affinity-sm-mute',SM.muted?'1':'0');$('[data-sm=sound]').innerHTML=ico(SM.muted?'soundoff':'sound');if(!SM.muted)sfx('pop')}
 const MOVE={KeyA:'L',ArrowLeft:'L',KeyD:'R',ArrowRight:'R',KeyS:'D',ArrowDown:'D'};
 addEventListener('keydown',e=>{
@@ -2491,7 +2507,7 @@ addEventListener('keydown',e=>{
   if(e.target===smt)return;
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   const c=combo(e);
-  if(e.code==='Escape'||(c&&KEYMAP[c]==='stickman')){e.preventDefault();e.stopImmediatePropagation();if(e.code==='Escape'&&$('#smkeys').classList.contains('on')){$('#smkeys').classList.remove('on');return}if(e.code==='Escape'&&SM.bubbleOn){hideBubble();return}smExit();return}
+  if(e.code==='Escape'||(c&&KEYMAP[c]==='stickman')){e.preventDefault();e.stopImmediatePropagation();if(e.code==='Escape'&&$('#smkeys').classList.contains('on')){$('#smkeys').classList.remove('on');return}if(e.code==='Escape'&&SM.bubbleOn){closeComment();return}smExit();return}
   if(editing())return;
   let used=true;
   if(MOVE[e.code]){SM.keys.add(MOVE[e.code]);if(MOVE[e.code]==='D'&&SM.plat){SM.dropKey=SM.plat.key;SM.dropY=SM.plat.y;SM.ground=null;SM.plat=null}}
@@ -2551,7 +2567,7 @@ function playerUpdate(dt,rdt){
   let land=null;
   if(SM.dropKey&&SM.y>SM.dropY+26)SM.dropKey=null;
   if(SM.vy>=0)for(const q of SM.plats){if(q.key===SM.dropKey)continue;if(SM.x>=q.x1&&SM.x<=q.x2&&SM.py<=q.y+2&&SM.y>=q.y&&(!land||q.y<land.y))land=q}
-  if(land){if(!SM.ground&&SM.vy>260){SM.squash=.22;burst(SM.x,land.y,7,SM.ink,160,'smoke',.4);sfx('land')}SM.y=land.y;SM.vy=0;SM.ground=land.n;SM.plat=land;if(land.key!==SM.dropKey&&SM.y<=SM.dropY+26)SM.dropKey=SM.dropKey&&land.y>SM.dropY?null:SM.dropKey}
+  if(land){if(!SM.ground&&SM.vy>260){SM.squash=.22;burst(SM.x,land.y,7,SM.ink,160,'smoke',.4);sfx('land')}SM.y=land.y;SM.vy=0;SM.ground=land.n;SM.lastGround=land.n;SM.plat=land;if(land.key!==SM.dropKey&&SM.y<=SM.dropY+26)SM.dropKey=SM.dropKey&&land.y>SM.dropY?null:SM.dropKey}
   else if(SM.plat&&(SM.dead.has(SM.plat.n.id)||SM.x<SM.plat.x1||SM.x>SM.plat.x2||SM.y<SM.plat.y-1||SM.plat.key===SM.dropKey)){SM.ground=null;SM.plat=null}
   // fell off the world
   const low=Math.max(...S.nodes.map(n=>n.y+n.h));
