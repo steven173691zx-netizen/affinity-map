@@ -388,13 +388,19 @@ body.sm #smbar{opacity:1;transform:translateX(-50%);pointer-events:auto;transiti
 #smw.on{max-width:200px;opacity:1;padding:0 8px 0 10px}
 #smw kbd{font:11px var(--font);color:var(--t3);background:var(--elev2);border:1px solid var(--line);border-radius:5px;padding:0 6px}
 #smw .wn{animation:chipin .4s var(--ease)}
+#smwatch{position:fixed;top:20px;left:50%;transform:translate(-50%,-16px);height:38px;display:flex;align-items:center;gap:10px;padding:0 6px 0 16px;border-radius:99px;z-index:100;font-size:12.5px;font-weight:600;color:var(--t1);opacity:0;pointer-events:none;transition:opacity .45s var(--ease),transform .65s var(--ease)}
+#smwatch.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+body.sm #smwatch{display:none}
+#smwatch i{width:8px;height:8px;border-radius:50%;background:var(--wc,var(--accent));animation:smdot 1.6s ease-in-out infinite}
+#smwatch button{all:unset;height:28px;padding:0 14px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:12px;font-weight:650;cursor:pointer;transition:all .2s var(--ease)}
+#smwatch button:hover{filter:brightness(1.08)}#smwatch button:active{transform:scale(.95)}
+#smwatch.follow button{background:rgba(var(--ovc),.12);color:var(--t1)}
 #smhud{position:fixed;top:20px;left:50%;transform:translate(-50%,-14px);opacity:0;z-index:100;text-align:center;pointer-events:none;transition:opacity .5s var(--ease),transform .7s var(--ease)}
 body.sm #smhud{opacity:1;transform:translate(-50%,0);transition-delay:.15s}
 #smhud .t{display:inline-flex;align-items:center;gap:9px;height:34px;padding:0 16px;border-radius:99px;font-size:12px;font-weight:650;letter-spacing:.02em;color:var(--t1)}
-#smhud .t i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:smdot 1.8s ease-in-out infinite}
+#smhud .t:has(#smhs:empty){display:none}
 @keyframes smdot{50%{transform:scale(.55);opacity:.5}}
 #smhud .t b{color:var(--accent);font-variant-numeric:tabular-nums;margin-left:2px}
-#smhud .t span:not(:empty)::before{content:"·";margin-right:8px;color:var(--t3)}
 #smhud .h{margin-top:9px;font-size:11.5px;color:var(--t3);transition:opacity .8s var(--ease)}
 #smwb{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);z-index:101;font:800 48px/1 var(--font);letter-spacing:-.025em;color:var(--t1);opacity:0;pointer-events:none;white-space:nowrap;text-align:center}
 #smwb small{display:block;font-size:11px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
@@ -574,7 +580,8 @@ body.sm #smhud{opacity:1;transform:translate(-50%,0);transition-delay:.15s}
   <div><span>Zoom</span><kbd>Scroll</kbd></div>
   <div><span>Leave stickman mode</span><kbd>Esc</kbd></div>
 </div>
-<div id="smhud"><div class="t glass"><i></i>Stickman<span id="smhs"></span></div><div class="h" id="smhh"></div></div>
+<div id="smhud"><div class="t glass"><span id="smhs"></span></div><div class="h" id="smhh"></div></div>
+<div id="smwatch" class="glass"><i></i><span></span><button>Watch</button></div>
 <div id="smwb"></div>
 <div id="smb"><div class="box"><div class="nm"><i></i><em></em></div><textarea id="smt" rows="1" maxlength="140" placeholder="Say something…" spellcheck="false"></textarea><div class="sp" id="sms"></div><div class="hint">Enter to send · Esc to hide</div><button class="x" id="smx" title="Hide (H)">×</button><i class="tail"></i></div></div>
 <div id="toast" class="glass"></div>
@@ -644,7 +651,7 @@ let view={x:0,y:0,z:1};
 let tool='select', sel=new Set(), selEdge=null, snap=false, zTop=1, spaceDown=false;
 let hist=[], redo=[];
 const els=new Map();
-const SM={on:false,tool:null,x:0,y:0,px:0,py:0,vx:0,vy:0,face:1,ground:null,phase:0,squash:0,keys:new Set(),mx:0,my:0,down:false,weapon:null,cd:0,swing:0,swingHit:false,swingDir:1,bullets:[],parts:[],pops:[],dead:new Map(),hp:new Map(),nshake:new Map(),shake:0,score:0,combo:0,comboT:0,drop:0,last:0,raf:0,muted:localStorage.getItem('affinity-sm-mute')==='1',bubbleOn:false,zoomT:1,ink:'#fff',beam:null,aim:0,hurt:0,flash:0,plats:[],tops:[],plat:null,wordC:new Map(),wordT:0,platDirty:true,slow:0,freeze:0,punch:0,kick:0,dropKey:null,dropY:0,sendT:0,looping:false,cs:null,csT:0};
+const SM={on:false,tool:null,x:0,y:0,px:0,py:0,vx:0,vy:0,face:1,ground:null,phase:0,squash:0,keys:new Set(),mx:0,my:0,down:false,weapon:null,cd:0,swing:0,swingHit:false,swingDir:1,bullets:[],parts:[],pops:[],dead:new Map(),hp:new Map(),nshake:new Map(),shake:0,score:0,combo:0,comboT:0,drop:0,last:0,raf:0,muted:localStorage.getItem('affinity-sm-mute')==='1',bubbleOn:false,zoomT:1,ink:'#fff',beam:null,aim:0,hurt:0,flash:0,plats:[],tops:[],plat:null,wordC:new Map(),wordT:0,platDirty:true,slow:0,freeze:0,punch:0,kick:0,dropKey:null,dropY:0,sendT:0,follow:null,looping:false,cs:null,csT:0};
 const uid=()=>Math.random().toString(36).slice(2,9);
 const byId=id=>S.nodes.find(n=>n.id===id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -2185,6 +2192,22 @@ addEventListener('keydown',e=>{
 loadKeys();refreshKeyLabels();
 
 /* ---------- stickman mode ---------- */
+function watchUI(rdt){
+  const w=$('#smwatch');let list=[];const now=performance.now();
+  if(!SM.on)peers.forEach((p,id)=>{if(p.sm&&now-p.sm.t<4000)list.push([id,p])});
+  if(SM.follow&&!list.some(x=>x[0]===SM.follow))SM.follow=null;
+  const on=list.length>0;
+  if(on){const [id,p]=SM.follow?list.find(x=>x[0]===SM.follow):list[0];w.style.setProperty('--wc',p.color||'#999');
+    const t=list.length>1?`${esc(p.name)} +${list.length-1} are playing`:`${esc(p.name)} is playing stickman`;
+    if(w._t!==t){w._t=t;w.querySelector('span').innerHTML=t}
+    w.classList.toggle('follow',!!SM.follow);w.querySelector('button').textContent=SM.follow?'Stop':'Watch';
+    if(SM.follow){const m=peers.get(SM.follow).sm;if(m){const z=Math.max(.7,Math.min(1.2,view.z)),k=1-Math.pow(.002,rdt);
+      view.z+=(z-view.z)*k;view.x+=(innerWidth/2-m.x*view.z-view.x)*k;view.y+=(innerHeight*.58-(m.y-30)*view.z-view.y)*k;applyView()}}}
+  w.classList.toggle('on',on);
+}
+$('#smwatch button').onclick=()=>{if(SM.follow){SM.follow=null;return}let id=null;peers.forEach((p,k)=>{if(!id&&p.sm)id=k});SM.follow=id};
+vp.addEventListener('pointerdown',()=>{SM.follow=null},true);
+vp.addEventListener('wheel',()=>{SM.follow=null},{capture:true,passive:true});
 function reviveBy(id){const p=peers.get(id);if(p){p.sm=null;p.say=null}[...SM.dead].forEach(([nid,d])=>{if(d.by===id)reviveNode(nid)})}
 function onSm(d,id){
   let p=peers.get(id);if(!p){p={name:'Guest',color:'#999',sel:[]};peers.set(id,p)}
@@ -2196,7 +2219,8 @@ function onSm(d,id){
   }else if(d.t==='f'){const w=WEAPONS.find(x=>x.id===d.w);if(w){spawnShot(w,{x:d.x,y:d.y},d.a,true);ensureLoop()}}
   else if(d.t==='k'){const n=byId(d.id);if(n&&!SM.dead.has(n.id)){destroyNode(n,{x:d.x,y:d.y},id);ensureLoop()}}
   else if(d.t==='s'){p.say=d.txt?{t:String(d.txt).slice(0,140),at:now}:null}
-  else if(d.t==='x'){reviveBy(id)}
+  else if(d.t==='x'){reviveBy(id);if(SM.follow===id)SM.follow=null}
+  else if(d.t==='e'){if(!SM.on)toast((p.name||'Someone')+' entered stickman mode');ensureLoop()}
 }
 const RESPAWN=22,GRAV=2000,RUN=400,JUMP=720;
 const WEAPONS=[
@@ -2434,7 +2458,8 @@ function smEnter(){
   const cu=$('#smcurt');cu.classList.remove('go');void cu.offsetWidth;cu.classList.add('go');SM.sendT=0;
   tone(330,.12,'square',.05,300);setTimeout(()=>tone(660,.2,'square',.05),110);
   cancelAnimationFrame(SM.raf);SM.looping=false;ensureLoop();
-  toast('Stickman mode — WASD to move · / for shortcuts');
+  smSend({t:'e'});
+  toast('WASD to move · / for shortcuts');
 }
 function smExit(){
   if(!SM.on)return;
@@ -2573,6 +2598,7 @@ function worldUpdate(dt,rdt){
   SM.comboT-=dt;if(SM.comboT<=0)SM.combo=0;
   SM.shake=Math.max(0,SM.shake-dt*2.2);
   const nowp=performance.now();
+  watchUI(rdt);
   peers.forEach(p=>{const m=p.sm;if(!m)return;if(nowp-m.t>5000){p.sm=null;return}
     const k=1-Math.pow(.0001,dt);m.x+=(m.tx-m.x)*k;m.y+=(m.ty-m.y)*k;
     m.phase+=m.ground?Math.abs(m.vx||0)*dt*.055:dt*3;m.squash*=Math.pow(.0008,dt)});
