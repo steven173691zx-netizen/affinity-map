@@ -892,14 +892,82 @@ async function callAI(items){
 /* ---------- wires ---------- */
 const portPos=(n,side)=>({x:side==='out'?n.x+n.w:n.x,y:n.y+n.h/2});
 function pathD(a,b){const d=Math.max(50,Math.abs(b.x-a.x)*.5);return`M${a.x} ${a.y}C${a.x+d} ${a.y},${b.x-d} ${b.y},${b.x} ${b.y}`}
+
+/* ---------- wire routing: wires go around blocks ---------- */
+const WR=9;let noRoute=0;const routeCache=new Map();
+function cubicPts(p0,p3,N=48){const dd=Math.max(50,Math.abs(p3.x-p0.x)*.5),c1={x:p0.x+dd,y:p0.y},c2={x:p3.x-dd,y:p3.y},out=[];
+  for(let i=0;i<=N;i++){const t=i/N,u=1-t;out.push({t,x:u*u*u*p0.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t*t*t*p3.y})}return out}
+function bezHits(p0,p3,nodes){
+  const pts=cubicPts(p0,p3);
+  return pts.some(q=>q.t>.04&&q.t<.96&&nodes.some(r=>q.x>r.x-3&&q.x<r.x+r.w+3&&q.y>r.y-3&&q.y<r.y+r.h+3));
+}
+function routeEdge(p0,p3,nodes){
+  const s={x:Math.round(p0.x)+WR,y:Math.round(p0.y)},e={x:Math.round(p3.x)-WR,y:Math.round(p3.y)};
+  const bx1=Math.min(s.x,e.x)-400,bx2=Math.max(s.x,e.x)+400,by1=Math.min(s.y,e.y)-400,by2=Math.max(s.y,e.y)+400;
+  const O=nodes.map(n=>({x:Math.round(n.x)-WR,y:Math.round(n.y)-WR,x2:Math.round(n.x+n.w)+WR,y2:Math.round(n.y+n.h)+WR})).filter(r=>r.x2>bx1&&r.x<bx2&&r.y2>by1&&r.y<by2);
+  const uniq=a=>[...new Set(a)].sort((a,b)=>a-b);
+  const xs=uniq([s.x,e.x,...O.flatMap(r=>[r.x,r.x2])]),ys=uniq([s.y,e.y,...O.flatMap(r=>[r.y,r.y2])]);
+  const nx=xs.length,ny=ys.length;if(nx*ny>40000)return null
+  const inR=(x,y)=>O.some(r=>x>r.x+.01&&x<r.x2-.01&&y>r.y+.01&&y<r.y2-.01);
+  const free=new Uint8Array(nx*ny);for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)free[j*nx+i]=inR(xs[i],ys[j])?0:1;
+  const si=xs.indexOf(s.x),sj=ys.indexOf(s.y),ei=xs.indexOf(e.x),ej=ys.indexOf(e.y);
+  if(si<0||ei<0||!free[sj*nx+si]||!free[ej*nx+ei])return null
+  const DX=[1,0,-1,0],DY=[0,1,0,-1],TURN=60;
+  const best=new Float64Array(nx*ny*4).fill(1e18),prev=new Int32Array(nx*ny*4).fill(-1);
+  const heap=[];const push=(f,k)=>{heap.push([f,k]);let i=heap.length-1;while(i>0){const p=(i-1)>>1;if(heap[p][0]<=heap[i][0])break;[heap[p],heap[i]]=[heap[i],heap[p]];i=p}};
+  const pop=()=>{const top=heap[0],last=heap.pop();if(heap.length){heap[0]=last;let i=0;for(;;){let l=2*i+1,r=l+1,m=i;if(l<heap.length&&heap[l][0]<heap[m][0])m=l;if(r<heap.length&&heap[r][0]<heap[m][0])m=r;if(m===i)break;[heap[m],heap[i]]=[heap[i],heap[m]];i=m}}return top};
+  const h=(i,j)=>Math.abs(xs[i]-e.x)+Math.abs(ys[j]-e.y);
+  const k0=(sj*nx+si)*4;best[k0]=0;push(h(si,sj),k0);
+  let goal=-1;
+  while(heap.length){
+    const [f,k]=pop(),d=k&3,cell=k>>2,i=cell%nx,j=(cell/nx)|0;
+    if(f-h(i,j)>best[k]+1e-6)continue;
+    if(i===ei&&j===ej){goal=k;break}
+    for(let nd=0;nd<4;nd++){
+      if(nd===((d+2)&3))continue;
+      const ni=i+DX[nd],nj=j+DY[nd];if(ni<0||nj<0||ni>=nx||nj>=ny||!free[nj*nx+ni])continue;
+      const mx=(xs[i]+xs[ni])/2,my=(ys[j]+ys[nj])/2;if(inR(mx,my))continue;
+      let c=best[k]+Math.abs(xs[ni]-xs[i])+Math.abs(ys[nj]-ys[j])+(nd!==d?TURN:0);
+      if(ni===ei&&nj===ej&&nd!==0)c+=TURN;
+      const nk=(nj*nx+ni)*4+nd;if(c<best[nk]){best[nk]=c;prev[nk]=k;push(c+h(ni,nj),nk)}
+    }
+  }
+  if(goal<0)return null;
+  const pts=[];for(let k=goal;k>=0;k=prev[k]){const cell=k>>2;pts.push({x:xs[cell%nx],y:ys[(cell/nx)|0]})}
+  pts.reverse();
+  const poly=[p0,...pts,p3].filter((q,i,a)=>i===0||q.x!==a[i-1].x||q.y!==a[i-1].y);
+  const out=[poly[0]];for(let i=1;i<poly.length;i++){const a=out[out.length-1],b=poly[i],c=poly[i+1];
+    if(c&&((a.x===b.x&&b.x===c.x)||(a.y===b.y&&b.y===c.y)))continue;out.push(b)}
+  return out;
+}
+function roundedD(poly,r=16){
+  let d=`M${poly[0].x} ${poly[0].y}`;
+  for(let i=1;i<poly.length-1;i++){
+    const a=poly[i-1],b=poly[i],c=poly[i+1],l1=Math.hypot(b.x-a.x,b.y-a.y),l2=Math.hypot(c.x-b.x,c.y-b.y),rr=Math.min(r,l1/2,l2/2);
+    const p1={x:b.x+(a.x-b.x)/l1*rr,y:b.y+(a.y-b.y)/l1*rr},p2={x:b.x+(c.x-b.x)/l2*rr,y:b.y+(c.y-b.y)/l2*rr};
+    d+=`L${p1.x} ${p1.y}Q${b.x} ${b.y} ${p2.x} ${p2.y}`;
+  }
+  const z=poly[poly.length-1];return d+`L${z.x} ${z.y}`;
+}
+const routingNow=()=>noRoute>0||(drag&&drag.moved&&(drag.k==='move'||drag.k==='rz'||drag.k==='gscale'));
+function edgePath(a,b,e,nodes,sig){
+  const p0=portPos(a,'out'),p3=portPos(b,'in');
+  if(routingNow())return pathD(p0,p3);
+  const key=`${p0.x},${p0.y},${p3.x},${p3.y}|${sig}`,c=routeCache.get(e.id);
+  if(c&&c.key===key)return c.d;
+  let d=pathD(p0,p3);
+  if(bezHits(p0,p3,nodes)){const r=routeEdge(p0,p3,nodes);if(r&&r.length>1)d=roundedD(r)}
+  routeCache.set(e.id,{key,d});return d;
+}
 function drawEdges(){
   const keep=new Set();
+  const rnodes=S.nodes.filter(n=>n.type!=='canvas'),rsig=rnodes.map(n=>Math.round(n.x)+','+Math.round(n.y)+','+Math.round(n.w)+','+Math.round(n.h)).join(';');
   S.edges.forEach(e=>{
     const a=byId(e.from),b=byId(e.to);if(!a||!b)return;keep.add(e.id);
     let g=wires.querySelector(`[data-e="${e.id}"]`);
     if(!g){g=document.createElementNS(SVGNS,'g');g.setAttribute('class','wire-g');g.dataset.e=e.id;
       g.innerHTML='<path class="wire"/><path class="wire-hit"/>';wires.appendChild(g);}
-    const d=pathD(portPos(a,'out'),portPos(b,'in'));
+    const d=edgePath(a,b,e,rnodes,rsig);
     g.children[0].setAttribute('d',d);g.children[1].setAttribute('d',d);
     g.classList.toggle('sel',selEdge===e.id);
   });
@@ -1047,6 +1115,7 @@ vp.addEventListener('pointermove',e=>{
 });
 function endDrag(e){
   if(!drag)return;
+  if(drag.moved)setTimeout(()=>drawEdges(),0);
   if(drag.k==='area'){drag=null;if(area&&(area.w<20||area.h<20))area=null;updArea();return}
   if(drag.k==='pan')vp.classList.remove('panning');
   if(drag.k==='marq')marquee.style.display='none';
@@ -1405,10 +1474,11 @@ function pasteClip(){
 
 /* ---------- animation helper ---------- */
 function tweenNodes(list,dur=600){
+  noRoute++;
   const st=list.map(o=>({...o,sx:o.n.x,sy:o.n.y})),t0=performance.now(),ease=x=>1-Math.pow(1-x,4);
   (function f(now){const p=clamp((now-t0)/dur,0,1),e=ease(p);
     st.forEach(o=>{o.n.x=o.sx+(o.x-o.sx)*e;o.n.y=o.sy+(o.y-o.sy)*e;sync(o.n)});drawEdges();
-    if(p<1)requestAnimationFrame(f);else{st.forEach(o=>{o.n.x=o.x;o.n.y=o.y;sync(o.n)});drawEdges();save()}})(t0);
+    if(p<1)requestAnimationFrame(f);else{st.forEach(o=>{o.n.x=o.x;o.n.y=o.y;sync(o.n)});noRoute=Math.max(0,noRoute-1);drawEdges();save()}})(t0);
 }
 
 /* ---------- group / tidy / auto-cluster ---------- */
@@ -1466,7 +1536,7 @@ async function autoCluster(){
   let tg=[...sel].map(byId).filter(Boolean);
   if(!tg.length)tg=S.nodes.slice();
   if(!tg.length){toast('Nothing to cluster');return}
-  const PAD=28,TOP=64,IN=22,GAP=110;
+  const PAD=34,TOP=70,IN=46,GAP=140;
   const parentOf=n=>innerCanvas(n);
   const kidsOf=c=>S.nodes.filter(n=>n.id!==c.id&&parentOf(n)?.id===c.id);
   // canvases in the selection (and any canvases nested inside them) are laid out from the inside out
@@ -1879,7 +1949,7 @@ loadKeys();refreshKeyLabels();
 })();
 function fitBar(){const t=$('#toolbar');t.style.setProperty('--k',1);const k=Math.min(1,(innerWidth-24)/t.scrollWidth);t.style.setProperty('--k',k)}
 addEventListener('resize',()=>{applyView();fitBar()});fitBar();
-window.__affinity={get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
+window.__affinity={redrawMs:()=>{routeCache.clear();const t=performance.now();drawEdges();return Math.round(performance.now()-t)},get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
 })();
 </script>
 </body>
