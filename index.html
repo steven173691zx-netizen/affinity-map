@@ -21,8 +21,7 @@
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font:13px/1.45 var(--font);-webkit-font-smoothing:antialiased;user-select:none}
-#vp{position:fixed;inset:0;overflow:hidden;cursor:default;touch-action:none}
-#grid{position:absolute;left:-60000px;top:-60000px;width:120000px;height:120000px;z-index:-1;pointer-events:none;background-image:radial-gradient(circle,var(--dot) 1px,transparent 1.4px);background-size:24px 24px;background-position:0 0}
+#vp{position:fixed;inset:0;overflow:hidden;cursor:default;touch-action:none;background-image:radial-gradient(circle,var(--dot) 1px,transparent 1.4px);background-size:24px 24px}
 #vp.hand,#vp.panning{cursor:grab}#vp.panning{cursor:grabbing}
 #world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 #wires,.wires{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;z-index:1;pointer-events:none}
@@ -365,7 +364,7 @@ body.multi .node.sel .rz{display:none}
 .kx{all:unset;width:22px;height:22px;display:grid;place-items:center;border-radius:6px;color:var(--t3);cursor:pointer;font-size:14px;transition:all .15s}.kx:hover{background:rgba(var(--ovc),.1);color:var(--t1)}
 
 /* ===== stickman mode ===== */
-body.sm .glass,body.moving .glass,body.sm #smb .box{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(var(--gl),.95)}
+body.sm .glass,body.sm #smb .box{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(var(--gl),.95)}
 #smc{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60;display:none}
 body.sm #smc,#smc.show{display:block}
 body.sm #more,body.sm #stylebar,body.sm #areabar,body.sm #mini,body.sm #gbox,body.sm #filemenu,body.sm #hint,body.sm #marquee{display:none!important}
@@ -565,7 +564,7 @@ body.sm #smhud{opacity:1;transform:translate(-50%,0);transition-delay:.15s}
 </head>
 <body>
 <div id="vp">
-  <div id="world"><div id="grid"></div><svg id="wires" class="wires"></svg></div>
+  <div id="world"><svg id="wires" class="wires"></svg></div>
   <div id="marquee"></div>
 </div>
 
@@ -766,43 +765,69 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const sn=v=>snap?Math.round(v/24)*24:v;
 
 /* ---------- history / persistence ---------- */
-function snapshot(){return JSON.stringify(S)}
+const imgTab=[],imgIdx=new Map();
+const imgTok=v=>{let k=imgIdx.get(v);if(k===undefined){k=imgTab.length;imgTab.push(v);imgIdx.set(v,k)}return '@i'+k};
+const isBig=v=>typeof v==='string'&&v.length>1500&&v.charCodeAt(0)===100&&v.startsWith('data:');
+function snapshot(){return JSON.stringify(S,(k,v)=>k==='src'&&isBig(v)?imgTok(v):v)}
+function hydrate(o){(o.nodes||[]).forEach(n=>{if(typeof n.src==='string'&&n.src.startsWith('@i'))n.src=imgTab[+n.src.slice(2)]||''});return o}
 function pushHist(){routeOn=false;hist.push(snapshot());if(hist.length>120)hist.shift();redo=[];updHist()}
 function updHist(){$('#bUndo').classList.toggle('dis',!hist.length);$('#bRedo').classList.toggle('dis',!redo.length)}
-function undo(){if(!hist.length)return;redo.push(snapshot());S=JSON.parse(hist.pop());sel.clear();selEdge=null;rebuild();updHist();save()}
-function doRedo(){if(!redo.length)return;hist.push(snapshot());S=JSON.parse(redo.pop());sel.clear();selEdge=null;rebuild();updHist();save()}
+function undo(){if(!hist.length)return;redo.push(snapshot());S=hydrate(JSON.parse(hist.pop()));sel.clear();selEdge=null;rebuild();updHist();save()}
+function doRedo(){if(!redo.length)return;hist.push(snapshot());S=hydrate(JSON.parse(redo.pop()));sel.clear();selEdge=null;rebuild();updHist();save()}
 let saveT,fileId=null,metas=[];
 let cmbT=0;function softCombine(){if(cmbT)return;cmbT=setTimeout(()=>{cmbT=0;refreshCombines()},120)}
-function save(){softCombine();if(!fileId)return;$('#status').textContent='Saving…';clearTimeout(saveT);saveT=setTimeout(writeFile,350)}
+function save(){softCombine();if(!fileId)return;$('#status').textContent='Saving…';clearTimeout(saveT);saveT=setTimeout(()=>{(window.requestIdleCallback||(f=>setTimeout(f,0)))(writeFile,{timeout:1500})},600)}
+let writing=false,again=false;
 async function writeFile(){
   clearTimeout(saveT);if(!fileId)return;
-  const rec={id:fileId,name:S.name||'Untitled map',updated:Date.now(),S,view:{...view},snap};
-  try{await dbPut(rec);const m={id:rec.id,name:rec.name,updated:rec.updated,count:S.nodes.length,room:S.room||null},i=metas.findIndex(x=>x.id===rec.id);i<0?metas.push(m):metas[i]=m;$('#status').textContent='Saved'}
-  catch(e){$('#status').textContent='Save failed — export JSON'}
+  if(writing){again=true;return}
+  writing=true;
+  try{
+    do{again=false;
+      const {doc,need}=slimDoc(),rec={id:fileId,name:S.name||'Untitled map',updated:Date.now(),S:doc,view:{...view},snap};
+      try{await dbPut(rec,need);const m={id:rec.id,name:rec.name,updated:rec.updated,count:S.nodes.length,room:S.room||null},i=metas.findIndex(x=>x.id===rec.id);i<0?metas.push(m):metas[i]=m;$('#status').textContent='Saved';try{localStorage.setItem('affinity-view-'+fileId,JSON.stringify(view))}catch{}}
+      catch(e){$('#status').textContent=e&&e.name==='QuotaExceededError'?'Storage full — export JSON':'Save failed — export JSON'}
+    }while(again);
+  }finally{writing=false}
 }
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1800)}
 
 /* ---------- view ---------- */
-let mvT=0,mvOn=false;
-function markMoving(){if(!mvOn){mvOn=true;document.body.classList.add('moving')}clearTimeout(mvT);mvT=setTimeout(()=>{mvOn=false;document.body.classList.remove('moving')},200)}
-const zlbl=$('#zoomlbl');let lastBS='',lastZL='';
+const zlbl=$('#zoomlbl');let lastBS='',lastBP='',lastZL='',viewT=0;
 function applyView(){
   world.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.z})`;queueBar();updArea();if(typeof updCursors==='function')updCursors();
+  const g=24*view.z,bs=`${g}px ${g}px`;if(bs!==lastBS){lastBS=bs;vp.style.backgroundSize=bs}const bp=`${view.x}px ${view.y}px`;if(bp!==lastBP){lastBP=bp;vp.style.backgroundPosition=bp}
   const zl=Math.round(view.z*100)+'%';if(zl!==lastZL){lastZL=zl;zlbl.textContent=zl}
-  if(!SM.on)markMoving();
+  if(view.z!==lastZ){lastZ=view.z;clearTimeout(rrT);rrT=setTimeout(rerast,170)}
 }
+/* will-change keeps panning/zooming on the GPU but freezes the text raster scale; re-raster once zooming settles so text is crisp */
+let lastZ=0,rrT=0;
+function rerast(){world.style.willChange='auto';requestAnimationFrame(()=>requestAnimationFrame(()=>{world.style.willChange='transform'}))}
+/* view position is tiny: keep it out of the (large) document write */
+function saveView(){if(!fileId)return;clearTimeout(viewT);viewT=setTimeout(()=>{try{localStorage.setItem('affinity-view-'+fileId,JSON.stringify(view))}catch{}},400)}
 const toWorld=(cx,cy)=>{const r=vp.getBoundingClientRect();return{x:(cx-r.left-view.x)/view.z,y:(cy-r.top-view.y)/view.z}};
+const ZT={z:1,cx:0,cy:0,wx:0,wy:0,on:false,raf:0,t:0};
+function stopZoom(){ZT.on=false;cancelAnimationFrame(ZT.raf)}
 function zoomAt(cx,cy,nz){
-  nz=clamp(nz,.1,3);const r=vp.getBoundingClientRect();const px=cx-r.left,py=cy-r.top;
-  view.x=px-(px-view.x)*(nz/view.z);view.y=py-(py-view.y)*(nz/view.z);view.z=nz;applyView();save();
+  nz=clamp(nz,.1,3);const r=vp.getBoundingClientRect(),px=cx-r.left,py=cy-r.top;
+  if(!ZT.on)ZT.z=view.z;
+  ZT.wx=(px-view.x)/view.z;ZT.wy=(py-view.y)/view.z;ZT.cx=px;ZT.cy=py;ZT.z=nz;
+  if(!ZT.on){ZT.on=true;ZT.t=performance.now();ZT.raf=requestAnimationFrame(zstep)}
+}
+function zstep(now){
+  const dt=Math.min(.05,(now-ZT.t)/1000||.016);ZT.t=now;
+  const d=ZT.z-view.z;
+  if(Math.abs(d)<view.z*.0015){view.z=ZT.z;ZT.on=false}else view.z+=d*(1-Math.pow(.00002,dt));
+  view.x=ZT.cx-ZT.wx*view.z;view.y=ZT.cy-ZT.wy*view.z;applyView();
+  if(ZT.on)ZT.raf=requestAnimationFrame(zstep);else{saveView();save()}
 }
 let anim;
 function animateTo(t,dur=550){
-  cancelAnimationFrame(anim);const s={...view},t0=performance.now();
+  cancelAnimationFrame(anim);stopZoom();const s={...view},t0=performance.now();
   const ease=x=>1-Math.pow(1-x,4);
   (function f(now){const p=clamp((now-t0)/dur,0,1),e=ease(p);
     view.x=s.x+(t.x-s.x)*e;view.y=s.y+(t.y-s.y)*e;view.z=s.z+(t.z-s.z)*e;applyView();
-    if(p<1)anim=requestAnimationFrame(f);else save();})(t0);
+    if(p<1)anim=requestAnimationFrame(f);else{saveView();save()}})(t0);
 }
 function fit(list){
   const ns=list&&list.length?list:S.nodes;
@@ -1384,7 +1409,7 @@ function targetNode(e){
 }
 vp.addEventListener('pointermove',e=>{
   if(!drag)return;
-  if(drag.k==='pan'){view.x=drag.vx+e.clientX-drag.sx;view.y=drag.vy+e.clientY-drag.sy;applyView()}
+  if(drag.k==='pan'){stopZoom();view.x=drag.vx+e.clientX-drag.sx;view.y=drag.vy+e.clientY-drag.sy;applyView();saveView()}
   else if(drag.k==='move'){
     const dx=(e.clientX-drag.sx)/view.z,dy=(e.clientY-drag.sy)/view.z;
     if(!drag.moved){if(Math.hypot(dx,dy)*view.z<3)return;drag.moved=true;pushHist();drag.start.forEach(s=>els.get(s.n.id).classList.add('dragging'))}
@@ -1441,10 +1466,11 @@ vp.addEventListener('dblclick',e=>{
   const w=toWorld(e.clientX,e.clientY);const n=addNode('text',w.x,w.y);
   setTimeout(()=>{const ed=els.get(n.id)?.querySelector('.edit');if(ed)enterEdit(ed)},60);
 });
+const panD={x:0,y:0};let panQ=0;
 vp.addEventListener('wheel',e=>{
   e.preventDefault();cancelAnimationFrame(anim);
   if(e.ctrlKey||e.metaKey){zoomAt(e.clientX,e.clientY,view.z*Math.exp(-e.deltaY*.0100))}
-  else{view.x-=e.deltaX;view.y-=e.deltaY;applyView();save()}
+  else{stopZoom();panD.x+=e.deltaX;panD.y+=e.deltaY;if(!panQ)panQ=requestAnimationFrame(()=>{panQ=0;view.x-=panD.x;view.y-=panD.y;panD.x=panD.y=0;applyView();saveView()})}
 },{passive:false});
 vp.addEventListener('contextmenu',e=>e.preventDefault());
 
@@ -1552,19 +1578,30 @@ addEventListener('pointerdown',e=>{if(!e.target.closest('#more,#bMore'))closeMor
 $('#mCluster').onclick=()=>autoCluster();$('#mPal').onclick=()=>openPal();
 
 /* ---------- files ---------- */
-const dbp=new Promise((res,rej)=>{try{const r=indexedDB.open('affinity',1);r.onupgradeneeded=()=>{r.result.createObjectStore('files',{keyPath:'id'});r.result.createObjectStore('meta',{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
+const dbp=new Promise((res,rej)=>{try{const r=indexedDB.open('affinity',2);r.onupgradeneeded=()=>{const d=r.result;['files','meta','imgs'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:'id'})})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
 const dbtx=(stores,mode,fn)=>dbp.then(db=>new Promise((res,rej)=>{const t=db.transaction(stores,mode);let out;try{out=fn(...[].concat(stores).map(x=>t.objectStore(x)))}catch(e){rej(e);return}t.oncomplete=()=>res(out&&'result' in out?out.result:undefined);t.onerror=t.onabort=()=>rej(t.error)}));
 const dbGet=id=>dbtx('files','readonly',s=>s.get(id));
 const dbMetas=()=>dbtx('meta','readonly',s=>s.getAll());
 const dbDelete=id=>dbtx(['files','meta'],'readwrite',(f,m)=>{f.delete(id);m.delete(id)});
-const dbPut=r=>dbtx(['files','meta'],'readwrite',(f,m)=>{f.put(r);m.put({id:r.id,name:r.name,updated:r.updated,count:r.S.nodes.length,room:r.S.room||null})});
+const storedImgs=new Set(),keyCache=new Map();
+function imgKey(v){let k=keyCache.get(v);if(k)return k;const L=v.length,st=Math.max(1,(L/600)|0);let h=2166136261,h2=5381;
+  for(let i=0;i<L;i+=st){const c=v.charCodeAt(i);h=Math.imul(h^c,16777619);h2=(Math.imul(h2,33)+c)|0}
+  for(let i=Math.max(0,L-96);i<L;i++){const c=v.charCodeAt(i);h=Math.imul(h^c,16777619);h2=(Math.imul(h2,33)+c)|0}
+  k=L+'-'+(h>>>0).toString(36)+(h2>>>0).toString(36);keyCache.set(v,k);return k}
+function slimDoc(){const need=[];const nodes=S.nodes.map(n=>{if(isBig(n.src)){const k=imgKey(n.src);if(!storedImgs.has(k))need.push([k,n.src]);return{...n,src:'idb:'+k}}return n});return{doc:{...S,nodes},need}}
+const dbPut=(r,need)=>dbtx(['files','meta','imgs'],'readwrite',(f,m,im)=>{(need||[]).forEach(([k,v])=>im.put({id:k,v}));f.put(r);m.put({id:r.id,name:r.name,updated:r.updated,count:r.S.nodes.length,room:r.S.room||null})}).then(()=>(need||[]).forEach(([k])=>storedImgs.add(k)));
+async function hydrateDoc(doc){const ks=[...new Set(doc.nodes.filter(n=>typeof n.src==='string'&&n.src.startsWith('idb:')).map(n=>n.src.slice(4)))];
+  if(!ks.length)return doc;const got=new Map();
+  await Promise.all(ks.map(k=>dbtx('imgs','readonly',s=>s.get(k)).then(r=>{if(r){got.set(k,r.v);storedImgs.add(k);keyCache.set(r.v,k)}}).catch(()=>{})));
+  doc.nodes.forEach(n=>{if(typeof n.src==='string'&&n.src.startsWith('idb:'))n.src=got.get(n.src.slice(4))||''});return doc}
 const flush=()=>writeFile();
 const ago=t=>{const s=(Date.now()-t)/1000;return s<60?'just now':s<3600?Math.floor(s/60)+'m ago':s<86400?Math.floor(s/3600)+'h ago':Math.floor(s/86400)+'d ago'};
 function newName(){let i=1,n='Untitled map';while(metas.some(m=>m.name===n))n='Untitled map '+(++i);return n}
 async function openFile(id,first){
   if(!first)await flush();
   const rec=await dbGet(id);if(!rec)return;
-  S=rec.S;view=rec.view||{x:innerWidth/2,y:innerHeight/2,z:1};snap=!!rec.snap;fileId=id;hist=[];redo=[];sel.clear();selEdge=null;area=null;
+  await hydrateDoc(rec.S);let lv=null;try{lv=JSON.parse(localStorage.getItem('affinity-view-'+id)||'null')}catch{}
+  S=rec.S;view=lv&&isFinite(lv.z)?lv:rec.view||{x:innerWidth/2,y:innerHeight/2,z:1};snap=!!rec.snap;fileId=id;hist=[];redo=[];sel.clear();selEdge=null;area=null;
   $('#bSnap').classList.toggle('on',snap);rebuild();applyView();updHist();updArea();
   localStorage.setItem('affinity-cur',id);
   if(typeof collab!=='undefined'){if(collab&&collab.roomId!==S.room)disconnect(true);if(S.room&&!collab&&!first)connect(S.room)}
@@ -3497,6 +3534,7 @@ window.addEventListener('resize',()=>{if(SM.looping)fxSize()});
 
 /* ---------- boot ---------- */
 (async function boot(){
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch{}
   try{
     metas=await dbMetas();
     if(!metas.length){
@@ -3510,6 +3548,7 @@ window.addEventListener('resize',()=>{if(SM.looping)fxSize()});
     }
   }catch(e){console.error(e);fileId=null;$('#status').textContent='Not saving — storage unavailable';view={x:innerWidth/2,y:innerHeight/2,z:1}}
   $('#bSnap').classList.toggle('on',snap);rebuild();applyView();updHist();
+  try{const e=await navigator.storage.estimate();if(e.quota&&e.usage/e.quota>.8)toast('Browser storage is almost full — export your maps')}catch{}
   if(!(await joinFromHash())&&S.room)connect(S.room);
 })();
 function fitBar(){const t=$('#toolbar');t.style.setProperty('--k',1);const k=Math.min(1,(innerWidth-24)/t.scrollWidth);t.style.setProperty('--k',k)}
