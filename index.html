@@ -601,7 +601,7 @@ body.sm #pnbar{display:none}
 .node[data-type=journey].sel{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
 .node[data-type=journey] .hd,.node[data-type=journey] .port{pointer-events:auto}
 .node[data-type=journey] .hd{height:40px;padding-left:14px}
-.node[data-type=journey] .rz{display:none}
+.node[data-type=journey] .rz{pointer-events:auto}
 .node[data-type=journey] .bd{position:absolute;left:0;right:0;top:40px;bottom:0;padding:0;overflow:hidden;border-radius:0 0 17px 17px;pointer-events:none}
 .jg{position:absolute;left:0;top:0;font-family:var(--font)}
 .jg>*{position:absolute}
@@ -976,7 +976,7 @@ function build(n,spawn){
   if(ed){
     ed.textContent=n.text||'';
     ed.addEventListener('focus',()=>{ed._snap=snapshot()});
-    ed.addEventListener('input',()=>{n.text=ed.innerText.replace(/\n$/,'');if(ed._snap){hist.push(ed._snap);redo=[];ed._snap=null;updHist()}refreshCombines();save()});
+    ed.addEventListener('input',()=>{n.text=ed.innerText.replace(/\n$/,'');if(ed._snap){hist.push(ed._snap);redo=[];ed._snap=null;updHist()}refreshCombines();autoGrow(n);save()});
     ed.addEventListener('paste',e=>{const f=[...(e.clipboardData.files||[])];if(f.some(x=>x.type.startsWith('image/')))return;e.preventDefault();document.execCommand('insertText',false,e.clipboardData.getData('text/plain'))});
     ed.addEventListener('pointerdown',e=>{if(nearText(e,ed))e.stopPropagation();else ed.blur()});
     ed.addEventListener('wheel',e=>{if(!e.ctrlKey&&ed.scrollHeight>ed.clientHeight)e.stopPropagation()},{passive:true});
@@ -1226,7 +1226,7 @@ function refreshCombines(){
     const rkey=html;
     el.querySelector('.badge').textContent=sm.count;
     el.classList.toggle('busy',busy.has(n.id));
-    if(list._key!==rkey){const first=list._key===undefined;list._key=rkey;list.innerHTML=html;if(!first){el.classList.remove('upd');void el.offsetWidth;el.classList.add('upd')}}
+    if(list._key!==rkey){const first=list._key===undefined;list._key=rkey;list.innerHTML=html;autoGrow(n);if(!first){el.classList.remove('upd');void el.offsetWidth;el.classList.add('upd')}}
     if(aiReady()&&sm.hasText&&!sm.ai&&!busy.has(n.id)&&failed.get(n.id)!==sm.key){
       clearTimeout(timers.get(n.id));timers.set(n.id,setTimeout(()=>runAI(n,sm.key),1200));
     }
@@ -1492,6 +1492,7 @@ function startResize(e,rz){
   const nd=nodeAt(rz),n=byId(nd.dataset.id);
   if(!sel.has(n.id))select([n.id]);
   drag={k:'rz',d:rz.dataset.d,sx:e.clientX,sy:e.clientY,o:{x:n.x,y:n.y,w:n.w,h:n.h},n,moved:false};
+  if(n.type==='journey')drag.jc=jmCapture(n);
   vp.setPointerCapture(e.pointerId);
 }
 let tmpPath=null;
@@ -1527,7 +1528,7 @@ vp.addEventListener('pointermove',e=>{
     if(drag.d.includes('s'))h=Math.max(mh,sn(o.h+dy));
     if(drag.d.includes('w')){w=Math.max(mw,sn(o.w-dx));x=o.x+o.w-w}
     if(drag.d.includes('n')){h=Math.max(mh,sn(o.h-dy));y=o.y+o.h-h}
-    Object.assign(n,{x,y,w,h});sync(n);drawEdges();
+    Object.assign(n,{x,y,w,h});if(n.type==='journey')jmScale(n,drag,drag.d);sync(n);drawEdges();
   }
   else if(drag.k==='marq'){
     const r=vp.getBoundingClientRect(),x1=Math.min(drag.sx,e.clientX),y1=Math.min(drag.sy,e.clientY),x2=Math.max(drag.sx,e.clientX),y2=Math.max(drag.sy,e.clientY);
@@ -1546,7 +1547,7 @@ function endDrag(e){
   if(!drag)return;
   if(drag.k==='pen'){const d=drag;drag=null;penFinish(d);return}
   if(drag.k==='area'){drag=null;if(area&&(area.w<20||area.h<20))area=null;updArea();return}
-  if(drag.k==='rz'&&drag.moved){const rzn=drag.n;setTimeout(()=>jmDropped([rzn]),0)}
+  if(drag.k==='rz'&&drag.moved){const rzn=drag.n;setTimeout(()=>jmDropped(rzn.type==='journey'?S.nodes.filter(m=>!jmSkip(m)):[rzn]),0)}
   if(drag.k==='pan')vp.classList.remove('panning');
   if(drag.k==='marq')marquee.style.display='none';
   if(drag.k==='move'){drag.start.forEach(s=>els.get(s.n.id).classList.remove('dragging'));if(drag.moved)jmDropped(drag.start.map(s=>s.n));
@@ -2247,6 +2248,7 @@ function refreshNodeDom(n){
   const el=els.get(n.id);if(!el)return;
   zTop=Math.max(zTop,n.z||0);sync(n);applyColor(n);applyText(n);renderPin(n);if(n.type==='journey')jmSoon();
   const ed=el.querySelector('.edit');if(ed&&document.activeElement!==ed&&ed.innerText.replace(/\n$/,'')!==(n.text||''))ed.textContent=n.text||'';
+  if(ed)requestAnimationFrame(()=>autoGrow(n));
   const ct=el.querySelector('.ctitle');if(ct&&document.activeElement!==ct){ct.value=n.title||'';sizeTitle(ct)}
   if(n.type==='image'&&el._src!==n.src){el._src=n.src;renderImage(n)}
   if(n.type==='draw'){const g=sigOf(n);if(el._ds!==g){el._ds=g;renderDraw(n,el)}toolsUI(n,el)}
@@ -3464,6 +3466,30 @@ function jmFitIn(j,c,n){
   if(x===n.x&&y===n.y&&w===n.w&&h===n.h)return;
   const el=els.get(n.id);if(el){el.classList.add('jfit');setTimeout(()=>el.classList.remove('jfit'),320)}
   n.x=x;n.y=y;n.w=w;n.h=h;sync(n);drawEdges();save()}
+function jmCapture(n){
+  const kids=[];S.nodes.forEach(m=>{if(jmSkip(m))return;const c=jmCellOf(n,m);if(!c)return;
+    kids.push({m,ri:c.ri,fx:(m.x+m.w/2-(jmGX(n)+c.pi*n.cw))/n.cw,fy:(m.y+m.h/2-(n.y+JM_HD+jmRowRel(n,c.ri)))/c.r.h,pi:c.pi,w:m.w,h:m.h})});
+  return{cw:n.cw,rows:n.rows.map(r=>r.h),kids}}
+/* resizing the map scales its columns and rows, and the blocks inside scale with it */
+function jmScale(n,d,handle){
+  const jc=d.jc;if(!jc)return;const w0=n.w,h0=n.h;
+  n.cw=Math.max(140,Math.round((w0-n.hw-2)/n.ph.length));
+  const oldTot=jc.rows.reduce((a,b)=>a+b,0),f=Math.max(.3,(h0-(JM_HD+n.hh+1))/oldTot);
+  n.rows.forEach((r,i)=>{r.h=Math.max(90,Math.round(jc.rows[i]*f))});
+  jmFit(n);if(handle.includes('w'))n.x+=w0-n.w;if(handle.includes('n'))n.y+=h0-n.h;
+  jc.kids.forEach(k=>{const rw=n.cw/jc.cw,rh=n.rows[k.ri].h/jc.rows[k.ri],q=Math.min(rw,rh),m=k.m;
+    m.w=Math.max(60,Math.round(k.w*q));m.h=Math.max(40,Math.round(k.h*q));
+    const cx=jmGX(n)+k.pi*n.cw+k.fx*n.cw,cy=n.y+JM_HD+jmRowRel(n,k.ri)+k.fy*n.rows[k.ri].h;
+    m.x=Math.round(cx-m.w/2);m.y=Math.round(cy-m.h/2);sync(m)});
+  jmRefresh(n)}
+/* every text-like block grows to show all its text (kept inside its cell if it sits in a journey map) */
+function jmMaxH(n){if(!n.jm)return 1e9;const j=byId(n.jm.m);if(!j)return 1e9;const c=jmCellOf(j,n);if(!c)return 1e9;return j.y+JM_HD+jmRowRel(j,c.ri)+c.r.h-10-n.y}
+function autoGrow(n){
+  const el=els.get(n.id);if(!el)return;
+  const box=n.type==='combine'?el.querySelector('.clist'):el.querySelector('.edit');if(!box)return;
+  const d=box.scrollHeight-box.clientHeight;if(d<=1)return;
+  const h=Math.min(n.type==='combine'?1000:1600,jmMaxH(n),Math.round(n.h+d+(n.type==='combine'?6:2)));
+  if(h>n.h){n.h=h;sync(n);drawEdges();jmSoon()}}
 function jmDropped(list){list.forEach(jmSnap);jmSoon()}
 const jmEnd=n=>{const o={};(n.eg||[]).forEach(l=>[l.a,l.b].forEach(k=>{const[p,v]=k.split('|');if(o[p]===undefined)o[p]=+v}));return o};
 const jmDotXY=(n,pid,l)=>{const ei=n.rows.findIndex(r=>r.k==='emotion'),pi=n.ph.findIndex(p=>p.id===pid);return ei<0||pi<0?null:{x:n.hw+(pi+.5)*n.cw,y:jmRowRel(n,ei)+JM_LEVELS[l]*n.rows[ei].h}};
