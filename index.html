@@ -634,6 +634,7 @@ body.sm #pnbar{display:none}
 .kw.emo0{background:rgba(63,166,107,.18);color:#3fa66b}.kw.emo1{background:rgba(var(--ovc),.1)}.kw.emo2{background:rgba(229,83,75,.18);color:#e5534b}
 /* no jumping: nothing lifts, scales, tilts or bounces when you pick up, drop or select a block */
 .node:hover,.node.dragging{transform:none!important}
+.node.jfit{transition:left .28s var(--ease),top .28s var(--ease),width .28s var(--ease),height .28s var(--ease)!important}
 .node.sel,.node.upd{animation:none!important}
 .node.spawn{animation:spawn3 .22s ease-out!important}
 @keyframes spawn3{from{opacity:0}to{opacity:1}}
@@ -1545,6 +1546,7 @@ function endDrag(e){
   if(!drag)return;
   if(drag.k==='pen'){const d=drag;drag=null;penFinish(d);return}
   if(drag.k==='area'){drag=null;if(area&&(area.w<20||area.h<20))area=null;updArea();return}
+  if(drag.k==='rz'&&drag.moved){const rzn=drag.n;setTimeout(()=>jmDropped([rzn]),0)}
   if(drag.k==='pan')vp.classList.remove('panning');
   if(drag.k==='marq')marquee.style.display='none';
   if(drag.k==='move'){drag.start.forEach(s=>els.get(s.n.id).classList.remove('dragging'));if(drag.moved)jmDropped(drag.start.map(s=>s.n));
@@ -3450,8 +3452,18 @@ function jmHolds(n){return !jmSkip(n)&&S.nodes.some(j=>j.type==='journey'&&jmCel
 function jmSnap(n){
   if(jmSkip(n))return;
   for(let k=S.nodes.length-1;k>=0;k--){const j=S.nodes[k];if(j.type!=='journey')continue;const c=jmCellOf(j,n);
-    if(c){n.jm={m:j.id,p:c.p.id,r:c.r.id};return}}
+    if(c){n.jm={m:j.id,p:c.p.id,r:c.r.id};jmFitIn(j,c,n);return}}
   if(n.jm)delete n.jm}
+/* make the block fit inside its cell (images/drawings keep their proportions); eased, so nothing jumps */
+function jmFitIn(j,c,n){
+  const pad=10,aw=j.cw-pad*2,ah=c.r.h-pad*2,L=jmGX(j)+c.pi*j.cw+pad,T=j.y+JM_HD+jmRowRel(j,c.ri)+pad;
+  let w=n.w,h=n.h;
+  if(n.type==='image'||n.type==='draw'){const k=Math.min(1,aw/w,ah/h);w*=k;h*=k}else{w=Math.min(w,aw);h=Math.min(h,ah)}
+  w=Math.round(w);h=Math.round(h);
+  const x=Math.round(Math.min(Math.max(n.x,L),L+aw-w)),y=Math.round(Math.min(Math.max(n.y,T),T+ah-h));
+  if(x===n.x&&y===n.y&&w===n.w&&h===n.h)return;
+  const el=els.get(n.id);if(el){el.classList.add('jfit');setTimeout(()=>el.classList.remove('jfit'),320)}
+  n.x=x;n.y=y;n.w=w;n.h=h;sync(n);drawEdges();save()}
 function jmDropped(list){list.forEach(jmSnap);jmSoon()}
 const jmEnd=n=>{const o={};(n.eg||[]).forEach(l=>[l.a,l.b].forEach(k=>{const[p,v]=k.split('|');if(o[p]===undefined)o[p]=+v}));return o};
 const jmDotXY=(n,pid,l)=>{const ei=n.rows.findIndex(r=>r.k==='emotion'),pi=n.ph.findIndex(p=>p.id===pid);return ei<0||pi<0?null:{x:n.hw+(pi+.5)*n.cw,y:jmRowRel(n,ei)+JM_LEVELS[l]*n.rows[ei].h}};
