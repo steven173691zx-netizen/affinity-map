@@ -596,28 +596,44 @@ body.sm #pnbar{display:none}
 #pnbar .b.on{color:var(--t1)}
 #pnbar .sv{width:1px;height:20px;background:var(--line)}
 
-/* ===== journey map ===== */
-#jm{position:absolute;left:0;top:0;width:0;height:0;z-index:0;pointer-events:none}
-.jm{position:absolute;pointer-events:none;font-family:var(--font)}
-.jm .jb{position:absolute;inset:0;border-radius:18px;background:rgba(var(--ovc),.035);border:1px solid var(--line2)}
-.jm .jh{position:absolute;display:flex;align-items:center;pointer-events:auto;background:var(--elev2);color:var(--t1);border:1px solid var(--line);box-sizing:border-box}
-.jm .jc{cursor:grab;justify-content:space-between;padding:0 10px;font-size:13px;font-weight:700}
-.jm .jc:active{cursor:grabbing}
-.jm .jc input{all:unset;flex:1;min-width:0;font-weight:700;font-size:13px;color:var(--t1);cursor:text}
-.jm .jr{padding:0 14px;font-size:12.5px;font-weight:700;color:var(--t2);letter-spacing:.01em}
-.jm .jt{left:0;top:0;border-radius:18px 0 0 0;text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;color:var(--t3);justify-content:space-between;padding:0 12px;cursor:grab}
-.jm .jx{all:unset;cursor:pointer;color:var(--t3);width:20px;height:20px;border-radius:7px;display:grid;place-items:center;font-size:15px;transition:all .2s var(--ease)}
-.jm .jx:hover{background:rgba(var(--ovc),.12);color:var(--t1)}
-.jm .jadd{background:var(--accent);color:var(--on-accent)!important}
-.jm .jl{position:absolute;pointer-events:none;border-top:1px solid var(--line2)}
-.jm .jl.alt{background:rgba(var(--ovc),.025)}
-.jm .jv{position:absolute;pointer-events:none;border-left:1px dashed var(--line2)}
-.jm svg{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
-.jm .jg{stroke:var(--line2);stroke-dasharray:4 6}
-.jm text{fill:var(--t3);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
-.jm .jcurve{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 6px var(--accent-soft))}
-.jm .jdot{fill:var(--surface);stroke:var(--accent);stroke-width:2.5}
-.node[data-jm]{box-shadow:0 0 0 2px var(--accent-soft)}
+/* ===== journey map (a real node) ===== */
+.node[data-type=journey]{background:var(--tint,rgba(var(--ovc),.03));border:1px solid var(--c,var(--line2));pointer-events:none;border-radius:18px;box-shadow:none;z-index:0}
+.node[data-type=journey].sel{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.node[data-type=journey] .hd,.node[data-type=journey] .port{pointer-events:auto}
+.node[data-type=journey] .hd{height:40px;padding-left:14px}
+.node[data-type=journey] .rz{display:none}
+.node[data-type=journey] .bd{position:absolute;left:0;right:0;top:40px;bottom:0;padding:0;overflow:hidden;border-radius:0 0 17px 17px;pointer-events:none}
+.jg{position:absolute;left:0;top:0;font-family:var(--font)}
+.jg>*{position:absolute}
+.jg .jcorner,.jg .jph,.jg .jrl{display:flex;align-items:center;box-sizing:border-box;background:var(--elev2);border:1px solid var(--line);pointer-events:auto;color:var(--t1)}
+.jg .jcorner{left:0;top:0;padding:0 12px;font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--t3);font-weight:700}
+.jg .jph{top:0;padding:0 8px 0 12px;gap:4px;border-top:2px solid var(--c,var(--accent))}
+.jg input{all:unset;flex:1;min-width:0;font-weight:700;font-size:13px;color:var(--t1);cursor:text;user-select:text}
+.jg .jrl{left:0;padding:0 8px 0 12px;gap:4px}
+.jg .jrl input{font-size:12.5px;color:var(--t2)}
+.jg .jx{all:unset;cursor:pointer;color:var(--t3);width:20px;height:20px;border-radius:7px;display:grid;place-items:center;font-size:15px;flex:none;transition:all .2s var(--ease)}
+.jg .jx:hover{background:rgba(var(--ovc),.12);color:var(--t1)}
+.jg .jadd{background:var(--c,var(--accent));color:var(--on-accent)}
+.jg .jadd:hover{filter:brightness(1.1);color:var(--on-accent)}
+.jg .jl{border-top:1px solid var(--line2);pointer-events:none}
+.jg .jl.alt{background:rgba(var(--ovc),.025)}
+.jg .jv{border-left:1px dashed var(--line2);pointer-events:none}
+.jg svg{left:0;top:0;overflow:visible;pointer-events:none}
+.jg .jgl{stroke:var(--line2);stroke-dasharray:4 6}
+.jg text{fill:var(--t3);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.jg .jcurve{fill:none;stroke:var(--c,var(--accent));stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.jg .jpt{fill:var(--c,var(--accent))}
+.jg .jdp{all:unset;position:absolute;box-sizing:border-box;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid var(--line2);background:var(--surface);cursor:pointer;pointer-events:auto;transition:transform .2s var(--ease),border-color .2s,background .2s}
+.jg .jdp:hover{transform:scale(1.35);border-color:var(--c,var(--accent))}
+.jg .jdp.on{background:var(--c,var(--accent));border-color:var(--surface);transform:scale(1.25)}
+.jg .jaddr{left:10px;all:unset;position:absolute;font-size:11px;font-weight:700;color:var(--t3);cursor:pointer;pointer-events:auto;padding:4px 8px;border-radius:8px;transition:all .2s}
+.jg .jaddr:hover{background:rgba(var(--ovc),.1);color:var(--t1)}
+.kw.emo0{background:rgba(63,166,107,.18);color:#3fa66b}.kw.emo1{background:rgba(var(--ovc),.1)}.kw.emo2{background:rgba(229,83,75,.18);color:#e5534b}
+/* no jumping: nothing lifts, scales, tilts or bounces when you pick up, drop or select a block */
+.node:hover,.node.dragging{transform:none!important}
+.node.sel,.node.upd{animation:none!important}
+.node.spawn{animation:spawn3 .22s ease-out!important}
+@keyframes spawn3{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -767,6 +783,7 @@ const SVGNS='http://www.w3.org/2000/svg';
 
 /* ---------- icons ---------- */
 const P={
+ md:'<path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5M8 14h8M8 17h5"/>',notes:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/>',
  journey:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 4v16"/><path d="M10 16c2-5 3 1 5-2s2-1 4-3"/>',trap:'<path d="M3 19l3-9 3 9 3-9 3 9 3-9 3 9"/><path d="M3 19h18"/>',wand:'<path d="M5 19l9-9"/><path d="M13 8l3 3"/><path d="M17 3v3M15.5 4.5h3M20 9v2M19 10h2"/>',pose:'<circle cx="12" cy="5" r="2.6"/><path d="M12 8.5v6M12 14.5l-4 6M12 14.5l4 6M5.5 10.5L12 8.5l6.5 2"/>',skull:'<path d="M12 3a8 8 0 00-8 8c0 2.6 1.3 4.5 3 5.7V20h10v-3.3c1.7-1.2 3-3.1 3-5.7a8 8 0 00-8-8z"/><circle cx="9" cy="11" r="1.7"/><circle cx="15" cy="11" r="1.7"/><path d="M10 20v-2.5M14 20v-2.5"/>',
  comment:'<path d="M5 5h14a1 1 0 011 1v9a1 1 0 01-1 1h-7l-4.5 3.5V16H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>',target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',keys:'<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>',sound:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a8 8 0 010 11"/>',soundoff:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l4 6M21 9l-4 6"/>',exit:'<path d="M10 5H6a1 1 0 00-1 1v12a1 1 0 001 1h4M15 8l4 4-4 4M19 12H9"/>',
  pen:'<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16z"/><path d="M14 7l3 3"/>',
@@ -801,9 +818,9 @@ const ico=(n,sz)=>`<svg viewBox="0 0 24 24">${P[n]}</svg>`;
 document.querySelectorAll('[data-icon]').forEach(b=>b.innerHTML=ico(b.dataset.icon));
 
 /* ---------- state ---------- */
-const DEF={text:[250,150],sticky:[190,190],image:[300,230],canvas:[560,400],combine:[290,240],label:[280,58],draw:[360,280]};
-const TITLES={text:'Text',sticky:'Note',image:'Image',canvas:'Canvas',combine:'Combine',label:'Heading',draw:'Drawing'};
-const DEFFS={text:14,sticky:15,label:26,canvas:15};
+const DEF={journey:[1552,900],text:[250,150],sticky:[190,190],image:[300,230],canvas:[560,400],combine:[290,240],label:[280,58],draw:[360,280]};
+const TITLES={journey:'Journey map',text:'Text',sticky:'Note',image:'Image',canvas:'Canvas',combine:'Combine',label:'Heading',draw:'Drawing'};
+const DEFFS={journey:15,text:14,sticky:15,label:26,canvas:15};
 const COLORS=['#f7d774','#f4a6a0','#f2b27a','#a9dfb7','#8fd6cf','#9fd0f2','#b2b8f3','#c9b5ef','#eeabd2','#e4e1da','#e5534b','#e8833a','#d9a520','#3fa66b','#2ba3a0','#4b8bf5','#7c5cf0','#d9519d','#3a3940','#ffffff'];
 const lum=h=>{const c=h.replace('#','');return(0.299*parseInt(c.slice(0,2),16)+0.587*parseInt(c.slice(2,4),16)+0.114*parseInt(c.slice(4,6),16))/255};
 const rgba=(h,a)=>{const c=h.replace('#','');return`rgba(${parseInt(c.slice(0,2),16)},${parseInt(c.slice(2,4),16)},${parseInt(c.slice(4,6),16)},${a})`};
@@ -814,10 +831,10 @@ function applyColor(n){
   if(!c)return;
   const t=n.type;
   if(t==='sticky'||t==='text'||t==='image'||t==='draw'){el.style.background=c;el.classList.add('fill');if(lum(c)>.58)el.classList.add('ink-d')}
-  else if(t==='canvas'){el.style.setProperty('--c',c);el.style.setProperty('--tint',rgba(c,.09))}
+  else if(t==='canvas'||t==='journey'){el.style.setProperty('--c',c);el.style.setProperty('--tint',rgba(c,.07))}
   else el.style.setProperty('--c',c);
 }
-const MIN={text:[140,80],sticky:[120,110],image:[120,100],canvas:[220,160],combine:[200,150],label:[100,40],draw:[300,180]};
+const MIN={journey:[400,300],text:[140,80],sticky:[120,110],image:[120,100],canvas:[220,160],combine:[200,150],label:[100,40],draw:[300,180]};
 let S={nodes:[],edges:[],name:'Untitled map'};
 let view={x:0,y:0,z:1};
 let tool='select', sel=new Set(), selEdge=null, snap=false, zTop=1, spaceDown=false;
@@ -919,7 +936,7 @@ function addNode(type,cx,cy,extra={},opts={}){
   if(!opts.noHist)pushHist();
   if(keepRoute)routeOn=true;
   const [w,h]=extra.w?[extra.w,extra.h]:DEF[type];
-  const n={id:uid(),type,x:sn(cx-w/2),y:sn(cy-h/2),w,h,z:type==='canvas'?0:++zTop,text:'',...extra};
+  const n={id:uid(),type,x:sn(cx-w/2),y:sn(cy-h/2),w,h,z:(type==='canvas'||type==='journey')?0:++zTop,text:'',...extra};
   if(type==='sticky'&&n.color==null)n.color=COLORS[Math.floor(Math.random()*6)];
   if(type==='canvas'&&!n.title)n.title='Group';
   n.w=w;n.h=h;
@@ -933,12 +950,13 @@ function build(n,spawn){
   el.className='node'+(spawn?' spawn':'');el.dataset.id=n.id;el.dataset.type=n.type;
   const t=n.type;
   let hd=`<div class="hd">${ico(t==='label'?'label':t)}`;
-  if(t==='canvas')hd+=`<input class="ctitle" placeholder="Name this canvas" spellcheck="false">`;
+  if(t==='canvas'||t==='journey')hd+=`<input class="ctitle" placeholder="${t==='journey'?'Name this journey':'Name this canvas'}" spellcheck="false">`;
   else hd+=`<span class="tt">${TITLES[t]}</span>`;
   if(t==='combine')hd+=`<span class="badge">0</span>`;
   hd+=`<span class="sp"></span>`;
   if(t==='combine')hd+=`<button class="hbtn" data-act="ai" title="Re-summarize">${ico('spark')}</button><button class="hbtn" data-act="copy" title="Copy merged text">${ico('copy')}</button><button class="hbtn" data-act="totext" title="Convert to text block">${ico('totext')}</button>`;
   if(t==='image')hd+=`<button class="hbtn" data-act="fitimg" title="Toggle fill / contain">${ico('fitimg')}</button>`;
+  if(t==='combine')hd+=`<button class="hbtn" data-act="md" title="Copy as Markdown report">${ico('md')}</button><button class="hbtn" data-act="stickies" title="Turn shared themes into notes">${ico('notes')}</button>`;
   hd+=`<button class="hbtn" data-act="del" title="Delete">${ico('x')}</button></div>`;
   let bd='<div class="bd">';
   if(t==='text'||t==='sticky'||t==='label')bd+=`<div class="edit" contenteditable="true" spellcheck="false" data-ph="${t==='label'?'Heading':t==='sticky'?'Write a note…':'Type something…'}"></div>`;
@@ -947,7 +965,7 @@ function build(n,spawn){
   if(t==='combine')bd+=`<div class="clist"></div>`;
   bd+='</div>';
   el.innerHTML=hd+bd;
-  el.insertAdjacentHTML('beforeend',t==='canvas'?'<div class="port out" data-p="out"></div>':'<div class="port in" data-p="in"></div><div class="port out" data-p="out"></div>');
+  el.insertAdjacentHTML('beforeend',(t==='canvas'||t==='journey')?'<div class="port out" data-p="out"></div>':'<div class="port in" data-p="in"></div><div class="port out" data-p="out"></div>');
   ['n','s','e','w','ne','nw','se','sw'].forEach(d=>el.insertAdjacentHTML('beforeend',`<div class="rz" data-d="${d}"></div>`));
   world.appendChild(el);els.set(n.id,el);
   const ed=el.querySelector('.edit');
@@ -966,6 +984,7 @@ function build(n,spawn){
     ct.addEventListener('pointerdown',e=>e.stopPropagation());}
   if(t==='image')renderImage(n);
   if(t==='draw')initDraw(n,el);
+  if(t==='journey')jmWire(n,el);
   applyText(n);
   applyColor(n);
   el.querySelectorAll('.hbtn').forEach(b=>{
@@ -977,7 +996,7 @@ function build(n,spawn){
 function sync(n){
   const el=els.get(n.id);if(!el)return;
   el.style.left=n.x+'px';el.style.top=n.y+'px';el.style.width=n.w+'px';el.style.height=n.h+'px';
-  el.style.zIndex=n.type==='canvas'?0:2+(n.z||0);
+  el.style.zIndex=(n.type==='canvas'||n.type==='journey')?0:2+(n.z||0);
   el.classList.toggle('sel',sel.has(n.id));
   if(n.type==='draw')drawView(n,el);
   queueBar();
@@ -1090,6 +1109,8 @@ function act(n,a){
   if(a==='del'){removeNodes([n.id])}
   if(a==='fitimg'){pushHist();n.contain=!n.contain;renderImage(n);save()}
   if(a==='copy'){navigator.clipboard?.writeText(summaryText(getSummary(n)));toast('Summary copied')}
+  if(a==='md'){navigator.clipboard?.writeText(combineMd(n));toast('Markdown report copied');return}
+  if(a==='stickies'){combineStickies(n);return}
   if(a==='totext'){
     const t=summaryText(getSummary(n));if(!t){toast('Nothing to convert');return}
     const m=addNode('text',n.x+n.w+200,n.y+n.h/2,{text:t,w:300,h:Math.min(460,130+t.length*.9)});
@@ -1102,7 +1123,7 @@ function act(n,a){
 const inside=(m,c)=>{const x=m.x+m.w/2,y=m.y+m.h/2;return x>c.x&&x<c.x+c.w&&y>c.y&&y<c.y+c.h};
 function innerCanvas(m){let b=null;const ma=m.type==='canvas'?m.w*m.h:0;S.nodes.forEach(c=>{if(c.type==='canvas'&&c.id!==m.id&&c.w*c.h>ma&&inside(m,c)&&(!b||c.w*c.h<b.w*b.h))b=c});return b}
 function itemOf(s){
-  if(s.type==='canvas'||s.type==='combine')return null;
+  if(s.type==='canvas'||s.type==='combine'||s.type==='journey')return null;
   const cv=innerCanvas(s),cvo=cv?{id:cv.id,title:cv.title||'Canvas'}:null;
   if(s.type==='image')return s.src?{t:'img',id:s.id,src:s.src,cv:cvo}:null;
   if(s.type==='draw')return s.strokes?.length?{t:'draw',id:s.id,n:s,cv:cvo}:null;
@@ -1115,7 +1136,8 @@ function collect(id,seen=new Set(),got=new Set()){
   const add=s=>{if(got.has(s.id))return;const it=itemOf(s);if(it){got.add(s.id);out.push(it)}};
   ins.forEach(s=>{
     if(s.type==='combine')out=out.concat(collect(s.id,seen,got));
-    else if(s.type==='canvas')S.nodes.filter(m=>m.type!=='canvas'&&m.type!=='combine'&&inside(m,s)).sort((a,b)=>a.y-b.y||a.x-b.x).forEach(add);
+    else if(s.type==='canvas')S.nodes.filter(m=>m.type!=='canvas'&&m.type!=='combine'&&m.type!=='journey'&&inside(m,s)).sort((a,b)=>a.y-b.y||a.x-b.x).forEach(add);
+    else if(s.type==='journey')S.nodes.filter(m=>!jmSkip(m)&&m.type!=='combine'&&jmCellOf(s,m)).sort((a,b)=>a.y-b.y||a.x-b.x).forEach(m=>{if(got.has(m.id))return;const it=itemOf(m);if(!it)return;const c=jmCellOf(s,m);it.cv={id:s.id+'|'+c.p.id+'|'+c.r.id,title:`${s.title||'Journey'} · ${c.p.n} · ${c.r.l}`,ord:c.pi*20+c.ri};got.add(m.id);out.push(it)});
     else add(s);
   });
   return out;
@@ -1155,7 +1177,7 @@ function getSummary(n){
   const ai=n.ai&&n.ai.key===key&&n.ai.rows?n.ai:null;
   const maps=texts.map(i=>termsOf(i.text));texts.forEach((t,i)=>t.map=maps[i]);
   const commonO=ai?(ai.common||[]).map(d=>({key:String(d).toLowerCase(),d:String(d)})):(texts.length>1?commonTerms(maps):[]);
-  const cvs=[...new Map(items.filter(i=>i.cv).map(i=>[i.cv.id,i.cv])).values()].sort((a,b)=>{const A=byId(a.id),B=byId(b.id);return(A?.y-B?.y)||(A?.x-B?.x)});
+  const cvs=[...new Map(items.filter(i=>i.cv).map(i=>[i.cv.id,i.cv])).values()].sort((a,b)=>{if(a.ord!==undefined||b.ord!==undefined)return(a.ord??1e9)-(b.ord??1e9);const A=byId(a.id),B=byId(b.id);return(A?.y-B?.y)||(A?.x-B?.x)});
   const groups=cvs.map(c=>({id:c.id,title:c.title,items:items.filter(i=>i.cv?.id===c.id)}));
   const loose=items.filter(i=>!i.cv);
   const aiRows=new Map();let ti=0;texts.forEach(t=>{aiRows.set(t.id,ai?.rows?.[ti++]||null)});
@@ -1176,10 +1198,10 @@ function getSummary(n){
     return{id:g.id,title:g.title,common:gc.map(c=>c.d),rows:mk(g.items,gc)};
   });
   if(loose.length)sections.push({id:null,title:groups.length?'Individual':null,common:[],rows:mk(loose,[])});
-  return{ai:!!ai,key,theme:ai?ai.theme:'',common:commonO.map(c=>c.d),sections,count:items.length,hasText:texts.length>0};
+  return{emo:jmEmo(n),ai:!!ai,key,theme:ai?ai.theme:'',common:commonO.map(c=>c.d),sections,count:items.length,hasText:texts.length>0};
 }
 function summaryText(s){
-  const L=[];if(s.theme)L.push(s.theme);if(s.common.length)L.push('Common: '+s.common.join(', '));
+  const L=[];if(s.emo&&s.emo.length)L.push('Emotion: '+s.emo.map(e=>e.p+' '+JM_LV[e.l]).join(' · '));if(s.theme)L.push(s.theme);if(s.common.length)L.push('Common: '+s.common.join(', '));
   s.sections.forEach(sec=>{
     if(sec.title){L.push('');L.push(sec.title+(sec.common.length?' — shared: '+sec.common.join(', '):''))}
     sec.rows.filter(r=>r.t==='text').forEach(r=>L.push('• '+r.keys.map(k=>k.d).join(' · ')));
@@ -1192,7 +1214,7 @@ function refreshCombines(){
   S.nodes.filter(n=>n.type==='combine').forEach(n=>{
     const el=els.get(n.id);if(!el)return;
     const sm=getSummary(n),list=el.querySelector('.clist');
-    const html=sm.count?(sm.theme?`<div class="theme">${esc(sm.theme)}</div>`:'')+
+    const html=(sm.count||sm.emo.length)?(sm.emo.length?`<div class="cm"><span class="cl">Emotion</span>${sm.emo.map(e=>`<span class="kw emo${e.l}">${esc(e.p)} · ${JM_LV[e.l]}</span>`).join('')}</div>`:'')+(sm.theme?`<div class="theme">${esc(sm.theme)}</div>`:'')+
       (sm.common.length?`<div class="cm"><span class="cl">Common</span>${sm.common.map(c=>`<span class="kw">${esc(c)}</span>`).join('')}</div>`:'')+
       sm.sections.map(sec=>`<div class="sec">${sec.title?`<div class="sh"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" stroke-dasharray="3 3"/></svg>${esc(sec.title)}${sec.common.length?`<span class="sn">·</span>${sec.common.map(c=>`<span class="kw hot">${esc(c)}</span>`).join('')}`:''}</div>`:''}${sec.rows.map(rowHtml).join('')}</div>`).join('')+
       `<div class="ctag${sm.ai?'':' local'}">${sm.ai?'✦ AI keywords':busy.has(n.id)?'✦ Analyzing…':aiReady()?'Local keywords':'Local keywords · add an AI key for deeper analysis'}</div>`
@@ -1357,7 +1379,7 @@ function computeRoutes(nodes){
 const wireEls=new Map();
 function drawEdges(){
   softCombine();const keep=new Set();
-  if(routeOn){const rnodes=S.nodes.filter(n=>n.type!=='canvas');const rsig=rnodes.map(n=>Math.round(n.x)+','+Math.round(n.y)+','+Math.round(n.w)+','+Math.round(n.h)).join(';')+'|'+S.edges.map(e=>e.id+e.from+e.to).join(',');if(rsig!==routeSig){routeSig=rsig;computeRoutes(rnodes)}}
+  if(routeOn){const rnodes=S.nodes.filter(n=>n.type!=='canvas'&&n.type!=='journey');const rsig=rnodes.map(n=>Math.round(n.x)+','+Math.round(n.y)+','+Math.round(n.w)+','+Math.round(n.h)).join(';')+'|'+S.edges.map(e=>e.id+e.from+e.to).join(',');if(rsig!==routeSig){routeSig=rsig;computeRoutes(rnodes)}}
   const usedIn=new Set(),usedOut=new Set();
   S.edges.forEach(e=>{
     const a=byId(e.from),b=byId(e.to);if(!a||!b)return;keep.add(e.id);usedIn.add(e.to);usedOut.add(e.from);
@@ -1376,12 +1398,12 @@ function drawEdges(){
   });
 }
 let remT=0;function schedRemote(){if(remT)return;remT=setTimeout(()=>{remT=0;refreshAll();paintRemoteSel();save()},90)}
-function refreshAll(){drawEdges();refreshCombines();queueBar();$('#hint').style.opacity=S.nodes.length?0:1}
+function refreshAll(){jmSoon();drawEdges();refreshCombines();queueBar();$('#hint').style.opacity=S.nodes.length?0:1}
 
 /* ---------- selection / deletion ---------- */
 function select(ids,add){
   if(!add)sel.clear();ids.forEach(i=>sel.add(i));selEdge=null;
-  if(ids.length===1){const n=byId(ids[0]);if(n&&n.type!=='canvas'){n.z=++zTop}}
+  if(ids.length===1){const n=byId(ids[0]);if(n&&n.type!=='canvas'&&n.type!=='journey'){n.z=++zTop}}
   S.nodes.forEach(sync);drawEdges();
 }
 function removeNodes(ids){
@@ -1395,7 +1417,9 @@ function rebuild(){routeOn=false;
   els.forEach(e=>e.remove());els.clear();
   wires.querySelectorAll('.wire-g').forEach(g=>g.remove());wireEls.clear();
   zTop=Math.max(1,...S.nodes.map(n=>n.z||0));
-  S.nodes.forEach(n=>build(n,false));renderJourneys();$('#pname').value=S.name||'Untitled map';refreshAll();renderPen();
+  if(S.journeys&&S.journeys.length){S.journeys.forEach(m=>{const n={id:m.id,type:'journey',x:m.x,y:m.y-JM_HD,z:0,text:'',title:'Journey map',ph:m.ph,rows:m.rows.map(r=>({id:r.id,l:r.l,k:r.k,h:r.h})),cw:m.cw,hw:m.hw,hh:m.hh,em:{}};jmFit(n);S.nodes.push(n)})}
+  delete S.journeys;
+  S.nodes.forEach(n=>build(n,false));jmSoon();$('#pname').value=S.name||'Untitled map';refreshAll();renderPen();
 }
 function dupSelected(){
   if(!sel.size)return;pushHist();const map={};const ids=[...sel];
@@ -1452,10 +1476,10 @@ function startDrag(e,nd){
   S.nodes.forEach(sync);
   const moving=new Set(sel);
   // frames carry what's inside
-  [...moving].map(byId).filter(n=>n&&n.type==='canvas').forEach(c=>{
+  [...moving].map(byId).filter(n=>n&&(n.type==='canvas'||n.type==='journey')).forEach(c=>{
     S.nodes.forEach(n=>{if(n.id===c.id||moving.has(n.id))return;
       const cx=n.x+n.w/2,cy=n.y+n.h/2;
-      if(cx>c.x&&cx<c.x+c.w&&cy>c.y&&cy<c.y+c.h&&(n.type!=='canvas'||n.w*n.h<c.w*c.h))moving.add(n.id)});
+      if((c.type==='journey'?!!jmCell(c,cx,cy):(cx>c.x&&cx<c.x+c.w&&cy>c.y&&cy<c.y+c.h))&&(c.type==='journey'?n.type!=='journey':(n.type!=='canvas'||n.w*n.h<c.w*c.h)))moving.add(n.id)});
   });
   drag={k:'move',sx:e.clientX,sy:e.clientY,moved:false,start:[...moving].map(i=>{const n=byId(i);return{n,x:n.x,y:n.y}})};
   vp.setPointerCapture(e.pointerId);
@@ -1481,7 +1505,7 @@ function moveWire(e){
 function targetNode(e){
   const el=document.elementFromPoint(e.clientX,e.clientY),nd=el&&el.closest?.('.node');
   if(!nd||nd.dataset.id===drag.n.id)return null;
-  if(nd.dataset.type==='canvas'&&drag.side==='out')return null;
+  if((nd.dataset.type==='canvas'||nd.dataset.type==='journey')&&drag.side==='out')return null;
   return byId(nd.dataset.id);
 }
 vp.addEventListener('pointermove',e=>{
@@ -1490,7 +1514,7 @@ vp.addEventListener('pointermove',e=>{
   else if(drag.k==='move'){
     const dx=(e.clientX-drag.sx)/view.z,dy=(e.clientY-drag.sy)/view.z;
     if(!drag.moved){if(Math.hypot(dx,dy)*view.z<3)return;drag.moved=true;pushHist();drag.start.forEach(s=>els.get(s.n.id).classList.add('dragging'))}
-    drag.start.forEach(s=>{s.n.x=sn(s.x+dx);s.n.y=sn(s.y+dy);sync(s.n)});drawEdges();
+    drag.start.forEach(s=>{s.n.x=sn(s.x+dx);s.n.y=sn(s.y+dy);sync(s.n)});drawEdges();jmSoon();
   }
   else if(drag.k==='rz'){
     const dx=(e.clientX-drag.sx)/view.z,dy=(e.clientY-drag.sy)/view.z,o=drag.o,n=drag.n,[mw,mh]=MIN[n.type];
@@ -1508,7 +1532,7 @@ vp.addEventListener('pointermove',e=>{
     Object.assign(marquee.style,{display:'block',left:x1-r.left+'px',top:y1-r.top+'px',width:x2-x1+'px',height:y2-y1+'px'});
     const a=toWorld(x1,y1),b=toWorld(x2,y2);sel=new Set(drag.base);
     S.nodes.forEach(n=>{if(n.x<b.x&&n.x+n.w>a.x&&n.y<b.y&&n.y+n.h>a.y){
-      if(n.type==='canvas'&&!(a.x<=n.x&&a.y<=n.y&&b.x>=n.x+n.w&&b.y>=n.y+n.h))return; sel.add(n.id)}});
+      if((n.type==='canvas'||n.type==='journey')&&!(a.x<=n.x&&a.y<=n.y&&b.x>=n.x+n.w&&b.y>=n.y+n.h))return; sel.add(n.id)}});
     S.nodes.forEach(sync);
   }
   else if(drag.k==='gscale')moveGroupScale(e);
@@ -1539,7 +1563,7 @@ vp.addEventListener('dblclick',e=>{
   if(SM.on||tool==='area')return;
   const hit=document.elementFromPoint(e.clientX,e.clientY),dn=hit?.closest('.node');
   if(dn&&['text','sticky','label'].includes(dn.dataset.type)&&!hit.closest('.hd')){enterEdit(dn.querySelector('.edit'),e.clientX,e.clientY);return}
-  if(dn&&dn.dataset.type!=='canvas')return;
+  if(dn&&dn.dataset.type!=='canvas'&&dn.dataset.type!=='journey')return;
   if(hit?.closest('.hd')||hit?.closest('input,.port'))return;
   const w=toWorld(e.clientX,e.clientY);const n=addNode('text',w.x,w.y);
   setTimeout(()=>{const ed=els.get(n.id)?.querySelector('.edit');if(ed)enterEdit(ed)},60);
@@ -1924,7 +1948,7 @@ function groupSel(){
   toast(`Canvas created around ${ns.length} block${ns.length>1?'s':''}`);
 }
 function tidySel(){
-  const ns=[...sel].map(byId).filter(n=>n&&n.type!=='canvas');
+  const ns=[...sel].map(byId).filter(n=>n&&n.type!=='canvas'&&n.type!=='journey');
   if(ns.length<2){toast('Select 2+ blocks to tidy');return}
   pushHist();ns.sort((a,b)=>Math.round(a.y/60)-Math.round(b.y/60)||a.x-b.x);
   const cols=Math.ceil(Math.sqrt(ns.length)),cw=Math.max(...ns.map(n=>n.w))+24,ch=Math.max(...ns.map(n=>n.h))+24;
@@ -2088,7 +2112,7 @@ async function autoCluster(){
     if(!S.edges.length)break;
     const saved=all.map(m=>[m.n,m.n.x,m.n.y]),szs=[...size.keys()].map(id=>{const c=byId(id);return[c,c.w,c.h]});
     all.forEach(m=>{m.n.x=m.x;m.n.y=m.y});size.forEach(([w,h],id)=>{const c=byId(id);c.w=w;c.h=h});
-    nudgeSkips=0;computeRoutes(S.nodes.filter(n=>n.type!=='canvas'));const skips=nudgeSkips;
+    nudgeSkips=0;computeRoutes(S.nodes.filter(n=>n.type!=='canvas'&&n.type!=='journey'));const skips=nudgeSkips;
     saved.forEach(([n,x,y])=>{n.x=x;n.y=y});szs.forEach(([c,w,h])=>{c.w=w;c.h=h});
     if(!skips)break;scale*=1.35;
   }
@@ -2110,7 +2134,7 @@ async function autoCluster(){
 /* ---------- markdown outline ---------- */
 function exportMd(){
   const cv=S.nodes.filter(n=>n.type==='canvas').sort((a,b)=>a.y-b.y||a.x-b.x);
-  const leaf=S.nodes.filter(n=>n.type!=='canvas').sort((a,b)=>a.y-b.y||a.x-b.x);
+  const leaf=S.nodes.filter(n=>n.type!=='canvas'&&n.type!=='journey'&&!jmHolds(n)).sort((a,b)=>a.y-b.y||a.x-b.x);
   const inside=(n,c)=>{const x=n.x+n.w/2,y=n.y+n.h/2;return x>c.x&&x<c.x+c.w&&y>c.y&&y<c.y+c.h};
   const line=n=>n.type==='image'?'- *(image)*':n.type==='draw'?'- *(drawing)*':n.type==='combine'?'- **Summary:** '+summaryText(getSummary(n)).replace(/\n+/g,' ; '):n.type==='label'?(n.text?.trim()?'- **'+n.text.trim()+'**':''):(n.text?.trim()?'- '+n.text.trim().replace(/\n+/g,' '):'');
   const used=new Set();let md=`# ${S.name||'Affinity map'}\n\n`;
@@ -2133,7 +2157,7 @@ function updMini(){
   mT={k,ox,oy};mctx.clearRect(0,0,W,H);
   S.nodes.forEach(n=>{
     const X=n.x*k+ox,Y=n.y*k+oy,w=Math.max(2,n.w*k),h=Math.max(2,n.h*k);
-    if(n.type==='canvas'){mctx.strokeStyle=n.color||MM.cv;mctx.lineWidth=1.5;mctx.strokeRect(X,Y,w,h)}
+    if(n.type==='canvas'||n.type==='journey'){mctx.strokeStyle=n.color||MM.cv;mctx.lineWidth=1.5;mctx.strokeRect(X,Y,w,h)}
     else{mctx.fillStyle=n.color&&n.type!=='label'?n.color:n.type==='combine'?MM.acc:MM.node;mctx.beginPath();mctx.roundRect?mctx.roundRect(X,Y,w,h,3):mctx.rect(X,Y,w,h);mctx.fill()}
   });
   mctx.strokeStyle=MM.acc;mctx.lineWidth=2;mctx.fillStyle=MM.accSoft;
@@ -2206,18 +2230,18 @@ function packNode(n,full){
   if(!full&&n.src&&lastSrc.get(n.id)===L)delete o.src;else lastSrc.set(n.id,L);
   return o;
 }
-const packAll=()=>({nodes:S.nodes.map(n=>packNode(n,true)),edges:S.edges,pen:S.pencil||[],jm:S.journeys||[]});
+const packAll=()=>({nodes:S.nodes.map(n=>packNode(n,true)),edges:S.edges,pen:S.pencil||[]});
 const penSig=q=>q.p.length+':'+q.c+q.w;
-function applyPen(d){applyJm(d);let ch=false;(d.pen||[]).forEach(q=>{S.pencil=S.pencil||[];const i=S.pencil.findIndex(x=>x.id===q.id);if(i<0)S.pencil.push(q);else S.pencil[i]=q;lastPen.set(q.id,penSig(q));ch=true});
+function applyPen(d){let ch=false;(d.pen||[]).forEach(q=>{S.pencil=S.pencil||[];const i=S.pencil.findIndex(x=>x.id===q.id);if(i<0)S.pencil.push(q);else S.pencil[i]=q;lastPen.set(q.id,penSig(q));ch=true});
   (d.delPen||[]).forEach(id=>{if(S.pencil)S.pencil=S.pencil.filter(x=>x.id!==id);lastPen.delete(id);ch=true});if(ch)renderPen()}
-function baseline(){lastSig=new Map(S.nodes.map(n=>[n.id,sigOf(n)]));lastEdge=new Map(S.edges.map(e=>[e.id,e.from+'>'+e.to]));S.nodes.forEach(n=>lastSrc.set(n.id,(n.src||'').length));lastPen=new Map((S.pencil||[]).map(q=>[q.id,penSig(q)]));lastJm=new Map((S.journeys||[]).map(q=>[q.id,jmSig(q)]))}
+function baseline(){lastSig=new Map(S.nodes.map(n=>[n.id,sigOf(n)]));lastEdge=new Map(S.edges.map(e=>[e.id,e.from+'>'+e.to]));S.nodes.forEach(n=>lastSrc.set(n.id,(n.src||'').length));lastPen=new Map((S.pencil||[]).map(q=>[q.id,penSig(q)]))}
 function pickColor(){
   const used=new Set([...peers.values()].map(p=>p.color));let h=0;for(const c of selfId)h=(h*31+c.charCodeAt(0))>>>0;
   for(let i=0;i<PEERCOLS.length;i++){const c=PEERCOLS[(h+i)%PEERCOLS.length];if(!used.has(c))return c}return PEERCOLS[h%PEERCOLS.length];
 }
 function refreshNodeDom(n){
   const el=els.get(n.id);if(!el)return;
-  zTop=Math.max(zTop,n.z||0);sync(n);applyColor(n);applyText(n);renderPin(n);
+  zTop=Math.max(zTop,n.z||0);sync(n);applyColor(n);applyText(n);renderPin(n);if(n.type==='journey')jmSoon();
   const ed=el.querySelector('.edit');if(ed&&document.activeElement!==ed&&ed.innerText.replace(/\n$/,'')!==(n.text||''))ed.textContent=n.text||'';
   const ct=el.querySelector('.ctitle');if(ct&&document.activeElement!==ct){ct.value=n.title||'';sizeTitle(ct)}
   if(n.type==='image'&&el._src!==n.src){el._src=n.src;renderImage(n)}
@@ -2260,8 +2284,7 @@ function tick(){
   const addE=S.edges.filter(e=>lastEdge.get(e.id)!==ce.get(e.id)),delE=[...lastEdge.keys()].filter(id=>!ce.has(id));
   lastSig=cur;lastEdge=ce;
   const pc=new Map((S.pencil||[]).map(q=>[q.id,penSig(q)])),pen=(S.pencil||[]).filter(q=>lastPen.get(q.id)!==pc.get(q.id)),delPen=[...lastPen.keys()].filter(id=>!pc.has(id));lastPen=pc;
-  const jc=new Map((S.journeys||[]).map(q=>[q.id,jmSig(q)])),jm=(S.journeys||[]).filter(q=>lastJm.get(q.id)!==jc.get(q.id)),delJm=[...lastJm.keys()].filter(id=>!jc.has(id));lastJm=jc;
-  if(ch.length||del.length||addE.length||delE.length||pen.length||delPen.length||jm.length||delJm.length)collab.sendOps({nodes:ch,del,addE,delE,pen,delPen,jm,delJm});
+  if(ch.length||del.length||addE.length||delE.length||pen.length||delPen.length)collab.sendOps({nodes:ch,del,addE,delE,pen,delPen});
   const ss=[...sel].join(',');if(ss!==lastSelSig){lastSelSig=ss;sendPresence()}
   const now=Date.now();peers.forEach(p=>{if(p.el)p.el.style.opacity=(p.t&&now-p.t<8000)?1:0});
 }
@@ -3409,82 +3432,102 @@ function trapsUpdate(dt){
     }
   });
 }
-/* ---- journey map: swimlane template that lives on the board ---- */
-const jmLayer=document.createElement('div');jmLayer.id='jm';world.insertBefore(jmLayer,world.firstChild);
-const jmEls=new Map();
+/* ---- journey map: a real node (colour, rename, wires, combine, copy, undo, sync all work as for any block) ---- */
+const JM_HD=41,JM_OX=1,JM_LEVELS=[.2,.5,.8],JM_LV=['Positive','Neutral','Negative'];
 const JM_ROWS=[['actions','User Actions','lane',170],['touchpoints','Touchpoints','lane',170],['emotion','Emotional State','emotion',220],['pains','Pain Points','lane',170]];
-const JM_LEVELS=[.2,.5,.8],JM_LV=['Positive','Neutral','Negative'];
-function newJourney(x,y){return{id:uid(),x,y,hw:150,hh:56,cw:280,ph:['Awareness','Consideration','Purchase','Onboarding','Retention'].map(n=>({id:uid(),n})),rows:JM_ROWS.map(([id,l,k,h])=>({id,l,k,h}))}}
-const jmW=m=>m.hw+m.ph.length*m.cw,jmH=m=>m.hh+m.rows.reduce((a,r)=>a+r.h,0);
-const jmRowTop=(m,i)=>m.y+m.hh+m.rows.slice(0,i).reduce((a,r)=>a+r.h,0),jmColLeft=(m,i)=>m.x+m.hw+i*m.cw;
-function jmCell(m,px,py){const lx=px-(m.x+m.hw),ly=py-(m.y+m.hh);if(lx<0||ly<0)return null;const pi=Math.floor(lx/m.cw);if(pi>=m.ph.length)return null;let a=0;
-  for(let ri=0;ri<m.rows.length;ri++){if(ly<a+m.rows[ri].h)return{pi,ri,p:m.ph[pi],r:m.rows[ri]};a+=m.rows[ri].h}return null}
+function jmDefaults(){return{ph:['Awareness','Consideration','Purchase','Onboarding','Retention'].map(n=>({id:uid(),n})),rows:JM_ROWS.map(([id,l,k,h])=>({id,l,k,h})),cw:280,hw:150,hh:48,em:{}}}
+function jmFit(n){n.w=n.hw+n.ph.length*n.cw+2;n.h=JM_HD+n.hh+n.rows.reduce((a,r)=>a+r.h,0)+1}
+const jmGX=n=>n.x+JM_OX+n.hw,jmGY=n=>n.y+JM_HD+n.hh;
+const jmRowRel=(n,i)=>n.hh+n.rows.slice(0,i).reduce((a,r)=>a+r.h,0);
+function jmCell(n,px,py){const lx=px-jmGX(n),ly=py-jmGY(n);if(lx<0||ly<0)return null;const pi=Math.floor(lx/n.cw);if(pi>=n.ph.length)return null;let a=0;
+  for(let ri=0;ri<n.rows.length;ri++){if(ly<a+n.rows[ri].h)return{pi,ri,p:n.ph[pi],r:n.rows[ri]};a+=n.rows[ri].h}return null}
+const jmSkip=m=>m.type==='canvas'||m.type==='journey';
+function jmCellOf(j,m){return jmCell(j,m.x+m.w/2,m.y+m.h/2)}
+function jmHolds(n){return !jmSkip(n)&&S.nodes.some(j=>j.type==='journey'&&jmCellOf(j,n))}
+/* registers the block with its phase/row; never moves it */
 function jmSnap(n){
-  if(n.type==='canvas'||!S.journeys)return false;
-  const cx=n.x+n.w/2,cy=n.y+n.h/2;
-  for(let k=S.journeys.length-1;k>=0;k--){const m=S.journeys[k],c=jmCell(m,cx,cy);if(!c)continue;
-    const L=jmColLeft(m,c.pi),T=jmRowTop(m,c.ri),pad=10;
-    n.w=Math.min(n.w,m.cw-pad*2);n.h=Math.min(n.h,c.r.h-pad*2);
-    let x=Math.min(Math.max(n.x,L+pad),L+m.cw-n.w-pad),y=Math.min(Math.max(n.y,T+pad),T+c.r.h-n.h-pad);
-    if(c.r.k==='emotion'){x=L+(m.cw-n.w)/2;const f=(y+n.h/2-T)/c.r.h,lv=JM_LEVELS.reduce((a,b)=>Math.abs(b-f)<Math.abs(a-f)?b:a);y=T+lv*c.r.h-n.h/2}
-    n.x=Math.round(x);n.y=Math.round(y);n.jm={m:m.id,p:c.p.id,r:c.r.id};return true}
-  if(n.jm){delete n.jm}return false}
-function jmCurve(m){
-  const ei=m.rows.findIndex(r=>r.k==='emotion');if(ei<0)return[];const out=[];
-  m.ph.forEach((p,pi)=>{const ns=S.nodes.filter(n=>n.jm&&n.jm.m===m.id&&n.jm.r===m.rows[ei].id&&n.jm.p===p.id);
-    if(ns.length)out.push({x:jmColLeft(m,pi)+m.cw/2-m.x,y:ns.reduce((a,n)=>a+n.y+n.h/2,0)/ns.length-m.y})});return out}
+  if(jmSkip(n))return;
+  for(let k=S.nodes.length-1;k>=0;k--){const j=S.nodes[k];if(j.type!=='journey')continue;const c=jmCellOf(j,n);
+    if(c){n.jm={m:j.id,p:c.p.id,r:c.r.id};return}}
+  if(n.jm)delete n.jm}
+function jmDropped(list){list.forEach(jmSnap);jmSoon()}
+function jmPts(n){
+  const ei=n.rows.findIndex(r=>r.k==='emotion');if(ei<0)return[];const rr=n.rows[ei],top=jmRowRel(n,ei),out=[];
+  n.ph.forEach((p,pi)=>{
+    const v=n.em&&n.em[p.id];let y=null;
+    if(v!==undefined)y=top+JM_LEVELS[v]*rr.h;
+    else{const ns=S.nodes.filter(m=>!jmSkip(m)&&m.type!=='combine'&&(c=>c&&c.pi===pi&&c.ri===ei)(jmCellOf(n,m)));
+      if(ns.length)y=ns.reduce((a,m)=>a+m.y+m.h/2,0)/ns.length-jmGY(n)+n.hh}
+    if(y!==null)out.push({x:n.hw+(pi+.5)*n.cw,y})});
+  return out}
 function jmPath(pts,t=.5){if(pts.length<2)return'';let d=`M${pts[0].x},${pts[0].y}`;
   for(let i=0;i<pts.length-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2,k=t/3;
     d+=` C${p1.x+(p2.x-p0.x)*k},${p1.y+(p2.y-p0.y)*k} ${p2.x-(p3.x-p1.x)*k},${p2.y-(p3.y-p1.y)*k} ${p2.x},${p2.y}`}return d}
-function jmStruct(m){return JSON.stringify([m.hw,m.hh,m.cw,m.ph,m.rows])}
-function buildJourney(m,el){
-  const W=jmW(m),H=jmH(m);el.style.width=W+'px';el.style.height=H+'px';
-  let h='<div class="jb"></div>';
-  m.rows.forEach((r,ri)=>{const t=jmRowTop(m,ri)-m.y;h+=`<div class="jl${ri%2?' alt':''}" style="left:${m.hw}px;right:0;top:${t}px;height:${r.h}px"></div><div class="jh jr" style="left:0;top:${t}px;width:${m.hw}px;height:${r.h}px">${esc(r.l)}</div>`});
-  m.ph.forEach((p,i)=>{h+=`<div class="jv" style="left:${m.hw+i*m.cw}px;top:${m.hh}px;bottom:0"></div><div class="jh jc" data-drag="1" style="left:${m.hw+i*m.cw}px;top:0;width:${m.cw}px;height:${m.hh}px"><input data-p="${p.id}" value="${esc(p.n)}" spellcheck="false">${m.ph.length>1?`<button class="jx" data-delp="${p.id}" title="Remove phase">×</button>`:''}${i===m.ph.length-1?'<button class="jx jadd" data-addp="1" title="Add phase">+</button>':''}</div>`});
-  h+=`<div class="jh jt" data-drag="1" style="width:${m.hw}px;height:${m.hh}px"><span>Journey</span><button class="jx" data-delm="1" title="Delete journey map">×</button></div>`;
-  const ei=m.rows.findIndex(r=>r.k==='emotion');
+const jmStruct=n=>JSON.stringify([n.hw,n.hh,n.cw,n.ph,n.rows]);
+function jmBuild(n,el){
+  jmFit(n);n.em=n.em||{};
+  const bd=el.querySelector('.bd');let g=bd.querySelector('.jg');if(!g){g=document.createElement('div');g.className='jg';bd.appendChild(g)}
+  const W=n.hw+n.ph.length*n.cw,H=n.hh+n.rows.reduce((a,r)=>a+r.h,0);g.style.width=W+'px';g.style.height=H+'px';
+  let h=`<div class="jcorner" style="width:${n.hw}px;height:${n.hh}px">Phases</div>`;
+  n.rows.forEach((r,ri)=>{const t=jmRowRel(n,ri);h+=`<div class="jl${ri%2?' alt':''}" style="left:${n.hw}px;right:0;top:${t}px;height:${r.h}px"></div><div class="jrl" style="top:${t}px;width:${n.hw}px;height:${r.h}px"><input data-r="${r.id}" value="${esc(r.l)}" spellcheck="false">${n.rows.length>1?`<button class="jx" data-delr="${r.id}" title="Remove row">×</button>`:''}</div>`});
+  n.ph.forEach((p,i)=>{h+=`<div class="jv" style="left:${n.hw+i*n.cw}px;top:${n.hh}px;bottom:0"></div><div class="jph" style="left:${n.hw+i*n.cw}px;width:${n.cw}px;height:${n.hh}px"><input data-p="${p.id}" value="${esc(p.n)}" spellcheck="false">${n.ph.length>1?`<button class="jx" data-delp="${p.id}" title="Remove phase">×</button>`:''}${i===n.ph.length-1?'<button class="jx jadd" data-addp="1" title="Add phase">+</button>':''}</div>`});
+  const ei=n.rows.findIndex(r=>r.k==='emotion');
   h+=`<svg width="${W}" height="${H}">`;
-  if(ei>=0)JM_LEVELS.forEach((l,i)=>{const y=jmRowTop(m,ei)-m.y+l*m.rows[ei].h;h+=`<line class="jg" x1="${m.hw}" x2="${W}" y1="${y}" y2="${y}"/><text x="${m.hw+8}" y="${y-5}">${JM_LV[i]}</text>`});
+  if(ei>=0)JM_LEVELS.forEach((l,i)=>{const y=jmRowRel(n,ei)+l*n.rows[ei].h;h+=`<line class="jgl" x1="${n.hw}" x2="${W}" y1="${y}" y2="${y}"/><text x="${n.hw+8}" y="${y-8}">${JM_LV[i]}</text>`});
   h+=`<g class="jcv"></g></svg>`;
-  el.innerHTML=h;el._st=jmStruct(m);
+  if(ei>=0)n.ph.forEach((p,pi)=>JM_LEVELS.forEach((l,li)=>{h+=`<button class="jdp" data-p="${p.id}" data-l="${li}" title="${JM_LV[li]}" style="left:${n.hw+(pi+.5)*n.cw}px;top:${jmRowRel(n,ei)+l*n.rows[ei].h}px"></button>`}));
+  h+=`<button class="jaddr" style="top:${H+4}px">+ row</button>`;
+  g.innerHTML=h;g._st=jmStruct(n);g._pg=null;
 }
-function renderJourneys(){
-  const list=S.journeys||[],keep=new Set();
-  list.forEach(m=>{keep.add(m.id);let el=jmEls.get(m.id);
-    if(!el||!el.isConnected){el=document.createElement('div');el.className='jm';jmLayer.appendChild(el);jmEls.set(m.id,el);el._st=''}
-    if(el._st!==jmStruct(m))buildJourney(m,el);
-    el.style.left=m.x+'px';el.style.top=m.y+'px';
-    const pts=jmCurve(m),g=el.querySelector('.jcv');
-    if(g){const sg=pts.map(q=>Math.round(q.x)+','+Math.round(q.y)).join(';');if(g._sg!==sg){g._sg=sg;g.innerHTML=(pts.length>1?`<path class="jcurve" d="${jmPath(pts)}"/>`:'')+pts.map(q=>`<circle class="jdot" cx="${q.x}" cy="${q.y}" r="5"/>`).join('')}}});
-  jmEls.forEach((el,id)=>{if(!keep.has(id)){el.remove();jmEls.delete(id)}});
-  S.nodes.forEach(n=>{const e=els.get(n.id);if(e){if(n.jm)e.dataset.jm='1';else delete e.dataset.jm}});
+function jmRefresh(n){
+  const el=els.get(n.id);if(!el)return;const bd=el.querySelector('.bd');if(!bd)return;let g=bd.querySelector('.jg');
+  if(!g||g._st!==jmStruct(n)){jmBuild(n,el);g=bd.querySelector('.jg');sync(n);drawEdges()}
+  const pts=jmPts(n),sg=pts.map(q=>Math.round(q.x)+','+Math.round(q.y)).join(';');
+  if(g._pg!==sg){g._pg=sg;g.querySelector('.jcv').innerHTML=(pts.length>1?`<path class="jcurve" d="${jmPath(pts)}"/>`:'')+pts.map(q=>`<circle class="jpt" cx="${q.x}" cy="${q.y}" r="3"/>`).join('')}
+  g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('on',(n.em||{})[b.dataset.p]===+b.dataset.l));
+}
+let jmQ=0;function jmSoon(){if(jmQ)return;jmQ=requestAnimationFrame(()=>{jmQ=0;S.nodes.forEach(n=>{if(n.type==='journey')jmRefresh(n)})})}
+function jmWire(n,el){
+  const bd=el.querySelector('.bd');
+  bd.addEventListener('pointerdown',e=>{if(e.target.closest('input,button'))e.stopPropagation()});
+  bd.addEventListener('focusin',e=>{if(e.target.matches('input')){e.target._h=0}});
+  bd.addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.delp){pushHist();n.ph=n.ph.filter(p=>p.id!==b.dataset.delp);if(n.em)delete n.em[b.dataset.delp];S.nodes.forEach(m=>{if(m.jm&&m.jm.m===n.id&&m.jm.p===b.dataset.delp)delete m.jm})}
+    else if(b.dataset.addp){pushHist();n.ph.push({id:uid(),n:'New phase'})}
+    else if(b.dataset.delr){pushHist();n.rows=n.rows.filter(r=>r.id!==b.dataset.delr)}
+    else if(b.classList.contains('jaddr')){pushHist();n.rows.push({id:uid(),l:'New row',k:'lane',h:170})}
+    else if(b.classList.contains('jdp')){pushHist();n.em=n.em||{};const pid=b.dataset.p,l=+b.dataset.l;if(n.em[pid]===l)delete n.em[pid];else n.em[pid]=l}
+    else return;
+    jmRefresh(n);refreshCombines();save();
+  });
+  bd.addEventListener('input',e=>{const i=e.target;if(!i.matches('input'))return;if(!i._h){pushHist();i._h=1}
+    if(i.dataset.p){const p=n.ph.find(q=>q.id===i.dataset.p);if(p)p.n=i.value}else if(i.dataset.r){const r=n.rows.find(q=>q.id===i.dataset.r);if(r)r.l=i.value}
+    const g=bd.querySelector('.jg');g._st=jmStruct(n);refreshCombines();save()});
+  jmBuild(n,el);
 }
 function addJourney(){
-  const c=centerWorld(),m=newJourney(Math.round(c.x-jmW({hw:150,cw:280,ph:[1,2,3,4,5]})/2),Math.round(c.y-310));
-  pushHist();S.journeys=S.journeys||[];S.journeys.push(m);renderJourneys();save();toast('Journey map added — drag blocks into its cells');
-  const k=Math.min(1,(innerWidth-120)/jmW(m));animateTo({z:k,x:innerWidth/2-(m.x+jmW(m)/2)*k,y:innerHeight/2-(m.y+jmH(m)/2)*k},500);
+  const c=centerWorld(),d=jmDefaults(),tmp={...d};jmFit(tmp);
+  const n=addNode('journey',c.x,c.y,{title:'Journey map',...d,w:tmp.w,h:tmp.h});
+  jmRefresh(n);toast('Journey map added — drag blocks into its cells, click the dots to plot emotion');
+  const k=Math.min(1,(innerWidth-120)/n.w);animateTo({z:k,x:innerWidth/2-(n.x+n.w/2)*k,y:innerHeight/2-(n.y+n.h/2)*k},500);
 }
 $('#bJourney').onclick=addJourney;
-let jmDrag=null,jmPend=null;
-jmLayer.addEventListener('pointerdown',e=>{
-  const root=e.target.closest('.jm');if(!root)return;const m=(S.journeys||[]).find(x=>jmEls.get(x.id)===root);if(!m)return;
-  if(e.target.closest('input')){jmPend={m,x:e.clientX,y:e.clientY,id:e.pointerId};return}
-  if(e.target.closest('[data-delm]')){e.stopPropagation();if(confirm('Delete this journey map? Blocks stay on the board.')){pushHist();S.journeys=S.journeys.filter(x=>x!==m);S.nodes.forEach(n=>{if(n.jm&&n.jm.m===m.id)delete n.jm});renderJourneys();save()}return}
-  const dp=e.target.closest('[data-delp]'),ap=e.target.closest('[data-addp]');
-  if(dp){e.stopPropagation();pushHist();m.ph=m.ph.filter(p=>p.id!==dp.dataset.delp);S.nodes.forEach(n=>{if(n.jm&&n.jm.m===m.id&&n.jm.p===dp.dataset.delp)delete n.jm});renderJourneys();save();return}
-  if(ap){e.stopPropagation();pushHist();m.ph.push({id:uid(),n:'New phase'});renderJourneys();save();return}
-  if(e.target.closest('[data-drag]')){e.stopPropagation();e.preventDefault();pushHist();jmDrag={m,x:e.clientX,y:e.clientY};vp.setPointerCapture(e.pointerId)}
-});
-jmLayer.addEventListener('input',e=>{const i=e.target.closest('input[data-p]');if(!i)return;const m=(S.journeys||[]).find(x=>jmEls.get(x.id)===i.closest('.jm'));if(!m)return;const p=m.ph.find(q=>q.id===i.dataset.p);if(p){p.n=i.value;i.closest('.jm')._st=jmStruct(m);save()}});
-addEventListener('pointermove',e=>{if(jmPend&&!jmDrag&&Math.hypot(e.clientX-jmPend.x,e.clientY-jmPend.y)>5){document.activeElement&&document.activeElement.blur();getSelection().removeAllRanges();pushHist();jmDrag={m:jmPend.m,x:jmPend.x,y:jmPend.y};jmPend=null}
-  if(!jmDrag)return;const dx=(e.clientX-jmDrag.x)/view.z,dy=(e.clientY-jmDrag.y)/view.z;jmDrag.x=e.clientX;jmDrag.y=e.clientY;
-  const m=jmDrag.m;m.x+=dx;m.y+=dy;S.nodes.forEach(n=>{if(n.jm&&n.jm.m===m.id){n.x+=dx;n.y+=dy;sync(n)}});renderJourneys();drawEdges()},true);
-addEventListener('pointerup',()=>{jmPend=null;if(!jmDrag)return;const m=jmDrag.m;m.x=Math.round(m.x);m.y=Math.round(m.y);S.nodes.forEach(n=>{if(n.jm&&n.jm.m===m.id){n.x=Math.round(n.x);n.y=Math.round(n.y);sync(n)}});jmDrag=null;renderJourneys();save()},true);
-function jmDropped(list){let ch=false;list.forEach(n=>{const before=JSON.stringify([n.x,n.y,n.w,n.h,n.jm]);jmSnap(n);if(JSON.stringify([n.x,n.y,n.w,n.h,n.jm])!==before)ch=true;sync(n)});if(ch||list.some(n=>n.jm))renderJourneys();drawEdges()}
-const jmSig=m=>JSON.stringify(m);let lastJm=new Map();
-function applyJm(d){let ch=false;(d.jm||[]).forEach(q=>{S.journeys=S.journeys||[];const i=S.journeys.findIndex(x=>x.id===q.id);if(i<0)S.journeys.push(q);else S.journeys[i]=q;lastJm.set(q.id,jmSig(q));ch=true});
-  (d.delJm||[]).forEach(id=>{if(S.journeys)S.journeys=S.journeys.filter(x=>x.id!==id);lastJm.delete(id);ch=true});if(ch)renderJourneys()}
+/* sentiment of every journey wired into a combine block */
+function jmEmo(c){const out=[];S.edges.filter(e=>e.to===c.id).map(e=>byId(e.from)).filter(j=>j&&j.type==='journey').forEach(j=>j.ph.forEach(p=>{const v=j.em&&j.em[p.id];if(v!==undefined)out.push({p:(j.title&&S.nodes.filter(q=>q.type==='journey').length>1?j.title+' · ':'')+p.n,l:v})}));return out}
+function combineMd(n){
+  const sm=getSummary(n),L=['# '+(S.name||'Affinity map')+' — summary'];
+  if(sm.emo.length){L.push('','**Emotional curve:** '+sm.emo.map(e=>e.p+' → '+JM_LV[e.l]).join(' · '))}
+  if(sm.common.length)L.push('','**Common themes:** '+sm.common.join(', '));
+  sm.sections.forEach(sec=>{L.push('');if(sec.title)L.push('## '+sec.title+(sec.common.length?' (shared: '+sec.common.join(', ')+')':''));
+    sec.rows.forEach(r=>{if(r.t==='text')L.push('- '+r.text.replace(/\n+/g,' '));else if(r.t==='img')L.push('- *(image)*');else if(r.t==='draw')L.push('- *(drawing)*')})});
+  return L.join('\n')}
+function combineStickies(n){
+  const sm=getSummary(n),words=[...new Set([...sm.common,...sm.sections.flatMap(s=>s.common)])].slice(0,14);
+  if(!words.length){toast('No shared themes yet');return}
+  pushHist();let y=n.y;const made=[];
+  words.forEach((w,i)=>{const m=addNode('sticky',n.x+n.w+150+(i%2)*210,n.y+Math.floor(i/2)*150+95,{text:cap(w),color:COLORS[i%6],w:190,h:130},{keepSel:true,noHist:true});made.push(m.id)});
+  select(made);save();toast(words.length+' theme notes created')}
 /* ---- magic pencil: freehand lines on the board that stickmen can stand on ---- */
 const penLayer=$('#pen'),penEls=new Map(),penPC=new WeakMap();
 const PEN=Object.assign({c:'#ff8a4c',w:4,erase:false},(()=>{try{return JSON.parse(localStorage.getItem('affinity-pen')||'{}')}catch{return{}}})());PEN.erase=false;
@@ -3983,7 +4026,7 @@ window.addEventListener('resize',()=>{if(SM.looping)fxSize()});
 })();
 function fitBar(){const t=$('#toolbar');t.style.setProperty('--k',1);const k=Math.min(1,(innerWidth-24)/t.scrollWidth);t.style.setProperty('--k',k)}
 addEventListener('resize',()=>{applyView();fitBar()});fitBar();
-window.__affinity={addJourney,jmSnap,renderJourneys,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{routeSig='';const t=performance.now();drawEdges();return Math.round(performance.now()-t)},routeOnNow:()=>routeOn,get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
+window.__affinity={addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{routeSig='';const t=performance.now();drawEdges();return Math.round(performance.now()-t)},routeOnNow:()=>routeOn,get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
 })();
 </script>
 </body>
