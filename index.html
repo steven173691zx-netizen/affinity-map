@@ -595,6 +595,29 @@ body.sm #pnbar{display:none}
 #pnbar .b{all:unset;height:28px;padding:0 11px;border-radius:9px;font-size:12px;font-weight:650;color:var(--t2);cursor:pointer;display:grid;place-items:center;transition:all .25s var(--ease)}
 #pnbar .b.on{color:var(--t1)}
 #pnbar .sv{width:1px;height:20px;background:var(--line)}
+
+/* ===== journey map ===== */
+#jm{position:absolute;left:0;top:0;width:0;height:0;z-index:0;pointer-events:none}
+.jm{position:absolute;pointer-events:none;font-family:var(--font)}
+.jm .jb{position:absolute;inset:0;border-radius:18px;background:rgba(var(--ovc),.035);border:1px solid var(--line2)}
+.jm .jh{position:absolute;display:flex;align-items:center;pointer-events:auto;background:var(--elev2);color:var(--t1);border:1px solid var(--line);box-sizing:border-box}
+.jm .jc{cursor:grab;justify-content:space-between;padding:0 10px;font-size:13px;font-weight:700}
+.jm .jc:active{cursor:grabbing}
+.jm .jc input{all:unset;flex:1;min-width:0;font-weight:700;font-size:13px;color:var(--t1);cursor:text}
+.jm .jr{padding:0 14px;font-size:12.5px;font-weight:700;color:var(--t2);letter-spacing:.01em}
+.jm .jt{left:0;top:0;border-radius:18px 0 0 0;text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;color:var(--t3);justify-content:space-between;padding:0 12px;cursor:grab}
+.jm .jx{all:unset;cursor:pointer;color:var(--t3);width:20px;height:20px;border-radius:7px;display:grid;place-items:center;font-size:15px;transition:all .2s var(--ease)}
+.jm .jx:hover{background:rgba(var(--ovc),.12);color:var(--t1)}
+.jm .jadd{background:var(--accent);color:var(--on-accent)!important}
+.jm .jl{position:absolute;pointer-events:none;border-top:1px solid var(--line2)}
+.jm .jl.alt{background:rgba(var(--ovc),.025)}
+.jm .jv{position:absolute;pointer-events:none;border-left:1px dashed var(--line2)}
+.jm svg{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.jm .jg{stroke:var(--line2);stroke-dasharray:4 6}
+.jm text{fill:var(--t3);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.jm .jcurve{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 6px var(--accent-soft))}
+.jm .jdot{fill:var(--surface);stroke:var(--accent);stroke-width:2.5}
+.node[data-jm]{box-shadow:0 0 0 2px var(--accent-soft)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -632,6 +655,7 @@ body.sm #pnbar{display:none}
   <button class="tb on" data-tool="select" data-tip="Select · V" data-icon="cursor"></button>
   <button class="tb" data-tool="hand" data-tip="Pan · H / Space" data-icon="hand"></button>
   <button class="tb" data-tool="pencil" data-tip="Magic pencil · B" data-icon="wand"></button>
+  <button class="tb" id="bJourney" data-tip="Journey map · ⇧J" data-icon="journey"></button>
   <div class="sep"></div>
   <button class="tb" draggable="true" data-add="text" data-tip="Text · T" data-icon="text"></button>
   <button class="tb" draggable="true" data-add="draw" data-tip="Draw · D" data-icon="pen"></button>
@@ -743,7 +767,7 @@ const SVGNS='http://www.w3.org/2000/svg';
 
 /* ---------- icons ---------- */
 const P={
- trap:'<path d="M3 19l3-9 3 9 3-9 3 9 3-9 3 9"/><path d="M3 19h18"/>',wand:'<path d="M5 19l9-9"/><path d="M13 8l3 3"/><path d="M17 3v3M15.5 4.5h3M20 9v2M19 10h2"/>',pose:'<circle cx="12" cy="5" r="2.6"/><path d="M12 8.5v6M12 14.5l-4 6M12 14.5l4 6M5.5 10.5L12 8.5l6.5 2"/>',skull:'<path d="M12 3a8 8 0 00-8 8c0 2.6 1.3 4.5 3 5.7V20h10v-3.3c1.7-1.2 3-3.1 3-5.7a8 8 0 00-8-8z"/><circle cx="9" cy="11" r="1.7"/><circle cx="15" cy="11" r="1.7"/><path d="M10 20v-2.5M14 20v-2.5"/>',
+ journey:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 4v16"/><path d="M10 16c2-5 3 1 5-2s2-1 4-3"/>',trap:'<path d="M3 19l3-9 3 9 3-9 3 9 3-9 3 9"/><path d="M3 19h18"/>',wand:'<path d="M5 19l9-9"/><path d="M13 8l3 3"/><path d="M17 3v3M15.5 4.5h3M20 9v2M19 10h2"/>',pose:'<circle cx="12" cy="5" r="2.6"/><path d="M12 8.5v6M12 14.5l-4 6M12 14.5l4 6M5.5 10.5L12 8.5l6.5 2"/>',skull:'<path d="M12 3a8 8 0 00-8 8c0 2.6 1.3 4.5 3 5.7V20h10v-3.3c1.7-1.2 3-3.1 3-5.7a8 8 0 00-8-8z"/><circle cx="9" cy="11" r="1.7"/><circle cx="15" cy="11" r="1.7"/><path d="M10 20v-2.5M14 20v-2.5"/>',
  comment:'<path d="M5 5h14a1 1 0 011 1v9a1 1 0 01-1 1h-7l-4.5 3.5V16H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>',target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',keys:'<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>',sound:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a8 8 0 010 11"/>',soundoff:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l4 6M21 9l-4 6"/>',exit:'<path d="M10 5H6a1 1 0 00-1 1v12a1 1 0 001 1h4M15 8l4 4-4 4M19 12H9"/>',
  pen:'<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16z"/><path d="M14 7l3 3"/>',
  draw:'<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16z"/><path d="M14 7l3 3"/>',
@@ -1371,7 +1395,7 @@ function rebuild(){routeOn=false;
   els.forEach(e=>e.remove());els.clear();
   wires.querySelectorAll('.wire-g').forEach(g=>g.remove());wireEls.clear();
   zTop=Math.max(1,...S.nodes.map(n=>n.z||0));
-  S.nodes.forEach(n=>build(n,false));$('#pname').value=S.name||'Untitled map';refreshAll();renderPen();
+  S.nodes.forEach(n=>build(n,false));renderJourneys();$('#pname').value=S.name||'Untitled map';refreshAll();renderPen();
 }
 function dupSelected(){
   if(!sel.size)return;pushHist();const map={};const ids=[...sel];
@@ -1497,7 +1521,7 @@ function endDrag(e){
   if(drag.k==='area'){drag=null;if(area&&(area.w<20||area.h<20))area=null;updArea();return}
   if(drag.k==='pan')vp.classList.remove('panning');
   if(drag.k==='marq')marquee.style.display='none';
-  if(drag.k==='move'){drag.start.forEach(s=>els.get(s.n.id).classList.remove('dragging'));
+  if(drag.k==='move'){drag.start.forEach(s=>els.get(s.n.id).classList.remove('dragging'));if(drag.moved)jmDropped(drag.start.map(s=>s.n));
     if(!drag.moved&&!e.shiftKey&&sel.size>1&&e.type==='pointerup'){}}
   if(drag.k==='wire'){
     document.body.classList.remove('wiring');tmpPath.remove();tmpPath=null;document.querySelectorAll('.port.hot').forEach(p=>p.classList.remove('hot'));
@@ -2137,6 +2161,7 @@ const ACTIONS=[
   {t:'Fit all to screen',id:'fit',f:()=>fit()},
   {t:'New file',f:()=>$('#mNew').click()},
   {t:'AI summary settings',f:()=>openSettings()},
+  {t:'Journey map (/journey)',id:'journey',f:()=>addJourney()},
   ...['text','draw','image','canvas','combine','label'].map(t=>({t:'Add '+TITLES[t].toLowerCase()+' block',id:t,f:()=>addFromTool(t)}))
 ];
 function jumpTo(n){
@@ -2181,11 +2206,11 @@ function packNode(n,full){
   if(!full&&n.src&&lastSrc.get(n.id)===L)delete o.src;else lastSrc.set(n.id,L);
   return o;
 }
-const packAll=()=>({nodes:S.nodes.map(n=>packNode(n,true)),edges:S.edges,pen:S.pencil||[]});
+const packAll=()=>({nodes:S.nodes.map(n=>packNode(n,true)),edges:S.edges,pen:S.pencil||[],jm:S.journeys||[]});
 const penSig=q=>q.p.length+':'+q.c+q.w;
-function applyPen(d){let ch=false;(d.pen||[]).forEach(q=>{S.pencil=S.pencil||[];const i=S.pencil.findIndex(x=>x.id===q.id);if(i<0)S.pencil.push(q);else S.pencil[i]=q;lastPen.set(q.id,penSig(q));ch=true});
+function applyPen(d){applyJm(d);let ch=false;(d.pen||[]).forEach(q=>{S.pencil=S.pencil||[];const i=S.pencil.findIndex(x=>x.id===q.id);if(i<0)S.pencil.push(q);else S.pencil[i]=q;lastPen.set(q.id,penSig(q));ch=true});
   (d.delPen||[]).forEach(id=>{if(S.pencil)S.pencil=S.pencil.filter(x=>x.id!==id);lastPen.delete(id);ch=true});if(ch)renderPen()}
-function baseline(){lastSig=new Map(S.nodes.map(n=>[n.id,sigOf(n)]));lastEdge=new Map(S.edges.map(e=>[e.id,e.from+'>'+e.to]));S.nodes.forEach(n=>lastSrc.set(n.id,(n.src||'').length));lastPen=new Map((S.pencil||[]).map(q=>[q.id,penSig(q)]))}
+function baseline(){lastSig=new Map(S.nodes.map(n=>[n.id,sigOf(n)]));lastEdge=new Map(S.edges.map(e=>[e.id,e.from+'>'+e.to]));S.nodes.forEach(n=>lastSrc.set(n.id,(n.src||'').length));lastPen=new Map((S.pencil||[]).map(q=>[q.id,penSig(q)]));lastJm=new Map((S.journeys||[]).map(q=>[q.id,jmSig(q)]))}
 function pickColor(){
   const used=new Set([...peers.values()].map(p=>p.color));let h=0;for(const c of selfId)h=(h*31+c.charCodeAt(0))>>>0;
   for(let i=0;i<PEERCOLS.length;i++){const c=PEERCOLS[(h+i)%PEERCOLS.length];if(!used.has(c))return c}return PEERCOLS[h%PEERCOLS.length];
@@ -2235,7 +2260,8 @@ function tick(){
   const addE=S.edges.filter(e=>lastEdge.get(e.id)!==ce.get(e.id)),delE=[...lastEdge.keys()].filter(id=>!ce.has(id));
   lastSig=cur;lastEdge=ce;
   const pc=new Map((S.pencil||[]).map(q=>[q.id,penSig(q)])),pen=(S.pencil||[]).filter(q=>lastPen.get(q.id)!==pc.get(q.id)),delPen=[...lastPen.keys()].filter(id=>!pc.has(id));lastPen=pc;
-  if(ch.length||del.length||addE.length||delE.length||pen.length||delPen.length)collab.sendOps({nodes:ch,del,addE,delE,pen,delPen});
+  const jc=new Map((S.journeys||[]).map(q=>[q.id,jmSig(q)])),jm=(S.journeys||[]).filter(q=>lastJm.get(q.id)!==jc.get(q.id)),delJm=[...lastJm.keys()].filter(id=>!jc.has(id));lastJm=jc;
+  if(ch.length||del.length||addE.length||delE.length||pen.length||delPen.length||jm.length||delJm.length)collab.sendOps({nodes:ch,del,addE,delE,pen,delPen,jm,delJm});
   const ss=[...sel].join(',');if(ss!==lastSelSig){lastSelSig=ss;sendPresence()}
   const now=Date.now();peers.forEach(p=>{if(p.el)p.el.style.opacity=(p.t&&now-p.t<8000)?1:0});
 }
@@ -2339,7 +2365,7 @@ readMM();updThemeUI();
 /* ---------- customizable shortcuts ---------- */
 const IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform);
 const KEYDEFS=[
- ['Tools',[['stickman','Stickman mode',['P']],['select','Select tool',['V']],['hand','Pan tool',['H']],['pencil','Magic pencil',['B']],['area','Export area to PDF',['E']]]],
+ ['Tools',[['stickman','Stickman mode',['P']],['select','Select tool',['V']],['hand','Pan tool',['H']],['pencil','Magic pencil',['B']],['journey','New Journey Map',['Shift+J']],['area','Export area to PDF',['E']]]],
  ['Add blocks',[['text','Text',['T']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['C']],['combine','Combine',['M']],['label','Heading',['L']]]],
  ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['cluster','Auto-cluster blocks',['J']],['del','Delete',['Delete','Backspace']]]],
  ['View',[['fit','Fit all / selection',['Shift+1']],['zoomin','Zoom in',['=','Shift+=']],['zoomout','Zoom out',['-']],['snap','Snap to grid',['G']],['format','Format bar (colour, text)',['K']],['minimap','Minimap',['N']],['themes','Theme',['Shift+D']],['palette','Command palette',['/','Mod+K']],['keys','Keyboard shortcuts',['Shift+/']]]]
@@ -2376,7 +2402,7 @@ function refreshKeyLabels(){
   document.querySelectorAll('[data-k]').forEach(el=>el.textContent=kl(el.dataset.k)||'—');
 }
 const ACT={
-  select:()=>setTool('select'),hand:()=>setTool('hand'),pencil:()=>setTool('pencil'),
+  select:()=>setTool('select'),hand:()=>setTool('hand'),pencil:()=>setTool('pencil'),journey:()=>addJourney(),
   area:()=>{setTool('area');if(sel.size){const ns=[...sel].map(byId);const x1=Math.min(...ns.map(n=>n.x))-40,y1=Math.min(...ns.map(n=>n.y))-40,x2=Math.max(...ns.map(n=>n.x+n.w))+40,y2=Math.max(...ns.map(n=>n.y+n.h))+40;area={x:x1,y:y1,w:x2-x1,h:y2-y1};updArea()}},
   text:()=>addFromTool('text'),draw:()=>addFromTool('draw'),image:()=>addFromTool('image'),canvas:()=>addFromTool('canvas'),combine:()=>addFromTool('combine'),label:()=>addFromTool('label'),
   undo:()=>undo(),redo:()=>doRedo(),dup:()=>dupSelected(),selall:()=>{S.nodes.forEach(n=>sel.add(n.id));S.nodes.forEach(sync)},
@@ -3383,6 +3409,82 @@ function trapsUpdate(dt){
     }
   });
 }
+/* ---- journey map: swimlane template that lives on the board ---- */
+const jmLayer=document.createElement('div');jmLayer.id='jm';world.insertBefore(jmLayer,world.firstChild);
+const jmEls=new Map();
+const JM_ROWS=[['actions','User Actions','lane',170],['touchpoints','Touchpoints','lane',170],['emotion','Emotional State','emotion',220],['pains','Pain Points','lane',170]];
+const JM_LEVELS=[.2,.5,.8],JM_LV=['Positive','Neutral','Negative'];
+function newJourney(x,y){return{id:uid(),x,y,hw:150,hh:56,cw:280,ph:['Awareness','Consideration','Purchase','Onboarding','Retention'].map(n=>({id:uid(),n})),rows:JM_ROWS.map(([id,l,k,h])=>({id,l,k,h}))}}
+const jmW=m=>m.hw+m.ph.length*m.cw,jmH=m=>m.hh+m.rows.reduce((a,r)=>a+r.h,0);
+const jmRowTop=(m,i)=>m.y+m.hh+m.rows.slice(0,i).reduce((a,r)=>a+r.h,0),jmColLeft=(m,i)=>m.x+m.hw+i*m.cw;
+function jmCell(m,px,py){const lx=px-(m.x+m.hw),ly=py-(m.y+m.hh);if(lx<0||ly<0)return null;const pi=Math.floor(lx/m.cw);if(pi>=m.ph.length)return null;let a=0;
+  for(let ri=0;ri<m.rows.length;ri++){if(ly<a+m.rows[ri].h)return{pi,ri,p:m.ph[pi],r:m.rows[ri]};a+=m.rows[ri].h}return null}
+function jmSnap(n){
+  if(n.type==='canvas'||!S.journeys)return false;
+  const cx=n.x+n.w/2,cy=n.y+n.h/2;
+  for(let k=S.journeys.length-1;k>=0;k--){const m=S.journeys[k],c=jmCell(m,cx,cy);if(!c)continue;
+    const L=jmColLeft(m,c.pi),T=jmRowTop(m,c.ri),pad=10;
+    n.w=Math.min(n.w,m.cw-pad*2);n.h=Math.min(n.h,c.r.h-pad*2);
+    let x=Math.min(Math.max(n.x,L+pad),L+m.cw-n.w-pad),y=Math.min(Math.max(n.y,T+pad),T+c.r.h-n.h-pad);
+    if(c.r.k==='emotion'){x=L+(m.cw-n.w)/2;const f=(y+n.h/2-T)/c.r.h,lv=JM_LEVELS.reduce((a,b)=>Math.abs(b-f)<Math.abs(a-f)?b:a);y=T+lv*c.r.h-n.h/2}
+    n.x=Math.round(x);n.y=Math.round(y);n.jm={m:m.id,p:c.p.id,r:c.r.id};return true}
+  if(n.jm){delete n.jm}return false}
+function jmCurve(m){
+  const ei=m.rows.findIndex(r=>r.k==='emotion');if(ei<0)return[];const out=[];
+  m.ph.forEach((p,pi)=>{const ns=S.nodes.filter(n=>n.jm&&n.jm.m===m.id&&n.jm.r===m.rows[ei].id&&n.jm.p===p.id);
+    if(ns.length)out.push({x:jmColLeft(m,pi)+m.cw/2-m.x,y:ns.reduce((a,n)=>a+n.y+n.h/2,0)/ns.length-m.y})});return out}
+function jmPath(pts,t=.5){if(pts.length<2)return'';let d=`M${pts[0].x},${pts[0].y}`;
+  for(let i=0;i<pts.length-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2,k=t/3;
+    d+=` C${p1.x+(p2.x-p0.x)*k},${p1.y+(p2.y-p0.y)*k} ${p2.x-(p3.x-p1.x)*k},${p2.y-(p3.y-p1.y)*k} ${p2.x},${p2.y}`}return d}
+function jmStruct(m){return JSON.stringify([m.hw,m.hh,m.cw,m.ph,m.rows])}
+function buildJourney(m,el){
+  const W=jmW(m),H=jmH(m);el.style.width=W+'px';el.style.height=H+'px';
+  let h='<div class="jb"></div>';
+  m.rows.forEach((r,ri)=>{const t=jmRowTop(m,ri)-m.y;h+=`<div class="jl${ri%2?' alt':''}" style="left:${m.hw}px;right:0;top:${t}px;height:${r.h}px"></div><div class="jh jr" style="left:0;top:${t}px;width:${m.hw}px;height:${r.h}px">${esc(r.l)}</div>`});
+  m.ph.forEach((p,i)=>{h+=`<div class="jv" style="left:${m.hw+i*m.cw}px;top:${m.hh}px;bottom:0"></div><div class="jh jc" data-drag="1" style="left:${m.hw+i*m.cw}px;top:0;width:${m.cw}px;height:${m.hh}px"><input data-p="${p.id}" value="${esc(p.n)}" spellcheck="false">${m.ph.length>1?`<button class="jx" data-delp="${p.id}" title="Remove phase">×</button>`:''}${i===m.ph.length-1?'<button class="jx jadd" data-addp="1" title="Add phase">+</button>':''}</div>`});
+  h+=`<div class="jh jt" data-drag="1" style="width:${m.hw}px;height:${m.hh}px"><span>Journey</span><button class="jx" data-delm="1" title="Delete journey map">×</button></div>`;
+  const ei=m.rows.findIndex(r=>r.k==='emotion');
+  h+=`<svg width="${W}" height="${H}">`;
+  if(ei>=0)JM_LEVELS.forEach((l,i)=>{const y=jmRowTop(m,ei)-m.y+l*m.rows[ei].h;h+=`<line class="jg" x1="${m.hw}" x2="${W}" y1="${y}" y2="${y}"/><text x="${m.hw+8}" y="${y-5}">${JM_LV[i]}</text>`});
+  h+=`<g class="jcv"></g></svg>`;
+  el.innerHTML=h;el._st=jmStruct(m);
+}
+function renderJourneys(){
+  const list=S.journeys||[],keep=new Set();
+  list.forEach(m=>{keep.add(m.id);let el=jmEls.get(m.id);
+    if(!el||!el.isConnected){el=document.createElement('div');el.className='jm';jmLayer.appendChild(el);jmEls.set(m.id,el);el._st=''}
+    if(el._st!==jmStruct(m))buildJourney(m,el);
+    el.style.left=m.x+'px';el.style.top=m.y+'px';
+    const pts=jmCurve(m),g=el.querySelector('.jcv');
+    if(g){const sg=pts.map(q=>Math.round(q.x)+','+Math.round(q.y)).join(';');if(g._sg!==sg){g._sg=sg;g.innerHTML=(pts.length>1?`<path class="jcurve" d="${jmPath(pts)}"/>`:'')+pts.map(q=>`<circle class="jdot" cx="${q.x}" cy="${q.y}" r="5"/>`).join('')}}});
+  jmEls.forEach((el,id)=>{if(!keep.has(id)){el.remove();jmEls.delete(id)}});
+  S.nodes.forEach(n=>{const e=els.get(n.id);if(e){if(n.jm)e.dataset.jm='1';else delete e.dataset.jm}});
+}
+function addJourney(){
+  const c=centerWorld(),m=newJourney(Math.round(c.x-jmW({hw:150,cw:280,ph:[1,2,3,4,5]})/2),Math.round(c.y-310));
+  pushHist();S.journeys=S.journeys||[];S.journeys.push(m);renderJourneys();save();toast('Journey map added — drag blocks into its cells');
+  const k=Math.min(1,(innerWidth-120)/jmW(m));animateTo({z:k,x:innerWidth/2-(m.x+jmW(m)/2)*k,y:innerHeight/2-(m.y+jmH(m)/2)*k},500);
+}
+$('#bJourney').onclick=addJourney;
+let jmDrag=null,jmPend=null;
+jmLayer.addEventListener('pointerdown',e=>{
+  const root=e.target.closest('.jm');if(!root)return;const m=(S.journeys||[]).find(x=>jmEls.get(x.id)===root);if(!m)return;
+  if(e.target.closest('input')){jmPend={m,x:e.clientX,y:e.clientY,id:e.pointerId};return}
+  if(e.target.closest('[data-delm]')){e.stopPropagation();if(confirm('Delete this journey map? Blocks stay on the board.')){pushHist();S.journeys=S.journeys.filter(x=>x!==m);S.nodes.forEach(n=>{if(n.jm&&n.jm.m===m.id)delete n.jm});renderJourneys();save()}return}
+  const dp=e.target.closest('[data-delp]'),ap=e.target.closest('[data-addp]');
+  if(dp){e.stopPropagation();pushHist();m.ph=m.ph.filter(p=>p.id!==dp.dataset.delp);S.nodes.forEach(n=>{if(n.jm&&n.jm.m===m.id&&n.jm.p===dp.dataset.delp)delete n.jm});renderJourneys();save();return}
+  if(ap){e.stopPropagation();pushHist();m.ph.push({id:uid(),n:'New phase'});renderJourneys();save();return}
+  if(e.target.closest('[data-drag]')){e.stopPropagation();e.preventDefault();pushHist();jmDrag={m,x:e.clientX,y:e.clientY};vp.setPointerCapture(e.pointerId)}
+});
+jmLayer.addEventListener('input',e=>{const i=e.target.closest('input[data-p]');if(!i)return;const m=(S.journeys||[]).find(x=>jmEls.get(x.id)===i.closest('.jm'));if(!m)return;const p=m.ph.find(q=>q.id===i.dataset.p);if(p){p.n=i.value;i.closest('.jm')._st=jmStruct(m);save()}});
+addEventListener('pointermove',e=>{if(jmPend&&!jmDrag&&Math.hypot(e.clientX-jmPend.x,e.clientY-jmPend.y)>5){document.activeElement&&document.activeElement.blur();getSelection().removeAllRanges();pushHist();jmDrag={m:jmPend.m,x:jmPend.x,y:jmPend.y};jmPend=null}
+  if(!jmDrag)return;const dx=(e.clientX-jmDrag.x)/view.z,dy=(e.clientY-jmDrag.y)/view.z;jmDrag.x=e.clientX;jmDrag.y=e.clientY;
+  const m=jmDrag.m;m.x+=dx;m.y+=dy;S.nodes.forEach(n=>{if(n.jm&&n.jm.m===m.id){n.x+=dx;n.y+=dy;sync(n)}});renderJourneys();drawEdges()},true);
+addEventListener('pointerup',()=>{jmPend=null;if(!jmDrag)return;const m=jmDrag.m;m.x=Math.round(m.x);m.y=Math.round(m.y);S.nodes.forEach(n=>{if(n.jm&&n.jm.m===m.id){n.x=Math.round(n.x);n.y=Math.round(n.y);sync(n)}});jmDrag=null;renderJourneys();save()},true);
+function jmDropped(list){let ch=false;list.forEach(n=>{const before=JSON.stringify([n.x,n.y,n.w,n.h,n.jm]);jmSnap(n);if(JSON.stringify([n.x,n.y,n.w,n.h,n.jm])!==before)ch=true;sync(n)});if(ch||list.some(n=>n.jm))renderJourneys();drawEdges()}
+const jmSig=m=>JSON.stringify(m);let lastJm=new Map();
+function applyJm(d){let ch=false;(d.jm||[]).forEach(q=>{S.journeys=S.journeys||[];const i=S.journeys.findIndex(x=>x.id===q.id);if(i<0)S.journeys.push(q);else S.journeys[i]=q;lastJm.set(q.id,jmSig(q));ch=true});
+  (d.delJm||[]).forEach(id=>{if(S.journeys)S.journeys=S.journeys.filter(x=>x.id!==id);lastJm.delete(id);ch=true});if(ch)renderJourneys()}
 /* ---- magic pencil: freehand lines on the board that stickmen can stand on ---- */
 const penLayer=$('#pen'),penEls=new Map(),penPC=new WeakMap();
 const PEN=Object.assign({c:'#ff8a4c',w:4,erase:false},(()=>{try{return JSON.parse(localStorage.getItem('affinity-pen')||'{}')}catch{return{}}})());PEN.erase=false;
@@ -3881,7 +3983,7 @@ window.addEventListener('resize',()=>{if(SM.looping)fxSize()});
 })();
 function fitBar(){const t=$('#toolbar');t.style.setProperty('--k',1);const k=Math.min(1,(innerWidth-24)/t.scrollWidth);t.style.setProperty('--k',k)}
 addEventListener('resize',()=>{applyView();fitBar()});fitBar();
-window.__affinity={applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{routeSig='';const t=performance.now();drawEdges();return Math.round(performance.now()-t)},routeOnNow:()=>routeOn,get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
+window.__affinity={addJourney,jmSnap,renderJourneys,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{routeSig='';const t=performance.now();drawEdges();return Math.round(performance.now()-t)},routeOnNow:()=>routeOn,get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
 })();
 </script>
 </body>
