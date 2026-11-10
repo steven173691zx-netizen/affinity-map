@@ -621,6 +621,9 @@ body.sm #pnbar{display:none}
 .jg svg{left:0;top:0;overflow:visible;pointer-events:none}
 .jg .jgl{stroke:var(--line2);stroke-dasharray:4 6}
 .jg text{fill:var(--t3);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.jg .jhit{fill:none;stroke:transparent;stroke-width:14;pointer-events:stroke;cursor:pointer}
+.jg .jtmp{stroke-dasharray:6 6;opacity:.7}
+.jg .jdp.hot{transform:scale(1.5);border-color:var(--c,var(--accent))}
 .jg .jcurve{fill:none;stroke:var(--c,var(--accent));stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
 .jg .jpt{fill:var(--c,var(--accent))}
 .jg .jdp{all:unset;position:absolute;box-sizing:border-box;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid var(--line2);background:var(--surface);cursor:pointer;pointer-events:auto;transition:transform .2s var(--ease),border-color .2s,background .2s}
@@ -965,7 +968,7 @@ function build(n,spawn){
   if(t==='combine')bd+=`<div class="clist"></div>`;
   bd+='</div>';
   el.innerHTML=hd+bd;
-  el.insertAdjacentHTML('beforeend',(t==='canvas'||t==='journey')?'<div class="port out" data-p="out"></div>':'<div class="port in" data-p="in"></div><div class="port out" data-p="out"></div>');
+  el.insertAdjacentHTML('beforeend','<div class="port in" data-p="in"></div><div class="port out" data-p="out"></div>');
   ['n','s','e','w','ne','nw','se','sw'].forEach(d=>el.insertAdjacentHTML('beforeend',`<div class="rz" data-d="${d}"></div>`));
   world.appendChild(el);els.set(n.id,el);
   const ed=el.querySelector('.edit');
@@ -1505,7 +1508,6 @@ function moveWire(e){
 function targetNode(e){
   const el=document.elementFromPoint(e.clientX,e.clientY),nd=el&&el.closest?.('.node');
   if(!nd||nd.dataset.id===drag.n.id)return null;
-  if((nd.dataset.type==='canvas'||nd.dataset.type==='journey')&&drag.side==='out')return null;
   return byId(nd.dataset.id);
 }
 vp.addEventListener('pointermove',e=>{
@@ -3451,6 +3453,9 @@ function jmSnap(n){
     if(c){n.jm={m:j.id,p:c.p.id,r:c.r.id};return}}
   if(n.jm)delete n.jm}
 function jmDropped(list){list.forEach(jmSnap);jmSoon()}
+const jmEnd=n=>{const o={};(n.eg||[]).forEach(l=>[l.a,l.b].forEach(k=>{const[p,v]=k.split('|');if(o[p]===undefined)o[p]=+v}));return o};
+const jmDotXY=(n,pid,l)=>{const ei=n.rows.findIndex(r=>r.k==='emotion'),pi=n.ph.findIndex(p=>p.id===pid);return ei<0||pi<0?null:{x:n.hw+(pi+.5)*n.cw,y:jmRowRel(n,ei)+JM_LEVELS[l]*n.rows[ei].h}};
+function jmLinks(n){return(n.eg||[]).map(l=>{const[ap,al]=l.a.split('|'),[bp,bl]=l.b.split('|'),A=jmDotXY(n,ap,+al),B=jmDotXY(n,bp,+bl);if(!A||!B)return null;const dx=Math.abs(B.x-A.x)/2,d=`M${A.x},${A.y} C${A.x+(B.x>=A.x?dx:-dx)},${A.y} ${B.x-(B.x>=A.x?dx:-dx)},${B.y} ${B.x},${B.y}`;return{id:l.id,d}}).filter(Boolean)}
 function jmPts(n){
   const ei=n.rows.findIndex(r=>r.k==='emotion');if(ei<0)return[];const rr=n.rows[ei],top=jmRowRel(n,ei),out=[];
   n.ph.forEach((p,pi)=>{
@@ -3474,7 +3479,7 @@ function jmBuild(n,el){
   const ei=n.rows.findIndex(r=>r.k==='emotion');
   h+=`<svg width="${W}" height="${H}">`;
   if(ei>=0)JM_LEVELS.forEach((l,i)=>{const y=jmRowRel(n,ei)+l*n.rows[ei].h;h+=`<line class="jgl" x1="${n.hw}" x2="${W}" y1="${y}" y2="${y}"/><text x="${n.hw+8}" y="${y-8}">${JM_LV[i]}</text>`});
-  h+=`<g class="jcv"></g></svg>`;
+  h+=`<g class="jcv"></g><g class="jlk"></g></svg>`;
   if(ei>=0)n.ph.forEach((p,pi)=>JM_LEVELS.forEach((l,li)=>{h+=`<button class="jdp" data-p="${p.id}" data-l="${li}" title="${JM_LV[li]}" style="left:${n.hw+(pi+.5)*n.cw}px;top:${jmRowRel(n,ei)+l*n.rows[ei].h}px"></button>`}));
   h+=`<button class="jaddr" style="top:${H+4}px">+ row</button>`;
   g.innerHTML=h;g._st=jmStruct(n);g._pg=null;
@@ -3482,18 +3487,37 @@ function jmBuild(n,el){
 function jmRefresh(n){
   const el=els.get(n.id);if(!el)return;const bd=el.querySelector('.bd');if(!bd)return;let g=bd.querySelector('.jg');
   if(!g||g._st!==jmStruct(n)){jmBuild(n,el);g=bd.querySelector('.jg');sync(n);drawEdges()}
-  const pts=jmPts(n),sg=pts.map(q=>Math.round(q.x)+','+Math.round(q.y)).join(';');
-  if(g._pg!==sg){g._pg=sg;g.querySelector('.jcv').innerHTML=(pts.length>1?`<path class="jcurve" d="${jmPath(pts)}"/>`:'')+pts.map(q=>`<circle class="jpt" cx="${q.x}" cy="${q.y}" r="3"/>`).join('')}
-  g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('on',(n.em||{})[b.dataset.p]===+b.dataset.l));
+  const lk=jmLinks(n),pts=lk.length?[]:jmPts(n),sg=lk.map(l=>l.d).join('|')+'#'+pts.map(q=>Math.round(q.x)+','+Math.round(q.y)).join(';');
+  if(g._pg!==sg){g._pg=sg;g.querySelector('.jcv').innerHTML=(pts.length>1?`<path class="jcurve" d="${jmPath(pts)}"/>`:'')+pts.map(q=>`<circle class="jpt" cx="${q.x}" cy="${q.y}" r="3"/>`).join('');
+    g.querySelector('.jlk').innerHTML=lk.map(l=>`<path class="jcurve" d="${l.d}"/><path class="jhit" data-lk="${l.id}" d="${l.d}"><title>Click to remove this link</title></path>`).join('')}
+  const ends=new Set((n.eg||[]).flatMap(l=>[l.a,l.b]));
+  g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('on',(n.em||{})[b.dataset.p]===+b.dataset.l||ends.has(b.dataset.p+'|'+b.dataset.l)));
 }
 let jmQ=0;function jmSoon(){if(jmQ)return;jmQ=requestAnimationFrame(()=>{jmQ=0;S.nodes.forEach(n=>{if(n.type==='journey')jmRefresh(n)})})}
 function jmWire(n,el){
   const bd=el.querySelector('.bd');
-  bd.addEventListener('pointerdown',e=>{if(e.target.closest('input,button'))e.stopPropagation()});
+  bd.addEventListener('pointerdown',e=>{if(e.target.closest('input,button,.jhit'))e.stopPropagation()});
   bd.addEventListener('focusin',e=>{if(e.target.matches('input')){e.target._h=0}});
+  let dd=null;
+  bd.addEventListener('pointerdown',e=>{const b=e.target.closest('.jdp');if(!b||e.button!==0)return;e.preventDefault();
+    const g=bd.querySelector('.jg'),rc=()=>g.getBoundingClientRect(),loc=ev=>({x:(ev.clientX-rc().left)/view.z,y:(ev.clientY-rc().top)/view.z});
+    dd={b,start:loc(e),sx:e.clientX,sy:e.clientY,moved:false,p:null,loc};
+    const mv=ev=>{if(!dd)return;if(!dd.moved&&Math.hypot(ev.clientX-dd.sx,ev.clientY-dd.sy)<5)return;dd.moved=true;
+      if(!dd.p){dd.p=document.createElementNS(SVGNS,'path');dd.p.setAttribute('class','jcurve jtmp');g.querySelector('.jlk').appendChild(dd.p);b.classList.add('on')}
+      const q=dd.loc(ev),a=dd.start,dx=Math.abs(q.x-a.x)/2,sg=q.x>=a.x?1:-1;dd.p.setAttribute('d',`M${a.x},${a.y} C${a.x+sg*dx},${a.y} ${q.x-sg*dx},${q.y} ${q.x},${q.y}`);
+      const t=document.elementFromPoint(ev.clientX,ev.clientY);bd.querySelectorAll('.jdp.hot').forEach(x=>x.classList.remove('hot'));if(t&&t.classList&&t.classList.contains('jdp')&&t!==b)t.classList.add('hot')};
+    const up=ev=>{removeEventListener('pointermove',mv,true);removeEventListener('pointerup',up,true);const d=dd;dd=null;if(!d)return;
+      if(d.p)d.p.remove();bd.querySelectorAll('.jdp.hot').forEach(x=>x.classList.remove('hot'));
+      if(!d.moved)return;d.b._dragged=true;setTimeout(()=>{d.b._dragged=false},0);
+      const t=document.elementFromPoint(ev.clientX,ev.clientY),o=t&&t.closest&&t.closest('.jdp');
+      if(o&&o!==d.b&&o.closest('.node')===el){const A=d.b.dataset.p+'|'+d.b.dataset.l,B=o.dataset.p+'|'+o.dataset.l;
+        n.eg=n.eg||[];if(!n.eg.some(l=>(l.a===A&&l.b===B)||(l.a===B&&l.b===A))){pushHist();n.eg.push({id:uid(),a:A,b:B});save()}}
+      jmRefresh(n);refreshCombines()};
+    addEventListener('pointermove',mv,true);addEventListener('pointerup',up,true)});
   bd.addEventListener('click',e=>{
-    const b=e.target.closest('button');if(!b)return;
-    if(b.dataset.delp){pushHist();n.ph=n.ph.filter(p=>p.id!==b.dataset.delp);if(n.em)delete n.em[b.dataset.delp];S.nodes.forEach(m=>{if(m.jm&&m.jm.m===n.id&&m.jm.p===b.dataset.delp)delete m.jm})}
+    const hit=e.target.closest&&e.target.closest('.jhit');if(hit){pushHist();n.eg=(n.eg||[]).filter(l=>l.id!==hit.dataset.lk);jmRefresh(n);save();return}
+    const b=e.target.closest('button');if(!b||b._dragged)return;
+    if(b.dataset.delp){pushHist();n.ph=n.ph.filter(p=>p.id!==b.dataset.delp);if(n.em)delete n.em[b.dataset.delp];n.eg=(n.eg||[]).filter(l=>l.a.split('|')[0]!==b.dataset.delp&&l.b.split('|')[0]!==b.dataset.delp);S.nodes.forEach(m=>{if(m.jm&&m.jm.m===n.id&&m.jm.p===b.dataset.delp)delete m.jm})}
     else if(b.dataset.addp){pushHist();n.ph.push({id:uid(),n:'New phase'})}
     else if(b.dataset.delr){pushHist();n.rows=n.rows.filter(r=>r.id!==b.dataset.delr)}
     else if(b.classList.contains('jaddr')){pushHist();n.rows.push({id:uid(),l:'New row',k:'lane',h:170})}
@@ -3514,7 +3538,7 @@ function addJourney(){
 }
 $('#bJourney').onclick=addJourney;
 /* sentiment of every journey wired into a combine block */
-function jmEmo(c){const out=[];S.edges.filter(e=>e.to===c.id).map(e=>byId(e.from)).filter(j=>j&&j.type==='journey').forEach(j=>j.ph.forEach(p=>{const v=j.em&&j.em[p.id];if(v!==undefined)out.push({p:(j.title&&S.nodes.filter(q=>q.type==='journey').length>1?j.title+' · ':'')+p.n,l:v})}));return out}
+function jmEmo(c){const out=[];S.edges.filter(e=>e.to===c.id).map(e=>byId(e.from)).filter(j=>j&&j.type==='journey').forEach(j=>{const E=jmEnd(j);j.ph.forEach(p=>{const v=(j.em&&j.em[p.id]!==undefined)?j.em[p.id]:E[p.id];if(v!==undefined)out.push({p:(j.title&&S.nodes.filter(q=>q.type==='journey').length>1?j.title+' · ':'')+p.n,l:v})})});return out}
 function combineMd(n){
   const sm=getSummary(n),L=['# '+(S.name||'Affinity map')+' — summary'];
   if(sm.emo.length){L.push('','**Emotional curve:** '+sm.emo.map(e=>e.p+' → '+JM_LV[e.l]).join(' · '))}
