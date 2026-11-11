@@ -2028,48 +2028,58 @@ async function clusterAI(ns){
   const rest=ns.map((_,i)=>i).filter(i=>!seen.has(i));if(rest.length)groups.push({title:'Unsorted',idx:rest});
   return groups;
 }
-/* if the blocks already sit apart from each other, just line them up (rows by centre, columns by left edge); nothing is regrouped */
+/* ---- auto-cluster helpers: blocks line up in rows and columns with ONE spacing (the most common gap already on the board) ---- */
+const ovr=(a,b,m=0)=>a.x<b.x+b.w+m&&b.x<a.x+a.w+m&&a.y<b.y+b.h+m&&b.y<a.y+a.h+m;
+function modeGap(gaps,dflt=48){
+  const g=gaps.filter(v=>v>=8&&v<=260);if(!g.length)return dflt;
+  const bk=new Map();g.forEach(v=>{const k=Math.round(v/8);(bk.get(k)||bk.set(k,[]).get(k)).push(v)});
+  let best=null;bk.forEach(l=>{if(!best||l.length>best.length||(l.length===best.length&&l[0]>best[0]))best=l});
+  return Math.round(best.reduce((a,v)=>a+v,0)/best.length)}
+function nearGaps(u){return u.map(a=>{let m=1e9;u.forEach(b=>{if(a===b)return;const dx=Math.max(b.x-(a.x+a.w),a.x-(b.x+b.w)),dy=Math.max(b.y-(a.y+a.h),a.y-(b.y+b.h)),d=Math.max(dx,dy);if(d>0&&d<m)m=d});return m<1e9?m:-1})}
+function gridAlign(u,kids){
+  if(u.length<2)return false;
+  if(u.some((a,i)=>u.slice(i+1).some(b=>ovr(a,b,4))))return false;                     // overlapping = out of order
+  const med=a=>[...a].sort((x,y)=>x-y)[a.length>>1],mh=med(u.map(n=>n.h)),mw=med(u.map(n=>n.w));
+  const rows=[];[...u].sort((a,b)=>(a.y+a.h/2)-(b.y+b.h/2)).forEach(n=>{const cy=n.y+n.h/2,r=rows.find(r=>Math.abs(r.cy-cy)<=Math.max(22,.5*Math.min(mh,n.h,r.mh)));
+    if(r){r.m.push(n);r.cy=r.m.reduce((s,q)=>s+q.y+q.h/2,0)/r.m.length;r.mh=Math.min(r.mh,n.h)}else rows.push({cy,mh:n.h,m:[n]})});
+  const cols=[];[...u].sort((a,b)=>(a.x+a.w/2)-(b.x+b.w/2)).forEach(n=>{const cx=n.x+n.w/2,c=cols.find(c=>Math.abs(c.cx-cx)<=Math.max(22,.5*Math.min(mw,n.w,c.mw)));
+    if(c){c.m.push(n);c.cx=c.m.reduce((s,q)=>s+q.x+q.w/2,0)/c.m.length;c.mw=Math.min(c.mw,n.w)}else cols.push({cx,mw:n.w,m:[n]})});
+  const ri=new Map(),ci=new Map();rows.forEach((r,i)=>r.m.forEach(n=>ri.set(n,i)));cols.forEach((c,i)=>c.m.forEach(n=>ci.set(n,i)));
+  const cell=new Set();for(const n of u){const k=ri.get(n)+'|'+ci.get(n);if(cell.has(k))return false;cell.add(k)}   // two blocks in one cell
+  if(cols.length>Math.max(3,1.5*Math.max(...rows.map(r=>r.m.length)))||rows.length>Math.max(3,1.5*Math.max(...cols.map(c=>c.m.length))))return false;   // staggered = messy
+  rows.sort((a,b)=>a.cy-b.cy);const rh=rows.map(r=>Math.max(...r.m.map(n=>n.h))),cw=cols.map(c=>Math.max(...c.m.map(n=>n.w)));
+  const rtop=rows.map((r,i)=>Math.min(...r.m.map(n=>n.y))),ctop=cols.map(c=>Math.min(...c.m.map(n=>n.x)));
+  const gaps=[];for(let i=1;i<rows.length;i++)gaps.push(Math.min(...rows[i].m.map(n=>n.y))-Math.max(...rows[i-1].m.map(n=>n.y+n.h)));
+  for(let i=1;i<cols.length;i++)gaps.push(Math.min(...cols[i].m.map(n=>n.x))-Math.max(...cols[i-1].m.map(n=>n.x+n.w)));
+  const G=modeGap(gaps),x0=Math.min(...u.map(n=>n.x)),y0=Math.min(...u.map(n=>n.y));
+  const rowC=[],colC=[];let yy=y0,xx=x0;rh.forEach(h=>{rowC.push(yy+h/2);yy+=h+G});cw.forEach(w=>{colC.push(xx+w/2);xx+=w+G});
+  const t=u.map(n=>({n,x:Math.round(colC[ci.get(n)]-n.w/2),y:Math.round(rowC[ri.get(n)]-n.h/2)}));
+  return{t,G}}
+function withKids(list,kids){return list.flatMap(m=>[m,...(kids.get(m.n)||[]).map(k=>({n:k,x:k.x+m.x-m.n.x,y:k.y+m.y-m.n.y}))])}
 /* X / Y: put the selection (or everything) in one tidy line, keeping its current order */
 function arrangeLine(horiz){
   let tg=[...sel].map(byId).filter(Boolean);if(!tg.length)tg=S.nodes.slice();
-  const ids=new Set(tg.map(n=>n.id)),cvs=tg.filter(n=>n.type==='canvas');
-  const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(cvs.some(c=>c!==n&&inside(n,c)))),GAP=40;
+  const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(innerCanvas(n)&&tg.includes(innerCanvas(n))));
   if(top.length<2){toast('Select 2+ blocks to arrange');return}
-  const kids=new Map(top.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!top.includes(m)&&m.type!=='journey'&&inside(m,c))]));
-  const x0=Math.min(...top.map(n=>n.x)),y0=Math.min(...top.map(n=>n.y)),mid=horiz?Math.round(top.reduce((a,n)=>a+n.y+n.h/2,0)/top.length):Math.round(top.reduce((a,n)=>a+n.x+n.w/2,0)/top.length);
+  const kids=new Map(top.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!top.includes(m)&&inside(m,c))]));
+  const GAP=modeGap(nearGaps(top),40),x0=Math.min(...top.map(n=>n.x)),y0=Math.min(...top.map(n=>n.y)),mid=horiz?Math.round(top.reduce((a,n)=>a+n.y+n.h/2,0)/top.length):Math.round(top.reduce((a,n)=>a+n.x+n.w/2,0)/top.length);
   top.sort(horiz?(a,b)=>(a.x+a.w/2)-(b.x+b.w/2):(a,b)=>(a.y+a.h/2)-(b.y+b.h/2));
   let c=horiz?x0:y0;const t=[];
-  top.forEach(n=>{const nx=horiz?c:Math.round(mid-n.w/2),ny=horiz?Math.round(mid-n.h/2):c;c+=(horiz?n.w:n.h)+GAP;
-    t.push({n,x:nx,y:ny});(kids.get(n)||[]).forEach(m=>t.push({n:m,x:m.x+nx-n.x,y:m.y+ny-n.y}))});
-  pushHist();tweenNodes(t,450);toast(horiz?`${top.length} blocks in a row`:`${top.length} blocks in a column`)}
-function alignOnly(top){
-  if(top.length<2||top.some(n=>n.type==='canvas'))return false;
-  const ov=(a,b,m)=>a.x<b.x+b.w+m&&b.x<a.x+a.w+m&&a.y<b.y+b.h+m&&b.y<a.y+a.h+m;
-  if(top.some((a,i)=>top.slice(i+1).some(b=>ov(a,b,10))))return false;
-  const old=top.map(n=>({x:n.x,y:n.y})),pos=new Map(top.map(n=>[n,{x:n.x,y:n.y}]));
-  const rows=[];[...top].sort((a,b)=>(a.y+a.h/2)-(b.y+b.h/2)).forEach(n=>{const cy=n.y+n.h/2,r=rows.find(r=>Math.abs(r.cy-cy)<Math.min(r.mh,n.h)*.45+8);
-    if(r){r.m.push(n);r.cy=r.m.reduce((a,m)=>a+m.y+m.h/2,0)/r.m.length;r.mh=Math.min(r.mh,n.h)}else rows.push({cy,mh:n.h,m:[n]})});
-  rows.forEach(r=>r.m.forEach(n=>{pos.get(n).y=Math.round(r.cy-n.h/2)}));
-  const cols=[];[...top].sort((a,b)=>a.x-b.x).forEach(n=>{const c=cols.find(c=>Math.abs(c.x-n.x)<26);if(c){c.m.push(n);c.x=c.m.reduce((a,m)=>a+m.x,0)/c.m.length}else cols.push({x:n.x,m:[n]})});
-  cols.forEach(c=>c.m.forEach(n=>{pos.get(n).x=Math.round(c.x)}));
-  const t=top.map(n=>({n,x:pos.get(n).x,y:pos.get(n).y})),moved=t.some((q,i)=>q.x!==old[i].x||q.y!==old[i].y);
-  const A=t.map(q=>({x:q.x,y:q.y,w:q.n.w,h:q.n.h}));
-  if(A.some((a,i)=>A.slice(i+1).some(b=>ov(a,b,10))))return false;
-  if(moved){pushHist();tweenNodes(t,450)}
-  toast(moved?`${top.length} blocks aligned`:'Already tidy');return true}
+  top.forEach(n=>{t.push({n,x:horiz?c:Math.round(mid-n.w/2),y:horiz?Math.round(mid-n.h/2):c});c+=(horiz?n.w:n.h)+GAP});
+  pushHist();tweenNodes(withKids(t,kids),450);toast(horiz?`${top.length} blocks in a row`:`${top.length} blocks in a column`)}
 async function autoCluster(){
   let tg=[...sel].map(byId).filter(Boolean);
   if(!tg.length)tg=S.nodes.slice();
   if(!tg.length){toast('Nothing to cluster');return}
-  const PAD=34,TOP=70;let IN=34,GAP=90;
-  const parentOf=n=>innerCanvas(n);
-  const kidsOf=c=>S.nodes.filter(n=>n.id!==c.id&&parentOf(n)?.id===c.id);
-  // canvases in the selection (and any canvases nested inside them) are laid out from the inside out
-  const active=new Set(tg.filter(n=>n.type==='canvas').map(n=>n.id));
-  for(let grow=true;grow;){grow=false;S.nodes.forEach(n=>{if(n.type==='canvas'&&!active.has(n.id)&&parentOf(n)&&active.has(parentOf(n).id)){active.add(n.id);grow=true}})}
-  const top=tg.filter(n=>!(parentOf(n)&&active.has(parentOf(n).id))&&n.type!=='journey'&&!jmHolds(n));
+  const parentOf=n=>innerCanvas(n),kidsOf=()=>[];
+  // a canvas counts as ONE block: its contents travel with it and are never rearranged
+  const active=new Set();
+  const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(parentOf(n)&&tg.includes(parentOf(n))));
   if(!top.length){toast('Nothing to arrange');return}
-  if(alignOnly(top))return;
+  const kids=new Map(top.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!top.includes(m)&&inside(m,c))]));
+  const al=gridAlign(top,kids);
+  if(al){const moved=al.t.some(q=>Math.round(q.n.x)!==q.x||Math.round(q.n.y)!==q.y);if(moved){pushHist();sel.clear();tweenNodes(withKids(al.t,kids),500)}toast(moved?`${top.length} blocks aligned · gap ${al.G}px`:'Already tidy');return}
+  const G=Math.min(80,Math.max(32,modeGap(nearGaps(top),48))),IN=G,GAP=G,PAD=34,TOP=70;
   const size=new Map(),subs=new Map(),SZ=n=>size.get(n.id)||[n.w,n.h];
   const isTxt=n=>(n.type==='text'||n.type==='sticky')&&n.text?.trim();
   const rank=n=>n.type==='label'?0:(isTxt(n)?1:n.type==='combine'?3:2);
@@ -2154,33 +2164,32 @@ async function autoCluster(){
     E.forEach(([a,b])=>par.set(fd(a),fd(b)));
     const comps={};linked.forEach(i=>(comps[fd(i)]=comps[fd(i)]||[]).push(i));
     const flows=Object.values(comps).map(ids=>({f:flowLayout(ids,um,E),y:Math.min(...ids.map(i=>um.get(i).y)),x:Math.min(...ids.map(i=>um.get(i).x))})).sort((a,b)=>a.y-b.y||a.x-b.x);
-    const pieces=flows.map(({f,x,y})=>({W:f.W,H:f.H,it:f.pos.map(([u,px,py])=>[u,px,py]),ox:x,oy:y}));
-    // blocks with no wires: grouped by theme, each group a tidy grid
+    // wired blocks keep their left-to-right flow, one flow under another (all with the same gap)
+    let Y=0,W=0;
+    flows.forEach(({f})=>{f.pos.forEach(([u,px,py])=>place(u,px,Y+py));W=Math.max(W,f.W);Y+=f.H+GAP});
+    // everything else goes into ONE strict grid: themes stay together, columns and rows line up, spacing is the same everywhere
     const loose=units.filter(u=>!linked.has(u.id));
     if(loose.length){
       const groups=await cluster(loose,depth===0);
-      groups.forEach(g=>{
-        const mem=g.members.sort((a,b)=>rank(a)-rank(b)||a.y-b.y||a.x-b.x),k=mem.length,cols=Math.min(4,Math.ceil(Math.sqrt(k)));
-        const cw=Math.max(...mem.map(n=>SZ(n)[0]))+IN,ch=Math.max(...mem.map(n=>SZ(n)[1]))+IN,rows=Math.ceil(k/cols);
-        pieces.push({W:cols*cw-IN,H:rows*ch-IN,it:mem.map((n,j)=>[n,(j%cols)*cw,Math.floor(j/cols)*ch]),ox:Math.min(...mem.map(n=>n.x)),oy:Math.min(...mem.map(n=>n.y))})});
+      groups.forEach(g=>{g.members.sort((a,b)=>rank(a)-rank(b)||a.y-b.y||a.x-b.x);g.oy=Math.min(...g.members.map(n=>n.y));g.ox=Math.min(...g.members.map(n=>n.x))});
+      const band=Math.max(260,Math.sqrt((Math.max(...loose.map(n=>n.y))-Math.min(...loose.map(n=>n.y))+1)*1.2));
+      groups.sort((a,b)=>Math.floor(a.oy/band)-Math.floor(b.oy/band)||a.ox-b.ox);
+      const list=groups.flatMap(g=>g.members),k=list.length,aw=list.reduce((s,n)=>s+SZ(n)[0],0)/k,ah=list.reduce((s,n)=>s+SZ(n)[1],0)/k;
+      const cols=Math.max(1,Math.min(k,Math.round(Math.sqrt(k*1.6*(ah+GAP)/(aw+GAP))))),rows=Math.ceil(k/cols);
+      const cw=Array(cols).fill(0),rh=Array(rows).fill(0);
+      list.forEach((n,i)=>{const c=i%cols,r=Math.floor(i/cols);cw[c]=Math.max(cw[c],SZ(n)[0]);rh[r]=Math.max(rh[r],SZ(n)[1])});
+      const cx=[],ry=[];let xx=0,yy=Y;cw.forEach(w=>{cx.push(xx);xx+=w+GAP});rh.forEach(h=>{ry.push(yy);yy+=h+GAP});
+      list.forEach((n,i)=>{const c=i%cols,r=Math.floor(i/cols);place(n,cx[c]+(cw[c]-SZ(n)[0])/2,ry[r]+(rh[r]-SZ(n)[1])/2)});
+      W=Math.max(W,xx-GAP);Y=yy;
     }
-    // pack everything into shelves of a roughly 16:10 page, keeping the original reading order so nothing flies across the board
-    let W=0,H=0;
-    if(pieces.length){
-      const hs=pieces.map(q=>q.H).sort((a,b)=>a-b),band=Math.max(260,hs[hs.length>>1]+GAP);
-      pieces.sort((a,b)=>Math.floor(a.oy/band)-Math.floor(b.oy/band)||a.ox-b.ox);
-      const area=pieces.reduce((a,q)=>a+(q.W+GAP)*(q.H+GAP),0),Wt=Math.max(...pieces.map(q=>q.W),Math.sqrt(area*1.7));
-      let cx=0,cy=0,rowH=0;
-      pieces.forEach(q=>{if(cx>0&&cx+q.W>Wt){cx=0;cy+=rowH+GAP;rowH=0}
-        q.it.forEach(([n,px,py])=>place(n,cx+px,cy+py));W=Math.max(W,cx+q.W);cx+=q.W+GAP;rowH=Math.max(rowH,q.H)});
-      H=cy+rowH}
+    const H=Math.max(0,Y-GAP);
     return{items,W,H};
   }
   const x0=Math.min(...top.map(n=>n.x)),y0=Math.min(...top.map(n=>n.y));
   await new Promise(r=>setTimeout(r,0));
   size.clear();subs.clear();
   const res=await layout(top,0);
-  const all=res.items.map(i=>({n:i.n,x:x0+i.x,y:y0+i.y}));
+  let all=res.items.map(i=>({n:i.n,x:x0+i.x,y:y0+i.y}));all=withKids(all,kids);
   // never land on blocks that stay put: if the result would touch one, move everything below them
   const movingIds=new Set(all.map(m=>m.n.id)),fixed=S.nodes.filter(n=>!movingIds.has(n.id));
   const hit=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
@@ -2193,7 +2202,7 @@ async function autoCluster(){
   sel.clear();refreshAll();
   tweenNodes(all,750,()=>{drawEdges()});
   setTimeout(()=>fit(),900);
-  toast(`${top.length} ${top.length===1?'block':'blocks'} arranged${active.size?' · canvases resized to fit':''}`);
+  toast(`${top.length} ${top.length===1?'block':'blocks'} arranged · gap ${G}px`);
 }
 
 /* ---------- markdown outline ---------- */
