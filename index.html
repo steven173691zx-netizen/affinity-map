@@ -3760,7 +3760,8 @@ let jmQ=0;function jmSoon(){if(jmQ)return;jmQ=requestAnimationFrame(()=>{jmQ=0;S
 /* graph dots only show for the row under the mouse */
 addEventListener('pointermove',e=>{
   S.nodes.forEach(n=>{if(n.type!=='journey')return;const el=els.get(n.id),g=el&&el.querySelector('.jg');if(!g)return;
-    const r=g.getBoundingClientRect(),inside=e.clientX>=r.left-6&&e.clientX<=r.right+6&&e.clientY>=r.top-6&&e.clientY<=r.bottom+6;
+    const r=g.getBoundingClientRect();let inside=false;
+    if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){const y=(e.clientY-r.top)/view.z;let acc=n.hh;for(const row of n.rows){if(y>=acc&&y<acc+row.h){inside=row.k==='graph';break}acc+=row.h}}
     const k=inside?jmStruct(n):null;
     if(g._hs!==k){g._hs=k;g.classList.toggle('hov',inside);g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('hot',inside))}})},true);
 document.addEventListener('pointerleave',()=>document.querySelectorAll('.jg.hov').forEach(g=>{g._hs=null;g.classList.remove('hov');g.querySelectorAll('.jdp.hot').forEach(b=>b.classList.remove('hot'))}));
