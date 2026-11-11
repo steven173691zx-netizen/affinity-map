@@ -2036,6 +2036,12 @@ function modeGap(gaps,dflt=48){
   let best=null;bk.forEach(l=>{if(!best||l.length>best.length||(l.length===best.length&&l[0]>best[0]))best=l});
   return Math.round(best.reduce((a,v)=>a+v,0)/best.length)}
 function nearGaps(u){return u.map(a=>{let m=1e9;u.forEach(b=>{if(a===b)return;const dx=Math.max(b.x-(a.x+a.w),a.x-(b.x+b.w)),dy=Math.max(b.y-(a.y+a.h),a.y-(b.y+b.h)),d=Math.max(dx,dy);if(d>0&&d<m)m=d});return m<1e9?m:-1})}
+const KIND_ORDER=['h','t','c','i','d','v'],kindOf=n=>n.type==='label'?'h':(n.type==='text'||n.type==='sticky')?'t':n.type==='combine'?'c':n.type==='image'?'i':n.type==='draw'?'d':'v';
+function kindAlign(u){
+  const g={};u.forEach(n=>(g[kindOf(n)]=g[kindOf(n)]||[]).push(n));const t=[],Gs=[];
+  for(const k in g){const l=g[k];if(l.length<2){t.push({n:l[0],x:l[0].x,y:l[0].y});continue}const r=gridAlign(l);if(!r)return false;t.push(...r.t);Gs.push(r.G)}
+  const R=t.map(q=>({x:q.x,y:q.y,w:q.n.w,h:q.n.h}));if(R.some((a,i)=>R.slice(i+1).some(b=>ovr(a,b,4))))return false;
+  return{t,G:Gs.length?Math.round(Gs.reduce((a,b)=>a+b,0)/Gs.length):48}}
 function gridAlign(u,kids){
   if(u.length<2)return false;
   if(u.some((a,i)=>u.slice(i+1).some(b=>ovr(a,b,4))))return false;                     // overlapping = out of order
@@ -2077,7 +2083,7 @@ async function autoCluster(){
   const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(parentOf(n)&&tg.includes(parentOf(n))));
   if(!top.length){toast('Nothing to arrange');return}
   const kids=new Map(top.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!top.includes(m)&&inside(m,c))]));
-  const al=gridAlign(top,kids);
+  const al=gridAlign(top,kids)||kindAlign(top);
   if(al){const moved=al.t.some(q=>Math.round(q.n.x)!==q.x||Math.round(q.n.y)!==q.y);if(moved){pushHist();sel.clear();tweenNodes(withKids(al.t,kids),500)}toast(moved?`${top.length} blocks aligned · gap ${al.G}px`:'Already tidy');return}
   const G=Math.min(80,Math.max(32,modeGap(nearGaps(top),48))),IN=G,GAP=G,PAD=34,TOP=70;
   const size=new Map(),subs=new Map(),SZ=n=>size.get(n.id)||[n.w,n.h];
@@ -2167,20 +2173,24 @@ async function autoCluster(){
     // wired blocks keep their left-to-right flow, one flow under another (all with the same gap)
     let Y=0,W=0;
     flows.forEach(({f})=>{f.pos.forEach(([u,px,py])=>place(u,px,Y+py));W=Math.max(W,f.W);Y+=f.H+GAP});
-    // everything else goes into ONE strict grid: themes stay together, columns and rows line up, spacing is the same everywhere
+    // everything else: one section per kind of block (headings, notes, images, drawings, combines, canvases),
+    // each section a strict grid whose rows and columns line up and use the same gap
     const loose=units.filter(u=>!linked.has(u.id));
     if(loose.length){
-      const groups=await cluster(loose,depth===0);
-      groups.forEach(g=>{g.members.sort((a,b)=>rank(a)-rank(b)||a.y-b.y||a.x-b.x);g.oy=Math.min(...g.members.map(n=>n.y));g.ox=Math.min(...g.members.map(n=>n.x))});
-      const band=Math.max(260,Math.sqrt((Math.max(...loose.map(n=>n.y))-Math.min(...loose.map(n=>n.y))+1)*1.2));
-      groups.sort((a,b)=>Math.floor(a.oy/band)-Math.floor(b.oy/band)||a.ox-b.ox);
-      const list=groups.flatMap(g=>g.members),k=list.length,aw=list.reduce((s,n)=>s+SZ(n)[0],0)/k,ah=list.reduce((s,n)=>s+SZ(n)[1],0)/k;
-      const cols=Math.max(1,Math.min(k,Math.round(Math.sqrt(k*1.6*(ah+GAP)/(aw+GAP))))),rows=Math.ceil(k/cols);
-      const cw=Array(cols).fill(0),rh=Array(rows).fill(0);
-      list.forEach((n,i)=>{const c=i%cols,r=Math.floor(i/cols);cw[c]=Math.max(cw[c],SZ(n)[0]);rh[r]=Math.max(rh[r],SZ(n)[1])});
-      const cx=[],ry=[];let xx=0,yy=Y;cw.forEach(w=>{cx.push(xx);xx+=w+GAP});rh.forEach(h=>{ry.push(yy);yy+=h+GAP});
-      list.forEach((n,i)=>{const c=i%cols,r=Math.floor(i/cols);place(n,cx[c]+(cw[c]-SZ(n)[0])/2,ry[r]+(rh[r]-SZ(n)[1])/2)});
-      W=Math.max(W,xx-GAP);Y=yy;
+      const groups=await cluster(loose,depth===0),themeOrder=new Map();let oi=0;
+      groups.forEach(g=>{g.members.sort((a,b)=>rank(a)-rank(b)||a.y-b.y||a.x-b.x).forEach(n=>themeOrder.set(n.id,oi++))});
+      const kinds={};loose.forEach(n=>(kinds[kindOf(n)]=kinds[kindOf(n)]||[]).push(n));
+      const band=Math.max(220,Math.sqrt((Math.max(...loose.map(n=>n.y))-Math.min(...loose.map(n=>n.y))+1)*1.2));
+      const area=loose.reduce((s,n)=>s+(SZ(n)[0]+GAP)*(SZ(n)[1]+GAP),0),Wt=Math.max(...loose.map(n=>SZ(n)[0]),Math.sqrt(area*1.7));
+      KIND_ORDER.filter(k=>kinds[k]).forEach(kk=>{
+        const list=kinds[kk];
+        if(kk==='t')list.sort((a,b)=>themeOrder.get(a.id)-themeOrder.get(b.id));else list.sort((a,b)=>Math.floor(a.y/band)-Math.floor(b.y/band)||a.x-b.x);
+        const k=list.length,aw=list.reduce((s,n)=>s+SZ(n)[0],0)/k,cols=Math.max(1,Math.min(k,Math.floor((Wt+GAP)/(aw+GAP)))),rows=Math.ceil(k/cols);
+        const cw=Array(cols).fill(0),rh=Array(rows).fill(0);
+        list.forEach((n,i)=>{const c=i%cols,r=Math.floor(i/cols);cw[c]=Math.max(cw[c],SZ(n)[0]);rh[r]=Math.max(rh[r],SZ(n)[1])});
+        const cx=[],ry=[];let xx=0,yy=Y;cw.forEach(w=>{cx.push(xx);xx+=w+GAP});rh.forEach(h=>{ry.push(yy);yy+=h+GAP});
+        list.forEach((n,i)=>{const c=i%cols,r=Math.floor(i/cols);place(n,cx[c]+(cw[c]-SZ(n)[0])/2,ry[r]+(rh[r]-SZ(n)[1])/2)});
+        W=Math.max(W,xx-GAP);Y=yy+GAP*.6});
     }
     const H=Math.max(0,Y-GAP);
     return{items,W,H};
