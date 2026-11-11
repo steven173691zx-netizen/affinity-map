@@ -2095,7 +2095,29 @@ function arrangeLine(horiz){
   let c=horiz?x0:y0;const t=[];
   top.forEach(n=>{t.push({n,x:horiz?c:Math.round(mid-n.w/2),y:horiz?Math.round(mid-n.h/2):c});c+=(horiz?n.w:n.h)+GAP});
   pushHist();tweenNodes(withKids(t,kids),450);toast(horiz?`${top.length} blocks in a row`:`${top.length} blocks in a column`)}
-async function autoCluster(){
+/* J: x aligns with x, y aligns with y. Blocks only align with blocks of the same kind and size; nothing is re-laid out. */
+function snapAxes(l){
+  const cl=(vals,tol)=>{const g=[];[...vals].sort((a,b)=>a.v-b.v).forEach(o=>{const c=g.find(c=>Math.abs(c.m-o.v)<=tol);if(c){c.l.push(o);c.m=c.l.reduce((s,q)=>s+q.v,0)/c.l.length}else g.push({m:o.v,l:[o]})});return g};
+  const pos=new Map(l.map(n=>[n,{x:n.x,y:n.y}])),tw=Math.max(24,.2*Math.min(...l.map(n=>n.w))),th=Math.max(24,.2*Math.min(...l.map(n=>n.h)));
+  cl(l.map(n=>({n,v:n.x})),tw).forEach(c=>c.l.forEach(o=>pos.get(o.n).x=Math.round(c.m)));
+  cl(l.map(n=>({n,v:n.y})),th).forEach(c=>c.l.forEach(o=>pos.get(o.n).y=Math.round(c.m)));
+  return l.map(n=>({n,x:pos.get(n).x,y:pos.get(n).y}))}
+function autoCluster(){
+  let tg=[...sel].map(byId).filter(Boolean);if(!tg.length)tg=S.nodes.slice();
+  const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(innerCanvas(n)&&tg.includes(innerCanvas(n))));
+  if(top.length<2){toast('Select 2+ blocks to align');return}
+  const kids=new Map(top.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!top.includes(m)&&inside(m,c))]));
+  const gk=groupKeys(top),groups={};top.forEach(n=>(groups[gk.get(n)]=groups[gk.get(n)]||[]).push(n));
+  const prop=new Map();let gh=[],gv=[];
+  Object.values(groups).forEach(l=>{if(l.length<2)return;const r=gridAlign(l);const t=r?r.t:snapAxes(l);if(r){gh.push(r.Gh);gv.push(r.Gv)}t.forEach(q=>prop.set(q.n,{x:q.x,y:q.y,g:l}))});
+  const rect=n=>{const q=prop.get(n);return{x:q?q.x:n.x,y:q?q.y:n.y,w:n.w,h:n.h}};
+  for(let k=0;k<3;k++){const bad=new Set();top.forEach((a,i)=>top.slice(i+1).forEach(b=>{if(ovr(rect(a),rect(b))&&(prop.has(a)||prop.has(b)))bad.add(a).add(b)}));
+    if(!bad.size)break;bad.forEach(n=>{const q=prop.get(n);if(q)q.g.forEach(m=>prop.delete(m))})}      // a group that would collide keeps its place
+  const t=top.map(n=>({n,x:rect(n).x,y:rect(n).y})),moved=t.some(q=>Math.abs(q.n.x-q.x)>.5||Math.abs(q.n.y-q.y)>.5);
+  const messy=top.some((a,i)=>top.slice(i+1).some(b=>ovr({x:rect(a).x,y:rect(a).y,w:a.w,h:a.h},{x:rect(b).x,y:rect(b).y,w:b.w,h:b.h})));
+  if(moved){pushHist();tweenNodes(withKids(t,kids),450)}
+  toast((moved?`${top.length} blocks aligned`:'Already aligned')+(messy?' · very messy? press O to organise':''))}
+async function organizeBoard(){
   let tg=[...sel].map(byId).filter(Boolean);
   if(!tg.length)tg=S.nodes.slice();
   if(!tg.length){toast('Nothing to cluster');return}
@@ -2105,13 +2127,11 @@ async function autoCluster(){
   const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(parentOf(n)&&tg.includes(parentOf(n))));
   if(!top.length){toast('Nothing to arrange');return}
   const kids=new Map(top.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!top.includes(m)&&inside(m,c))]));
-  const al=kindAlign(top);
-  if(al){const moved=al.t.some(q=>Math.round(q.n.x)!==q.x||Math.round(q.n.y)!==q.y);if(moved){pushHist();sel.clear();tweenNodes(withKids(al.t,kids),500)}toast(moved?`${top.length} blocks aligned · gap ${al.Gh}px across · ${al.Gv}px down`:'Already tidy');return}
   const ng=nearGapsXY(top),GX=Math.min(80,Math.max(32,modeGap(ng.h,48))),GY=Math.min(80,Math.max(32,modeGap(ng.v,48))),IN=GY,GAP=GX,PAD=34,TOP=70;
   const size=new Map(),subs=new Map(),SZ=n=>size.get(n.id)||[n.w,n.h];
   const isTxt=n=>(n.type==='text'||n.type==='sticky')&&n.text?.trim();
   const rank=n=>n.type==='label'?0:(isTxt(n)?1:n.type==='combine'?3:2);
-  toast(aiReady()?'Clustering with AI…':'Clustering…');
+  toast(aiReady()?'Organising with AI…':'Organising…');
   const memo=new Map();
   async function cluster(units,useAI){
     const mk=units.map(u=>u.id).sort().join(',')+useAI;if(memo.has(mk))return memo.get(mk);
@@ -2278,7 +2298,8 @@ mini.addEventListener('pointerup',()=>{mini._d=false;save()});
 /* ---------- command palette ---------- */
 const pal=$('#pal'),pin=$('#pin'),plist=$('#plist');let pItems=[],pIdx=0;
 const ACTIONS=[
-  {t:'Auto-cluster blocks',id:'cluster',f:()=>autoCluster()},
+  {t:'Align blocks (J)',id:'cluster',f:()=>autoCluster()},
+  {t:'Organise a messy board (O)',id:'organize',f:()=>organizeBoard()},
   {t:'Delete empty blocks (E)',id:'empty',f:()=>deleteEmpty()},
   {t:'Arrange in a row (X)',id:'arrx',f:()=>arrangeLine(true)},
   {t:'Arrange in a column (Y)',id:'arry',f:()=>arrangeLine(false)},
@@ -2555,7 +2576,7 @@ const IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform);
 const KEYDEFS=[
  ['Tools',[['stickman','Stickman mode',['P']],['select','Select tool',['V']],['hand','Pan tool',['H']],['pencil','Magic pencil',['B']],['journey','New Journey Map',['Shift+J']],['area','Export area to PDF',['Shift+E']],['empty','Delete empty blocks',['E']]]],
  ['Add blocks',[['text','Text',['T']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['C']],['combine','Combine',['M']],['label','Heading',['L']]]],
- ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['cluster','Auto-cluster blocks',['J']],['arrx','Arrange in a row',['X']],['arry','Arrange in a column',['Y']],['del','Delete',['Delete','Backspace']]]],
+ ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['cluster','Align blocks (x with x, y with y)',['J']],['organize','Organise a messy board',['O']],['arrx','Arrange in a row',['X']],['arry','Arrange in a column',['Y']],['del','Delete',['Delete','Backspace']]]],
  ['View',[['fit','Fit all / selection',['Shift+1']],['zoomin','Zoom in',['=','Shift+=']],['zoomout','Zoom out',['-']],['snap','Snap to grid',['G']],['format','Format bar (colour, text)',['K']],['minimap','Minimap',['N']],['themes','Theme',['Shift+D']],['palette','Command palette',['/','Mod+K']],['keys','Keyboard shortcuts',['Shift+/']]]]
 ];
 const PUNCT={Slash:'/',Equal:'=',Minus:'-',Period:'.',Comma:',',Semicolon:';',Quote:"'",BracketLeft:'[',BracketRight:']',Backslash:'\\',Backquote:'`'};
@@ -2595,7 +2616,7 @@ const ACT={
   area:()=>{setTool('area');if(sel.size){const ns=[...sel].map(byId);const x1=Math.min(...ns.map(n=>n.x))-40,y1=Math.min(...ns.map(n=>n.y))-40,x2=Math.max(...ns.map(n=>n.x+n.w))+40,y2=Math.max(...ns.map(n=>n.y+n.h))+40;area={x:x1,y:y1,w:x2-x1,h:y2-y1};updArea()}},
   text:()=>addFromTool('text'),draw:()=>addFromTool('draw'),image:()=>addFromTool('image'),canvas:()=>addFromTool('canvas'),combine:()=>addFromTool('combine'),label:()=>addFromTool('label'),
   undo:()=>undo(),redo:()=>doRedo(),dup:()=>dupSelected(),selall:()=>{S.nodes.forEach(n=>sel.add(n.id));S.nodes.forEach(sync)},
-  group:()=>groupSel(),tidy:()=>tidySel(),cluster:()=>autoCluster(),arrx:()=>arrangeLine(true),arry:()=>arrangeLine(false),
+  group:()=>groupSel(),tidy:()=>tidySel(),cluster:()=>autoCluster(),organize:()=>organizeBoard(),arrx:()=>arrangeLine(true),arry:()=>arrangeLine(false),
   del:()=>{if(selEdge){pushHist();S.edges=S.edges.filter(x=>x.id!==selEdge);selEdge=null;refreshAll();save()}else if(sel.size)removeNodes([...sel])},
   fit:()=>fit(sel.size?[...sel].map(byId):null),zoomin:()=>$('#bIn').click(),zoomout:()=>$('#bOut').click(),
   snap:()=>$('#bSnap').click(),format:()=>toggleColors(),minimap:()=>toggleMini(),themes:()=>openThemes(),palette:()=>openPal(),keys:()=>openKeys()

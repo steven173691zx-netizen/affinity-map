@@ -6,7 +6,8 @@ Open `index.html`, or visit the published site. Press `/` for all commands and `
 
 | Key | Action |
 | --- | --- |
-| `J` | Auto-cluster (aligns only when already tidy) |
+| `J` | Align blocks: x with x, y with y (same kind and size only) |
+| `O` | Organise a messy board into tidy grids |
 | `X` / `Y` | Arrange selection in a row / column |
 | `⌘G` | Group into a canvas |
 | `⇧J` | New journey map |
