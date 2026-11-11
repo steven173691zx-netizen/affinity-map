@@ -602,6 +602,9 @@ body.sm #pnbar{display:none}
 .node[data-type=journey] .hd,.node[data-type=journey] .port{pointer-events:auto}
 .node[data-type=journey] .hd{height:40px;padding-left:14px}
 .node[data-type=journey] .rz{pointer-events:auto}
+.node{contain:layout style}
+.node[data-type=journey]{contain:layout style;transform:translateZ(0);backface-visibility:hidden}
+.jg{contain:layout style;backface-visibility:hidden}
 .node[data-type=journey] .bd{position:absolute;left:0;right:0;top:40px;bottom:0;padding:0;overflow:hidden;border-radius:0 0 17px 17px;pointer-events:none}
 .jg{position:absolute;left:0;top:0;font-family:var(--font)}
 .jg>*{position:absolute}
@@ -635,8 +638,9 @@ body.sm #pnbar{display:none}
 .jg .jcurve{fill:none;stroke:var(--c,var(--accent));stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
 .jg .jpt{fill:var(--c,var(--accent))}
 .jg .jdp{opacity:0;all:unset;position:absolute;box-sizing:border-box;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid var(--line2);background:var(--surface);cursor:pointer;pointer-events:auto;transition:transform .2s var(--ease),border-color .2s,background .2s}
-.jg .jdp{opacity:0}
-.jg .jdp.hot,.jg .jdp.hot2{opacity:1}
+.jg .jdp{opacity:0;transition:opacity .12s linear,transform .2s var(--ease),border-color .2s,background .2s}
+.jg .jdp.hot,.jg .jdp.hot2{opacity:1;border-color:var(--c,var(--accent));background:var(--surface);box-shadow:0 0 0 4px var(--accent-soft)}
+.jg .jdp.hot.on{background:var(--c,var(--accent))}
 .jg .jdp.on:not(.hot){opacity:1;transform:scale(.55)}
 .jg .jdp:hover{opacity:1;transform:scale(1.35);border-color:var(--c,var(--accent))}
 .jg .jdp.on{background:var(--c,var(--accent));border-color:var(--surface);transform:scale(1.25)}
@@ -945,8 +949,8 @@ function applyView(){
 }
 /* will-change keeps panning/zooming on the GPU but freezes the text raster scale; re-raster once zooming settles so text is crisp */
 let lastZ=0,rrT=0;
-let rasterZ=1;
-function rerast(){if(Math.abs(view.z/rasterZ-1)<.18)return;rasterZ=view.z;world.style.willChange='auto';requestAnimationFrame(()=>requestAnimationFrame(()=>{world.style.willChange='transform'}))}
+let rasterZ=1,qv=0;const queueView=()=>{if(!qv)qv=requestAnimationFrame(()=>{qv=0;applyView()})};
+function rerast(){if(view.z<rasterZ*1.3&&view.z>rasterZ/2.5)return;rasterZ=view.z;world.style.willChange='auto';requestAnimationFrame(()=>requestAnimationFrame(()=>{world.style.willChange='transform'}))}
 /* view position is tiny: keep it out of the (large) document write */
 function saveView(){if(!fileId)return;clearTimeout(viewT);viewT=setTimeout(()=>{try{localStorage.setItem('affinity-view-'+fileId,JSON.stringify(view))}catch{}},400)}
 const toWorld=(cx,cy)=>{const r=vp.getBoundingClientRect();return{x:(cx-r.left-view.x)/view.z,y:(cy-r.top-view.y)/view.z}};
@@ -1566,7 +1570,7 @@ function targetNode(e){
 }
 vp.addEventListener('pointermove',e=>{
   if(!drag)return;
-  if(drag.k==='pan'){stopZoom();view.x=drag.vx+e.clientX-drag.sx;view.y=drag.vy+e.clientY-drag.sy;applyView();saveView()}
+  if(drag.k==='pan'){stopZoom();view.x=drag.vx+e.clientX-drag.sx;view.y=drag.vy+e.clientY-drag.sy;queueView();saveView()}
   else if(drag.k==='move'){
     const dx=(e.clientX-drag.sx)/view.z,dy=(e.clientY-drag.sy)/view.z;
     if(!drag.moved){if(Math.hypot(dx,dy)*view.z<3)return;drag.moved=true;pushHist();drag.start.forEach(s=>els.get(s.n.id).classList.add('dragging'))}
@@ -3759,7 +3763,7 @@ function jmRefresh(n){
 let jmQ=0;function jmSoon(){if(jmQ)return;jmQ=requestAnimationFrame(()=>{jmQ=0;S.nodes.forEach(n=>{if(n.type==='journey')jmRefresh(n)})})}
 /* graph dots only show for the row under the mouse */
 addEventListener('pointermove',e=>{
-  S.nodes.forEach(n=>{if(n.type!=='journey')return;const el=els.get(n.id),g=el&&el.querySelector('.jg');if(!g)return;
+  S.nodes.forEach(n=>{if(n.type!=='journey')return;const el=els.get(n.id),g=el&&el.querySelector('.jg');if(!g||g._keep)return;
     const r=g.getBoundingClientRect();let inside=false;
     if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){const y=(e.clientY-r.top)/view.z;let acc=n.hh;for(const row of n.rows){if(y>=acc&&y<acc+row.h){inside=row.k==='graph';break}acc+=row.h}}
     const k=inside?jmStruct(n):null;
@@ -3773,11 +3777,11 @@ function jmWire(n,el){
   bd.addEventListener('pointerdown',e=>{const b=e.target.closest('.jdp');if(!b||e.button!==0)return;e.preventDefault();
     const g=bd.querySelector('.jg'),rc=()=>g.getBoundingClientRect(),loc=ev=>({x:(ev.clientX-rc().left)/view.z,y:(ev.clientY-rc().top)/view.z});
     dd={b,start:loc(e),sx:e.clientX,sy:e.clientY,moved:false,p:null,loc};
-    const mv=ev=>{if(!dd)return;if(!dd.moved&&Math.hypot(ev.clientX-dd.sx,ev.clientY-dd.sy)<5)return;dd.moved=true;
+    const mv=ev=>{if(!dd)return;if(!dd.moved&&Math.hypot(ev.clientX-dd.sx,ev.clientY-dd.sy)<5)return;dd.moved=true;g._keep=1;
       if(!dd.p){dd.p=document.createElementNS(SVGNS,'path');dd.p.setAttribute('class','jcurve jtmp');g.querySelector('.jlk').appendChild(dd.p);b.classList.add('on')}
       const q=dd.loc(ev),a=dd.start,dx=Math.abs(q.x-a.x)/2,sg=q.x>=a.x?1:-1;dd.p.setAttribute('d',`M${a.x},${a.y} C${a.x+sg*dx},${a.y} ${q.x-sg*dx},${q.y} ${q.x},${q.y}`);
       const t=document.elementFromPoint(ev.clientX,ev.clientY);bd.querySelectorAll('.jdp.hot').forEach(x=>x.classList.remove('hot'));if(t&&t.classList&&t.classList.contains('jdp')&&t!==b&&t.dataset.r===b.dataset.r)t.classList.add('hot')};
-    const up=ev=>{removeEventListener('pointermove',mv,true);removeEventListener('pointerup',up,true);const d=dd;dd=null;if(!d)return;
+    const up=ev=>{removeEventListener('pointermove',mv,true);removeEventListener('pointerup',up,true);const d=dd;dd=null;g._keep=0;g._hs=null;if(!d)return;
       if(d.p)d.p.remove();bd.querySelectorAll('.jdp.hot').forEach(x=>x.classList.remove('hot'));
       if(!d.moved)return;d.b._dragged=true;setTimeout(()=>{d.b._dragged=false},0);
       const t=document.elementFromPoint(ev.clientX,ev.clientY),o=t&&t.closest&&t.closest('.jdp');
