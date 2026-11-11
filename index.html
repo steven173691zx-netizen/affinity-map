@@ -173,6 +173,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 .swt.custom input{position:absolute;left:-6px;top:-6px;opacity:0;cursor:pointer;width:34px;height:34px;border:0;padding:0}
 #area{position:absolute;display:none;border:2px dashed var(--accent);box-shadow:0 0 0 30000px rgba(0,0,0,.45);z-index:40;pointer-events:none;border-radius:3px}
 #areabar{position:fixed;left:0;top:0;z-index:99;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 14px;border-radius:14px;opacity:0;pointer-events:none;transition:opacity .22s var(--ease)}
+#areabar .abgs{display:flex;align-items:center;gap:5px}
+#areabar .abgs i{width:20px;height:20px;border:1.5px solid var(--line2);cursor:pointer;border-radius:50%;transition:transform .2s var(--ease)}
+#areabar .abgs i:hover{transform:scale(1.15)}
+#areabar .abgs i.on{outline:2px solid var(--accent);outline-offset:2px}
+#areabar #abg{all:unset;width:26px;height:26px;cursor:pointer;border-radius:50%;overflow:hidden;border:1.5px solid var(--line2)}
+#areabar #abg::-webkit-color-swatch-wrapper{padding:0}#areabar #abg::-webkit-color-swatch{border:0}
 #areabar.on{opacity:1;pointer-events:auto}
 #asize{font-size:12px;color:var(--t2);font-variant-numeric:tabular-nums;white-space:nowrap}
 select,.fld{background:var(--surface);color:var(--t1);border:1px solid var(--line2);border-radius:9px;height:32px;padding:0 8px;font:inherit;font-size:12px;outline:none}
@@ -758,7 +764,8 @@ html.glb{background:#0a0014!important}
 <canvas id="mini" class="glass" width="380" height="252"></canvas>
 <div id="pal"><div class="pcard glass"><input id="pin" placeholder="Search blocks or run a command…" spellcheck="false" autocomplete="off"><div id="plist"></div></div></div>
 <div id="areabar" class="glass"><span id="asize"></span>
-  <select id="atheme"><option value="dark">Dark</option><option value="light">Light</option></select>
+  <select id="atheme" title="Block style"><option value="dark">Dark</option><option value="light">Light</option></select>
+  <span class="abgs" title="Background colour"><i data-bg="#161519" style="background:#161519"></i><i data-bg="#ffffff" style="background:#ffffff"></i><i data-bg="#f4f1ea" style="background:#f4f1ea"></i><i data-bg="#0b1826" style="background:#0b1826"></i><i data-bg="#fdf0f2" style="background:#fdf0f2"></i><input type="color" id="abg" value="#161519" title="Custom background colour"></span>
   <button class="btn pri" id="aexp">Export PDF</button>
   <button class="btn sq" id="acancel" title="Cancel"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div>
@@ -1916,33 +1923,75 @@ function updArea(){
   let y=(area.y+area.h)*view.z+view.y+14;if(y>innerHeight-bh-90)y=Math.max(70,(area.y)*view.z+view.y-bh-14);
   abar.style.transform=`translate(${cx-bw/2}px,${clamp(y,64,innerHeight-bh-90)}px)`;
 }
-function prepPrint(theme){
-  const a=area;if(!a)return null;
-  const W=Math.ceil(a.w),H=Math.ceil(a.h);
+function areaBg(){return $('#abg').value||($('#atheme').value==='light'?'#ffffff':'#161519')}
+function cloneArea(theme,bg){
+  const a=area,W=Math.ceil(a.w),H=Math.ceil(a.h);
   const root=document.createElement('div');root.id='printroot';root.className=theme==='light'?'light':'';root.dataset.theme=theme==='light'?'day':'night';
-  root.style.width=W+'px';root.style.height=H+'px';
+  root.style.cssText=`width:${W}px;height:${H}px;background:${bg};position:relative;overflow:hidden`;
   const inner=document.createElement('div');inner.id='printworld';inner.style.transform=`translate(${-a.x}px,${-a.y}px)`;
-  const svg=wires.cloneNode(true);svg.removeAttribute('id');svg.querySelectorAll('.wire.temp,.wire-hit').forEach(x=>x.remove());svg.querySelectorAll('.wire-g').forEach(g=>g.classList.remove('sel'));
+  const svg=wires.cloneNode(true);svg.removeAttribute('id');svg.querySelectorAll('.wire.temp,.wire-hit').forEach(x=>x.remove());svg.querySelectorAll('.wire-g').forEach(g=>g.classList.remove('sel','splice'));
+  const lt=lum(bg)>.5;svg.querySelectorAll('.wire').forEach(w=>{w.style.stroke=lt?'rgba(0,0,0,.4)':'rgba(255,255,255,.4)';w.style.animation='none';w.style.strokeDasharray='none'});
   inner.appendChild(svg);
   S.nodes.filter(n=>n.x<a.x+a.w&&n.x+n.w>a.x&&n.y<a.y+a.h&&n.y+n.h>a.y).forEach(n=>{
     const c=els.get(n.id).cloneNode(true);
-    c.classList.remove('sel','spawn','dragging','dying');
-    c.querySelectorAll('.port,.rz,.hbtn,.ctag,.dtools,.cpin').forEach(x=>x.remove());
+    c.classList.remove('sel','spawn','dragging','dying','jfit');c.style.animation='none';
+    c.querySelectorAll('.port,.rz,.hbtn,.ctag,.dtools,.cpin,.jtools,.jdp,.jadd,.jhit').forEach(x=>x.remove());
     const ct=c.querySelector('.ctitle');if(ct)ct.setAttribute('value',n.title||'');
+    c.querySelectorAll('input').forEach(i=>i.setAttribute('value',i.value));
     c.querySelectorAll('[contenteditable]').forEach(x=>x.removeAttribute('contenteditable'));
     inner.appendChild(c);
   });
-  root.appendChild(inner);document.body.appendChild(root);
-  const st=document.createElement('style');st.id='printstyle';st.textContent=`@page{size:${W}px ${H}px;margin:0}`;document.head.appendChild(st);
+  root.appendChild(inner);return{root,W,H}}
+function prepPrint(theme){
+  if(!area)return null;const{root,W,H}=cloneArea(theme,areaBg());document.body.appendChild(root);
+  const st=document.createElement('style');st.id='printstyle';st.textContent=`@page{size:${W}px ${H}px;margin:0}#printroot{background:${areaBg()}!important}`;document.head.appendChild(st);
   document.body.classList.add('printing');
   return()=>{root.remove();st.remove();document.body.classList.remove('printing')};
 }
-function exportPDF(){
-  const done=prepPrint($('#atheme').value);if(!done)return;
-  const fin=()=>{done();removeEventListener('afterprint',fin)};addEventListener('afterprint',fin);
-  toast('Choose “Save as PDF” in the print dialog');
-  setTimeout(()=>window.print(),120);
+/* direct PDF: the area is drawn to an image and written into a one-page PDF (no print dialog) */
+const toDataURL=async u=>{if(!u||u.startsWith('data:'))return u;const b=await (await fetch(u)).blob();return new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)})};
+async function renderArea(theme,bg){
+  const{root,W,H}=cloneArea(theme,bg);
+  for(const im of root.querySelectorAll('img')){try{im.src=await toDataURL(im.getAttribute('src'))}catch{}}
+  const live=[...document.querySelectorAll('.node canvas')];
+  const css=[...document.querySelectorAll('style')].map(x=>x.textContent).join('\n').replace(/@media print\{[\s\S]*?\n\}\n/g,'').replace(/@import[^;]*;/g,'');
+  const xml=new XMLSerializer().serializeToString(root);
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;height:${H}px"><style>#printroot{display:block!important}[id=printroot]{--ease:cubic-bezier(.22,1,.36,1);--bounce:cubic-bezier(.34,1.56,.64,1);--font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;font:13px/1.45 var(--font);color:var(--t1)}${css.replace(/</g,'&lt;')}</style>${xml}</div></foreignObject></svg>`;
+  const img=new Image();img.decoding='sync';
+  await new Promise((res,rej)=>{img.onload=res;img.onerror=()=>rej(new Error('render'));img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
+  const k=Math.min(3,Math.sqrt(26e6/(W*H)),12000/Math.max(W,H)),cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(W*k));cv.height=Math.max(1,Math.round(H*k));
+  const x=cv.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,cv.width,cv.height);x.drawImage(img,0,0,cv.width,cv.height);
+  return{cv,W,H}}
+function pdfFromJpeg(jpg,pw,ph,iw,ih){
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;const push=b=>{if(typeof b==='string')b=enc.encode(b);parts.push(b);len+=b.length};
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  const obj=(n,body)=>{offs[n]=len;push(`${n} 0 obj\n`);body.forEach(push);push('\nendobj\n')};
+  obj(1,['<< /Type /Catalog /Pages 2 0 R >>']);obj(2,['<< /Type /Pages /Kids [3 0 R] /Count 1 >>']);
+  obj(3,[`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw.toFixed(2)} ${ph.toFixed(2)}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`]);
+  obj(4,[`<< /Type /XObject /Subtype /Image /Width ${iw} /Height ${ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`,jpg,'\nendstream']);
+  const cs=`q ${pw.toFixed(2)} 0 0 ${ph.toFixed(2)} 0 0 cm /Im0 Do Q`;obj(5,[`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`]);
+  const xr=len;push(`xref\n0 6\n0000000000 65535 f \n`);for(let i=1;i<=5;i++)push(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+  push(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+  const out=new Uint8Array(len);let o=0;parts.forEach(b=>{out.set(b,o);o+=b.length});return out}
+async function exportPDF(){
+  if(!area)return;const btn=$('#aexp');btn.disabled=true;const t0=btn.textContent;btn.textContent='Exporting…';
+  try{
+    const{cv,W,H}=await renderArea($('#atheme').value,areaBg());
+    const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.93));
+    const jpg=new Uint8Array(await blob.arrayBuffer()),f=Math.min(.75,14400/Math.max(W,H)),pdf=pdfFromJpeg(jpg,W*f,H*f,cv.width,cv.height);
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));a.download=((S.name||'affinity-map').replace(/[^\w\- ]+/g,'').trim()||'affinity-map')+'.pdf';
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast('PDF saved');
+  }catch(err){
+    console.warn('direct export failed, using print dialog',err);
+    const done=prepPrint($('#atheme').value);if(!done)return;
+    const fin=()=>{done();removeEventListener('afterprint',fin)};addEventListener('afterprint',fin);
+    toast('Choose “Save as PDF” in the print dialog');setTimeout(()=>window.print(),120);
+  }finally{btn.disabled=false;btn.textContent=t0}
 }
+const abgSet=c=>{$('#abg').value=c;document.querySelectorAll('#areabar .abgs i').forEach(i=>i.classList.toggle('on',i.dataset.bg===c))};
+document.querySelectorAll('#areabar .abgs i').forEach(i=>i.onclick=()=>abgSet(i.dataset.bg));
+$('#abg').addEventListener('input',e=>abgSet(e.target.value));
+$('#atheme').addEventListener('change',()=>abgSet($('#atheme').value==='light'?'#ffffff':'#161519'));abgSet('#161519');
 $('#aexp').onclick=exportPDF;
 $('#acancel').onclick=()=>{area=null;updArea();setTool('select')};
 
@@ -4286,7 +4335,7 @@ window.addEventListener('resize',()=>{if(SM.looping)fxSize()});
 })();
 function fitBar(){const t=$('#toolbar');t.style.setProperty('--k',1);const k=Math.min(1,(innerWidth-24)/t.scrollWidth);t.style.setProperty('--k',k)}
 addEventListener('resize',()=>{applyView();fitBar()});fitBar();
-window.__affinity={addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{routeSig='';const t=performance.now();drawEdges();return Math.round(performance.now()-t)},routeOnNow:()=>routeOn,get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
+window.__affinity={cloneArea,renderArea,pdfFromJpeg,setArea:a=>{area=a;updArea()},addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{routeSig='';const t=performance.now();drawEdges();return Math.round(performance.now()-t)},routeOnNow:()=>routeOn,get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
 })();
 </script>
 </body>
