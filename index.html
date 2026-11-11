@@ -634,8 +634,11 @@ body.sm #pnbar{display:none}
 .jg .jdp.hot{transform:scale(1.5);border-color:var(--c,var(--accent))}
 .jg .jcurve{fill:none;stroke:var(--c,var(--accent));stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
 .jg .jpt{fill:var(--c,var(--accent))}
-.jg .jdp{all:unset;position:absolute;box-sizing:border-box;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid var(--line2);background:var(--surface);cursor:pointer;pointer-events:auto;transition:transform .2s var(--ease),border-color .2s,background .2s}
-.jg .jdp:hover{transform:scale(1.35);border-color:var(--c,var(--accent))}
+.jg .jdp{opacity:0;all:unset;position:absolute;box-sizing:border-box;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid var(--line2);background:var(--surface);cursor:pointer;pointer-events:auto;transition:transform .2s var(--ease),border-color .2s,background .2s}
+.jg .jdp{opacity:0}
+.jg .jdp.hot,.jg .jdp.hot2{opacity:1}
+.jg .jdp.on:not(.hot){opacity:1;transform:scale(.55)}
+.jg .jdp:hover{opacity:1;transform:scale(1.35);border-color:var(--c,var(--accent))}
 .jg .jdp.on{background:var(--c,var(--accent));border-color:var(--surface);transform:scale(1.25)}
 .jg .jaddr{left:10px;all:unset;position:absolute;font-size:11px;font-weight:700;color:var(--t3);cursor:pointer;pointer-events:auto;padding:4px 8px;border-radius:8px;transition:all .2s}
 .jg .jaddr:hover{background:rgba(var(--ovc),.1);color:var(--t1)}
@@ -1021,7 +1024,7 @@ function applyText(n){
   const el=els.get(n.id);if(!el)return;
   const ed=el.querySelector('.edit')||el.querySelector('.ctitle');if(!ed)return;
   ed.style.fontSize=n.fs?n.fs+'px':'';ed.style.color=n.tc||'';ed.style.textAlign=n.align||'';
-  if(ed.classList.contains('ctitle'))sizeTitle(ed);
+  if(ed.classList.contains('ctitle'))sizeTitle(ed);else requestAnimationFrame(()=>autoGrow(n));
 }
 function nearText(e,ed){
   if(!ed.textContent.trim()){const r=ed.getBoundingClientRect();return e.clientY<r.top+40*view.z&&e.clientX>=r.left&&e.clientX<=r.right}
@@ -2003,6 +2006,19 @@ async function clusterAI(ns){
   return groups;
 }
 /* if the blocks already sit apart from each other, just line them up (rows by centre, columns by left edge); nothing is regrouped */
+/* X / Y: put the selection (or everything) in one tidy line, keeping its current order */
+function arrangeLine(horiz){
+  let tg=[...sel].map(byId).filter(Boolean);if(!tg.length)tg=S.nodes.slice();
+  const ids=new Set(tg.map(n=>n.id)),cvs=tg.filter(n=>n.type==='canvas');
+  const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(cvs.some(c=>c!==n&&inside(n,c)))),GAP=40;
+  if(top.length<2){toast('Select 2+ blocks to arrange');return}
+  const kids=new Map(top.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!top.includes(m)&&m.type!=='journey'&&inside(m,c))]));
+  const x0=Math.min(...top.map(n=>n.x)),y0=Math.min(...top.map(n=>n.y)),mid=horiz?Math.round(top.reduce((a,n)=>a+n.y+n.h/2,0)/top.length):Math.round(top.reduce((a,n)=>a+n.x+n.w/2,0)/top.length);
+  top.sort(horiz?(a,b)=>(a.x+a.w/2)-(b.x+b.w/2):(a,b)=>(a.y+a.h/2)-(b.y+b.h/2));
+  let c=horiz?x0:y0;const t=[];
+  top.forEach(n=>{const nx=horiz?c:Math.round(mid-n.w/2),ny=horiz?Math.round(mid-n.h/2):c;c+=(horiz?n.w:n.h)+GAP;
+    t.push({n,x:nx,y:ny});(kids.get(n)||[]).forEach(m=>t.push({n:m,x:m.x+nx-n.x,y:m.y+ny-n.y}))});
+  pushHist();tweenNodes(t,450);toast(horiz?`${top.length} blocks in a row`:`${top.length} blocks in a column`)}
 function alignOnly(top){
   if(top.length<2||top.some(n=>n.type==='canvas'))return false;
   const ov=(a,b,m)=>a.x<b.x+b.w+m&&b.x<a.x+a.w+m&&a.y<b.y+b.h+m&&b.y<a.y+a.h+m;
@@ -2022,7 +2038,7 @@ async function autoCluster(){
   let tg=[...sel].map(byId).filter(Boolean);
   if(!tg.length)tg=S.nodes.slice();
   if(!tg.length){toast('Nothing to cluster');return}
-  const PAD=34,TOP=70;let IN=46,GAP=140;
+  const PAD=34,TOP=70;let IN=34,GAP=90;
   const parentOf=n=>innerCanvas(n);
   const kidsOf=c=>S.nodes.filter(n=>n.id!==c.id&&parentOf(n)?.id===c.id);
   // canvases in the selection (and any canvases nested inside them) are laid out from the inside out
@@ -2116,25 +2132,27 @@ async function autoCluster(){
     E.forEach(([a,b])=>par.set(fd(a),fd(b)));
     const comps={};linked.forEach(i=>(comps[fd(i)]=comps[fd(i)]||[]).push(i));
     const flows=Object.values(comps).map(ids=>({f:flowLayout(ids,um,E),y:Math.min(...ids.map(i=>um.get(i).y)),x:Math.min(...ids.map(i=>um.get(i).x))})).sort((a,b)=>a.y-b.y||a.x-b.x);
-    let Y=0,Wmax=0;
-    flows.forEach(({f})=>{f.pos.forEach(([u,x,y])=>place(u,x,Y+y));Wmax=Math.max(Wmax,f.W);Y+=f.H+GAP});
-    if(flows.length)Y-=GAP*.35;
-    // blocks with no wires: grouped by theme, in tidy grids under the flows
-    const loose=units.filter(u=>!linked.has(u.id));let tw=0,H=flows.length?Y-GAP*.65+GAP*.0:0;
+    const pieces=flows.map(({f,x,y})=>({W:f.W,H:f.H,it:f.pos.map(([u,px,py])=>[u,px,py]),ox:x,oy:y}));
+    // blocks with no wires: grouped by theme, each group a tidy grid
+    const loose=units.filter(u=>!linked.has(u.id));
     if(loose.length){
-      const groups=await cluster(loose,depth===0),maxW=Math.max(900,Math.sqrt(loose.length)*500,Wmax);
-      let cx=0,cy=Y,rowH=0;
+      const groups=await cluster(loose,depth===0);
       groups.forEach(g=>{
         const mem=g.members.sort((a,b)=>rank(a)-rank(b)||a.y-b.y||a.x-b.x),k=mem.length,cols=Math.min(4,Math.ceil(Math.sqrt(k)));
         const cw=Math.max(...mem.map(n=>SZ(n)[0]))+IN,ch=Math.max(...mem.map(n=>SZ(n)[1]))+IN,rows=Math.ceil(k/cols);
-        const W=cols*cw-IN,Hh=rows*ch-IN;
-        if(cx>0&&cx+W>maxW){cx=0;cy+=rowH+GAP;rowH=0}
-        mem.forEach((n,j)=>place(n,cx+(j%cols)*cw,cy+Math.floor(j/cols)*ch));
-        tw=Math.max(tw,cx+W);cx+=W+GAP;rowH=Math.max(rowH,Hh);
-      });
-      H=cy+rowH;
+        pieces.push({W:cols*cw-IN,H:rows*ch-IN,it:mem.map((n,j)=>[n,(j%cols)*cw,Math.floor(j/cols)*ch]),ox:Math.min(...mem.map(n=>n.x)),oy:Math.min(...mem.map(n=>n.y))})});
     }
-    return{items,W:Math.max(Wmax,tw),H};
+    // pack everything into shelves of a roughly 16:10 page, keeping the original reading order so nothing flies across the board
+    let W=0,H=0;
+    if(pieces.length){
+      const hs=pieces.map(q=>q.H).sort((a,b)=>a-b),band=Math.max(260,hs[hs.length>>1]+GAP);
+      pieces.sort((a,b)=>Math.floor(a.oy/band)-Math.floor(b.oy/band)||a.ox-b.ox);
+      const area=pieces.reduce((a,q)=>a+(q.W+GAP)*(q.H+GAP),0),Wt=Math.max(...pieces.map(q=>q.W),Math.sqrt(area*1.7));
+      let cx=0,cy=0,rowH=0;
+      pieces.forEach(q=>{if(cx>0&&cx+q.W>Wt){cx=0;cy+=rowH+GAP;rowH=0}
+        q.it.forEach(([n,px,py])=>place(n,cx+px,cy+py));W=Math.max(W,cx+q.W);cx+=q.W+GAP;rowH=Math.max(rowH,q.H)});
+      H=cy+rowH}
+    return{items,W,H};
   }
   const x0=Math.min(...top.map(n=>n.x)),y0=Math.min(...top.map(n=>n.y));
   // lay out, then dry-run the wire routing; if wires can't get their own lane, open up the spacing and repeat
@@ -2208,6 +2226,8 @@ mini.addEventListener('pointerup',()=>{mini._d=false;save()});
 const pal=$('#pal'),pin=$('#pin'),plist=$('#plist');let pItems=[],pIdx=0;
 const ACTIONS=[
   {t:'Auto-cluster blocks',id:'cluster',f:()=>autoCluster()},
+  {t:'Arrange in a row (X)',id:'arrx',f:()=>arrangeLine(true)},
+  {t:'Arrange in a column (Y)',id:'arry',f:()=>arrangeLine(false)},
   {t:'Group selection into a canvas',id:'group',f:()=>groupSel()},
   {t:'Tidy selection into a grid',id:'tidy',f:()=>tidySel()},
   {t:'Toggle format bar (colour, text size, align)',id:'format',f:()=>toggleColors()},
@@ -2426,7 +2446,7 @@ const IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform);
 const KEYDEFS=[
  ['Tools',[['stickman','Stickman mode',['P']],['select','Select tool',['V']],['hand','Pan tool',['H']],['pencil','Magic pencil',['B']],['journey','New Journey Map',['Shift+J']],['area','Export area to PDF',['E']]]],
  ['Add blocks',[['text','Text',['T']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['C']],['combine','Combine',['M']],['label','Heading',['L']]]],
- ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['cluster','Auto-cluster blocks',['J']],['del','Delete',['Delete','Backspace']]]],
+ ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['cluster','Auto-cluster blocks',['J']],['arrx','Arrange in a row',['X']],['arry','Arrange in a column',['Y']],['del','Delete',['Delete','Backspace']]]],
  ['View',[['fit','Fit all / selection',['Shift+1']],['zoomin','Zoom in',['=','Shift+=']],['zoomout','Zoom out',['-']],['snap','Snap to grid',['G']],['format','Format bar (colour, text)',['K']],['minimap','Minimap',['N']],['themes','Theme',['Shift+D']],['palette','Command palette',['/','Mod+K']],['keys','Keyboard shortcuts',['Shift+/']]]]
 ];
 const PUNCT={Slash:'/',Equal:'=',Minus:'-',Period:'.',Comma:',',Semicolon:';',Quote:"'",BracketLeft:'[',BracketRight:']',Backslash:'\\',Backquote:'`'};
@@ -2465,7 +2485,7 @@ const ACT={
   area:()=>{setTool('area');if(sel.size){const ns=[...sel].map(byId);const x1=Math.min(...ns.map(n=>n.x))-40,y1=Math.min(...ns.map(n=>n.y))-40,x2=Math.max(...ns.map(n=>n.x+n.w))+40,y2=Math.max(...ns.map(n=>n.y+n.h))+40;area={x:x1,y:y1,w:x2-x1,h:y2-y1};updArea()}},
   text:()=>addFromTool('text'),draw:()=>addFromTool('draw'),image:()=>addFromTool('image'),canvas:()=>addFromTool('canvas'),combine:()=>addFromTool('combine'),label:()=>addFromTool('label'),
   undo:()=>undo(),redo:()=>doRedo(),dup:()=>dupSelected(),selall:()=>{S.nodes.forEach(n=>sel.add(n.id));S.nodes.forEach(sync)},
-  group:()=>groupSel(),tidy:()=>tidySel(),cluster:()=>autoCluster(),
+  group:()=>groupSel(),tidy:()=>tidySel(),cluster:()=>autoCluster(),arrx:()=>arrangeLine(true),arry:()=>arrangeLine(false),
   del:()=>{if(selEdge){pushHist();S.edges=S.edges.filter(x=>x.id!==selEdge);selEdge=null;refreshAll();save()}else if(sel.size)removeNodes([...sel])},
   fit:()=>fit(sel.size?[...sel].map(byId):null),zoomin:()=>$('#bIn').click(),zoomout:()=>$('#bOut').click(),
   snap:()=>$('#bSnap').click(),format:()=>toggleColors(),minimap:()=>toggleMini(),themes:()=>openThemes(),palette:()=>openPal(),keys:()=>openKeys()
@@ -3484,18 +3504,26 @@ function jmHolds(n){return !jmSkip(n)&&S.nodes.some(j=>j.type==='journey'&&jmCel
 function jmSnap(n){
   if(jmSkip(n))return;
   for(let k=S.nodes.length-1;k>=0;k--){const j=S.nodes[k];if(j.type!=='journey')continue;const c=jmCellOf(j,n);
-    if(c){n.jm={m:j.id,p:c.p.id,r:c.r.id};jmFitIn(j,c,n);return}}
+    if(c){n.jm={m:j.id,p:c.p.id,r:c.r.id};return}}
   if(n.jm)delete n.jm}
 /* make the block fit inside its cell (images/drawings keep their proportions); eased, so nothing jumps */
-function jmFitIn(j,c,n){
-  const pad=10,aw=j.cw-pad*2,ah=c.r.h-pad*2,L=jmGX(j)+c.pi*j.cw+pad,T=j.y+JM_HD+jmRowRel(j,c.ri)+pad;
-  let w=n.w,h=n.h;
-  if(n.type==='image'||n.type==='draw'){const k=Math.min(1,aw/w,ah/h);w*=k;h*=k}else{w=Math.min(w,aw);h=Math.min(h,ah)}
-  w=Math.round(w);h=Math.round(h);
-  const x=Math.round(Math.min(Math.max(n.x,L),L+aw-w)),y=Math.round(Math.min(Math.max(n.y,T),T+ah-h));
-  if(x===n.x&&y===n.y&&w===n.w&&h===n.h)return;
-  const el=els.get(n.id);if(el){el.classList.add('jfit');setTimeout(()=>el.classList.remove('jfit'),320)}
-  n.x=x;n.y=y;n.w=w;n.h=h;sync(n);drawEdges();save()}
+/* the map grows around its blocks: columns/rows get as big as the largest block, and every block is centred in its cell */
+function jmArrange(j){
+  const pad=12,gap=10,cells=new Map();
+  S.nodes.forEach(m=>{if(jmSkip(m))return;const c=jmCellOf(j,m);if(!c)return;const k=c.ri+'|'+c.pi;(cells.get(k)||cells.set(k,{ri:c.ri,pi:c.pi,l:[]}).get(k)).l.push(m)});
+  if(!cells.size)return;
+  let cw=j.cw;const rh=j.rows.map(r=>r.h);
+  cells.forEach(c=>{cw=Math.max(cw,Math.ceil(Math.max(...c.l.map(m=>m.w))+pad*2));
+    const need=j.rows[c.ri].k==='graph'?Math.max(...c.l.map(m=>m.h))+pad*2:c.l.reduce((a,m)=>a+m.h,0)+gap*(c.l.length-1)+pad*2;rh[c.ri]=Math.max(rh[c.ri],Math.ceil(need))});
+  j.cw=cw;j.rows.forEach((r,i)=>{r.h=rh[i]});jmFit(j);
+  cells.forEach(c=>{const r=j.rows[c.ri],T=j.y+JM_HD+jmRowRel(j,c.ri),L=jmGX(j)+c.pi*j.cw;
+    c.l.sort((a,b)=>a.y-b.y||a.x-b.x);
+    if(r.k==='graph')c.l.forEach(m=>{m.x=Math.round(L+(j.cw-m.w)/2);m.y=Math.round(Math.min(Math.max(m.y,T+pad),T+r.h-pad-m.h))});
+    else{const tot=c.l.reduce((a,m)=>a+m.h,0)+gap*(c.l.length-1);let y=T+(r.h-tot)/2;c.l.forEach(m=>{m.x=Math.round(L+(j.cw-m.w)/2);m.y=Math.round(y);y+=m.h+gap})}});
+  const ids=[];cells.forEach(c=>c.l.forEach(m=>{const el=els.get(m.id);if(el){el.classList.add('jfit');ids.push(el)}sync(m)}));
+  setTimeout(()=>ids.forEach(e=>e.classList.remove('jfit')),340);
+  sync(j);jmRefresh(j);drawEdges();save()}
+function jmArrangeFor(list){const js=new Set();list.forEach(m=>{if(m.jm){const j=byId(m.jm.m);if(j)js.add(j)}});js.forEach(jmArrange)}
 function jmCapture(n){
   const kids=[];S.nodes.forEach(m=>{if(jmSkip(m))return;const c=jmCellOf(n,m);if(!c)return;
     kids.push({m,ri:c.ri,fx:(m.x+m.w/2-(jmGX(n)+c.pi*n.cw))/n.cw,fy:(m.y+m.h/2-(n.y+JM_HD+jmRowRel(n,c.ri)))/c.r.h,pi:c.pi,w:m.w,h:m.h})});
@@ -3512,14 +3540,14 @@ function jmScale(n,d,handle){
     const cx=jmGX(n)+k.pi*n.cw+k.fx*n.cw,cy=n.y+JM_HD+jmRowRel(n,k.ri)+k.fy*n.rows[k.ri].h;
     m.x=Math.round(cx-m.w/2);m.y=Math.round(cy-m.h/2);sync(m)});
   jmRefresh(n)}
-/* every text-like block grows to show all its text (kept inside its cell if it sits in a journey map) */
-function jmMaxH(n){if(!n.jm)return 1e9;const j=byId(n.jm.m);if(!j)return 1e9;const c=jmCellOf(j,n);if(!c)return 1e9;return j.y+JM_HD+jmRowRel(j,c.ri)+c.r.h-10-n.y}
+/* every text-like block grows to show all its text; a block inside a journey map makes the map grow */
 function autoGrow(n){
   const el=els.get(n.id);if(!el)return;
   const box=n.type==='combine'?el.querySelector('.clist'):el.querySelector('.edit');if(!box)return;
-  const d=box.scrollHeight-box.clientHeight;if(d<=1)return;
-  const h=Math.min(n.type==='combine'?1000:1600,jmMaxH(n),Math.round(n.h+d+(n.type==='combine'?6:2)));
-  if(h>n.h){n.h=h;sync(n);drawEdges();jmSoon()}}
+  const dh=box.scrollHeight-box.clientHeight,dw=box.scrollWidth-box.clientWidth;let ch=false;
+  if(dh>1){const h=Math.min(n.type==='combine'?1000:1600,Math.round(n.h+dh+(n.type==='combine'?6:2)));if(h>n.h){n.h=h;ch=true}}
+  if(dw>1&&n.type!=='combine'){n.w=Math.min(900,Math.round(n.w+dw+2));ch=true}
+  if(ch){sync(n);drawEdges();if(n.jm){const j=byId(n.jm.m);if(j)jmArrange(j)}else jmSoon()}}
 /* Blender-style auto connect: drag a loose block onto a wire and it is inserted into that wire */
 let spl=null,splQ=0;
 function spliceClear(){if(spl){const g=wireEls.get(spl.id);g&&g.classList.remove('splice');spl=null}}
@@ -3539,7 +3567,7 @@ function spliceDo(n){
   const e=spl;spliceClear();if(!e||!byId(e.from)||!byId(e.to))return false;
   S.edges=S.edges.filter(x=>x!==e);S.edges.push({id:uid(),from:e.from,to:n.id},{id:uid(),from:n.id,to:e.to});
   refreshAll();toast('Block connected into the wire');return true}
-function jmDropped(list){list.forEach(jmSnap);jmSoon();softCombine()}
+function jmDropped(list){list.forEach(jmSnap);jmArrangeFor(list);jmSoon();softCombine()}
 const jmLvT=(r,i)=>(r.lv&&r.lv[i])||JM_LV[i];
 const jmRI=(n,rid)=>n.rows.findIndex(r=>r.id===rid);
 function jmMigrate(n){
@@ -3594,6 +3622,13 @@ function jmRefresh(n){
   g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('on',(n.em||{})[b.dataset.r+'|'+b.dataset.p]===+b.dataset.l||ends.has(b.dataset.r+'|'+b.dataset.p+'|'+b.dataset.l)));
 }
 let jmQ=0;function jmSoon(){if(jmQ)return;jmQ=requestAnimationFrame(()=>{jmQ=0;S.nodes.forEach(n=>{if(n.type==='journey')jmRefresh(n)})})}
+/* graph dots only show for the row under the mouse */
+addEventListener('pointermove',e=>{
+  S.nodes.forEach(n=>{if(n.type!=='journey')return;const el=els.get(n.id),g=el&&el.querySelector('.jg');if(!g)return;
+    let rid=null;const r=g.getBoundingClientRect();
+    if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){const y=(e.clientY-r.top)/view.z;
+      let acc=n.hh;for(const row of n.rows){if(y>=acc&&y<acc+row.h){rid=row.k==='graph'?row.id:null;break}acc+=row.h}}
+    if(g._hr!==rid||g._hs!==jmStruct(n)){g._hr=rid;g._hs=jmStruct(n);g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('hot',b.dataset.r===rid))}})},true);
 function jmWire(n,el){
   const bd=el.querySelector('.bd');
   bd.addEventListener('pointerdown',e=>{if(e.target.closest('input,button,.jhit'))e.stopPropagation()});
