@@ -717,6 +717,11 @@ html.glb{background:#0a0014!important}
 [data-theme="glitch"] .toast,[data-theme="glitch"] #toast{background:var(--m)!important;color:#000!important;text-shadow:none}
 /* while the view moves nothing may react to the pointer (no hover flicker on frames passing under the cursor) */
 body.zm #world{pointer-events:none}
+.pghost{position:fixed;left:0;top:0;z-index:300;pointer-events:none;border:2px dashed var(--accent);background:var(--accent-soft);border-radius:14px;display:grid;place-items:center;color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.04em;animation:pgin .22s var(--bounce);transition:opacity .16s,border-color .2s,filter .2s;min-width:90px;min-height:56px}
+.pghost.bad{border-color:var(--t3);color:var(--t3);filter:grayscale(1);opacity:.55}
+.pghost.drop{opacity:0}
+@keyframes pgin{from{scale:.6;opacity:0}to{scale:1;opacity:1}}
+body.placing,body.placing *{cursor:grabbing!important}
 body.zm .node,body.zm .node *,body.zm .port{transition:none!important}
 @media (prefers-reduced-motion:reduce){[data-theme="glitch"] *{animation:none!important}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
@@ -1556,14 +1561,40 @@ function addFromTool(type,pos){
   if(type==='canvas'&&!pos&&sel.size){groupSel();return}
   if(type==='image'&&!pos){pickTarget=null;$('#fileImg').click();return}
   const c=pos||(()=>{const w=centerWorld();cascade=(cascade+1)%6;return{x:w.x+cascade*26-65,y:w.y+cascade*26-65}})();
-  const n=addNode(type,c.x,c.y);
+  const n=addNode(type,c.x,c.y);if(pos)jmDropped([n]);
   if(type==='text'||type==='sticky'||type==='label')setTimeout(()=>{const ed=els.get(n.id)?.querySelector('.edit');if(ed)enterEdit(ed)},80);
   if(type==='canvas')setTimeout(()=>els.get(n.id).querySelector('.ctitle')?.focus(),80);
+  return n;
 }
+/* placing blocks: click = auto-spawn at the centre of the view; press and drag = a ghost follows the cursor and the block lands where you let go (Esc cancels) */
+let placing=null,justPlaced=false;
+function placeStart(btn,type,e){
+  const d=type==='journey'?[1552,820]:(DEF[type]||[200,120]),k=Math.min(view.z,Math.min(innerWidth*.6/d[0],innerHeight*.6/d[1]));
+  const g=document.createElement('div');g.className='pghost';g.style.width=d[0]*k+'px';g.style.height=d[1]*k+'px';g.innerHTML=`<span>${esc(TITLES[type]||type)}</span>`;document.body.appendChild(g);
+  placing={g,type,btn};document.body.classList.add('placing');placeMove(e);
+}
+function placeMove(e){if(!placing)return;placing.g.style.transform=`translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
+  const over=document.elementFromPoint(e.clientX,e.clientY),ok=!!over&&!over.closest('#bar,.glass,#tbar,#toolbar,.tb');placing.g.classList.toggle('bad',!ok);placing.ok=ok}
+function placeEnd(e,cancel){
+  if(!placing)return;const p=placing;placing=null;p.g.classList.add('drop');setTimeout(()=>p.g.remove(),160);document.body.classList.remove('placing');
+  if(cancel||!p.ok)return;justPlaced=true;setTimeout(()=>justPlaced=false,0);
+  const w=toWorld(e.clientX,e.clientY);setTool('select');
+  if(p.type==='journey')addJourney(w);else addFromTool(p.type,w);
+}
+function wirePlace(b,type){
+  b.removeAttribute('draggable');b.style.touchAction='none';
+  b.addEventListener('pointerdown',e=>{if(e.button!==0)return;const sx=e.clientX,sy=e.clientY;let on=false;
+    const mv=ev=>{if(!on&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>7){on=true;placeStart(b,type,ev)}if(on)placeMove(ev)};
+    const up=ev=>{removeEventListener('pointermove',mv,true);removeEventListener('pointerup',up,true);removeEventListener('pointercancel',up,true);if(on)placeEnd(ev,ev.type==='pointercancel')};
+    addEventListener('pointermove',mv,true);addEventListener('pointerup',up,true);addEventListener('pointercancel',up,true)});
+  b.addEventListener('click',e=>{if(justPlaced){e.stopImmediatePropagation();return}},true);
+}
+addEventListener('keydown',e=>{if(e.key==='Escape'&&placing){e.stopImmediatePropagation();placeEnd(e,true)}},true);
 document.querySelectorAll('[data-add]').forEach(b=>{
   b.onclick=()=>{setTool('select');addFromTool(b.dataset.add)};
-  b.addEventListener('dragstart',e=>{e.dataTransfer.setData('application/x-affinity',b.dataset.add);e.dataTransfer.effectAllowed='copy'});
+  wirePlace(b,b.dataset.add);
 });
+wirePlace($('#bJourney'),'journey');
 $('#bUndo').onclick=undo;$('#bRedo').onclick=doRedo;
 $('#bIn').onclick=()=>animateTo({...zoomTarget(1.25)},300);
 $('#bOut').onclick=()=>animateTo({...zoomTarget(.8)},300);
@@ -3713,13 +3744,14 @@ function jmWire(n,el){
     const g=bd.querySelector('.jg');g._st=jmStruct(n);refreshCombines();save()});
   jmBuild(n,el);
 }
-function addJourney(){
-  const c=centerWorld(),d=jmDefaults(),tmp={...d};jmFit(tmp);
+function addJourney(pos){
+  const c=pos||centerWorld(),d=jmDefaults(),tmp={...d};jmFit(tmp);
   const n=addNode('journey',c.x,c.y,{title:'Journey map',...d,w:tmp.w,h:tmp.h});
   jmRefresh(n);toast('Journey map added — drop blocks in its cells; click a dot to plot a graph row');
+  if(pos){jmDropped([n]);return}
   const k=Math.min(1,(innerWidth-120)/n.w);animateTo({z:k,x:innerWidth/2-(n.x+n.w/2)*k,y:innerHeight/2-(n.y+n.h/2)*k},500);
 }
-$('#bJourney').onclick=addJourney;
+$('#bJourney').onclick=()=>addJourney();
 /* values plotted on the graph rows of every journey wired into a combine block */
 function jmEmo(c){const out=[];S.edges.filter(e=>e.to===c.id).map(e=>byId(e.from)).filter(j=>j&&j.type==='journey').forEach(j=>{jmMigrate(j);const E=jmEnd(j),gr=j.rows.filter(r=>r.k==='graph'),multi=S.nodes.filter(q=>q.type==='journey').length>1;
   gr.forEach(r=>j.ph.forEach(p=>{const v=jmVal(j,E,r.id,p.id);if(v!==undefined)out.push({p:(multi&&j.title?j.title+' · ':'')+(gr.length>1?r.l+' · ':'')+p.n,l:v,t:jmLvT(r,v)})}))});return out}
