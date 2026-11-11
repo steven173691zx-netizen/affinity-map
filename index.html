@@ -609,7 +609,7 @@ body.sm #pnbar{display:none}
 .jg .jcorner{left:0;top:0;padding:0 12px;font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--t3);font-weight:700}
 .jg .jph{top:0;padding:0 8px 0 12px;gap:4px;border-top:2px solid var(--c,var(--accent))}
 .jg input{all:unset;flex:1;min-width:0;font-weight:700;font-size:13px;color:var(--t1);cursor:text;user-select:text}
-.jg .jrl{left:0;padding:0 8px 0 12px;gap:4px}
+.jg .jrl{left:0;padding:12px 8px 0 12px;gap:4px}
 .jg .jrl input{font-size:12.5px;color:var(--t2)}
 .jg .jx{all:unset;cursor:pointer;color:var(--t3);width:20px;height:20px;border-radius:7px;display:grid;place-items:center;font-size:15px;flex:none;transition:all .2s var(--ease)}
 .jg .jx:hover{background:rgba(var(--ovc),.12);color:var(--t1)}
@@ -621,6 +621,14 @@ body.sm #pnbar{display:none}
 .jg svg{left:0;top:0;overflow:visible;pointer-events:none}
 .jg .jgl{stroke:var(--line2);stroke-dasharray:4 6}
 .jg text{fill:var(--t3);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.jg .jtools{position:absolute;right:6px;top:8px;background:var(--elev2);border-radius:8px;display:flex;gap:2px;opacity:0;transition:opacity .2s var(--ease)}
+.jg .jrl:hover .jtools,.jg .jph:hover .jtools,.jg .jtools:focus-within{opacity:1}
+.jg .jrl{position:absolute;align-items:flex-start;padding-top:12px}
+.jg .jrl.isg .jgt,.jg .jgt.on{color:var(--c,var(--accent))}
+.jg .jgt svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.jg .jrowadd{position:absolute;left:auto;right:6px;top:auto;bottom:6px;border-radius:50%;width:22px;height:22px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.jg .jlv{all:unset;position:absolute;width:96px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);cursor:text;user-select:text;pointer-events:auto;border-radius:5px;padding:1px 3px;margin-left:-3px}
+.jg .jlv:hover,.jg .jlv:focus{background:rgba(var(--ovc),.1);color:var(--t1)}
 .jg .jhit{fill:none;stroke:transparent;stroke-width:14;pointer-events:stroke;cursor:pointer}
 .jg .jtmp{stroke-dasharray:6 6;opacity:.7}
 .jg .jdp.hot{transform:scale(1.5);border-color:var(--c,var(--accent))}
@@ -634,6 +642,7 @@ body.sm #pnbar{display:none}
 .kw.emo0{background:rgba(63,166,107,.18);color:#3fa66b}.kw.emo1{background:rgba(var(--ovc),.1)}.kw.emo2{background:rgba(229,83,75,.18);color:#e5534b}
 /* no jumping: nothing lifts, scales, tilts or bounces when you pick up, drop or select a block */
 .node:hover,.node.dragging{transform:none!important}
+.wire-g.splice .wire{stroke:var(--accent)!important;stroke-width:4!important;filter:drop-shadow(0 0 6px var(--accent-soft))}
 .node.jfit{transition:left .28s var(--ease),top .28s var(--ease),width .28s var(--ease),height .28s var(--ease)!important}
 .node.sel,.node.upd{animation:none!important}
 .node.spawn{animation:spawn3 .22s ease-out!important}
@@ -1133,6 +1142,7 @@ function itemOf(s){
   if(s.type==='draw')return s.strokes?.length?{t:'draw',id:s.id,n:s,cv:cvo}:null;
   return s.text?.trim()?{t:'text',id:s.id,text:s.text.trim(),color:s.color||null,cv:cvo}:null;
 }
+function jmCollect(s,got,out){S.nodes.filter(m=>!jmSkip(m)&&m.type!=='combine'&&jmCellOf(s,m)).sort((a,b)=>a.y-b.y||a.x-b.x).forEach(m=>{if(got.has(m.id))return;const it=itemOf(m);if(!it)return;const c=jmCellOf(s,m);it.cv={id:s.id+'|'+c.p.id+'|'+c.r.id,title:`${s.title||'Journey'} · ${c.p.n} · ${c.r.l}`,ord:c.pi*20+c.ri};got.add(m.id);out.push(it)})}
 function collect(id,seen=new Set(),got=new Set()){
   if(seen.has(id))return[];seen.add(id);
   const ins=S.edges.filter(e=>e.to===id).map(e=>byId(e.from)).filter(Boolean).sort((a,b)=>a.y-b.y||a.x-b.x);
@@ -1140,8 +1150,9 @@ function collect(id,seen=new Set(),got=new Set()){
   const add=s=>{if(got.has(s.id))return;const it=itemOf(s);if(it){got.add(s.id);out.push(it)}};
   ins.forEach(s=>{
     if(s.type==='combine')out=out.concat(collect(s.id,seen,got));
-    else if(s.type==='canvas')S.nodes.filter(m=>m.type!=='canvas'&&m.type!=='combine'&&m.type!=='journey'&&inside(m,s)).sort((a,b)=>a.y-b.y||a.x-b.x).forEach(add);
-    else if(s.type==='journey')S.nodes.filter(m=>!jmSkip(m)&&m.type!=='combine'&&jmCellOf(s,m)).sort((a,b)=>a.y-b.y||a.x-b.x).forEach(m=>{if(got.has(m.id))return;const it=itemOf(m);if(!it)return;const c=jmCellOf(s,m);it.cv={id:s.id+'|'+c.p.id+'|'+c.r.id,title:`${s.title||'Journey'} · ${c.p.n} · ${c.r.l}`,ord:c.pi*20+c.ri};got.add(m.id);out.push(it)});
+    else if(s.type==='canvas')S.nodes.filter(m=>m.type!=='canvas'&&m.type!=='combine'&&m.type!=='journey'&&!jmHolds(m)&&inside(m,s)).sort((a,b)=>a.y-b.y||a.x-b.x).forEach(add);
+    if(s.type==='canvas')S.nodes.filter(m=>m.type==='journey'&&inside(m,s)).forEach(j=>jmCollect(j,got,out));
+    else if(s.type==='journey')jmCollect(s,got,out);
     else add(s);
   });
   return out;
@@ -1205,7 +1216,7 @@ function getSummary(n){
   return{emo:jmEmo(n),ai:!!ai,key,theme:ai?ai.theme:'',common:commonO.map(c=>c.d),sections,count:items.length,hasText:texts.length>0};
 }
 function summaryText(s){
-  const L=[];if(s.emo&&s.emo.length)L.push('Emotion: '+s.emo.map(e=>e.p+' '+JM_LV[e.l]).join(' · '));if(s.theme)L.push(s.theme);if(s.common.length)L.push('Common: '+s.common.join(', '));
+  const L=[];if(s.emo&&s.emo.length)L.push('Emotion: '+s.emo.map(e=>e.p+' '+e.t).join(' · '));if(s.theme)L.push(s.theme);if(s.common.length)L.push('Common: '+s.common.join(', '));
   s.sections.forEach(sec=>{
     if(sec.title){L.push('');L.push(sec.title+(sec.common.length?' — shared: '+sec.common.join(', '):''))}
     sec.rows.filter(r=>r.t==='text').forEach(r=>L.push('• '+r.keys.map(k=>k.d).join(' · ')));
@@ -1218,7 +1229,7 @@ function refreshCombines(){
   S.nodes.filter(n=>n.type==='combine').forEach(n=>{
     const el=els.get(n.id);if(!el)return;
     const sm=getSummary(n),list=el.querySelector('.clist');
-    const html=(sm.count||sm.emo.length)?(sm.emo.length?`<div class="cm"><span class="cl">Emotion</span>${sm.emo.map(e=>`<span class="kw emo${e.l}">${esc(e.p)} · ${JM_LV[e.l]}</span>`).join('')}</div>`:'')+(sm.theme?`<div class="theme">${esc(sm.theme)}</div>`:'')+
+    const html=(sm.count||sm.emo.length)?(sm.emo.length?`<div class="cm"><span class="cl">Emotion</span>${sm.emo.map(e=>`<span class="kw emo${e.l}">${esc(e.p)} · ${esc(e.t)}</span>`).join('')}</div>`:'')+(sm.theme?`<div class="theme">${esc(sm.theme)}</div>`:'')+
       (sm.common.length?`<div class="cm"><span class="cl">Common</span>${sm.common.map(c=>`<span class="kw">${esc(c)}</span>`).join('')}</div>`:'')+
       sm.sections.map(sec=>`<div class="sec">${sec.title?`<div class="sh"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" stroke-dasharray="3 3"/></svg>${esc(sec.title)}${sec.common.length?`<span class="sn">·</span>${sec.common.map(c=>`<span class="kw hot">${esc(c)}</span>`).join('')}`:''}</div>`:''}${sec.rows.map(rowHtml).join('')}</div>`).join('')+
       `<div class="ctag${sm.ai?'':' local'}">${sm.ai?'✦ AI keywords':busy.has(n.id)?'✦ Analyzing…':aiReady()?'Local keywords':'Local keywords · add an AI key for deeper analysis'}</div>`
@@ -1421,7 +1432,7 @@ function rebuild(){routeOn=false;
   els.forEach(e=>e.remove());els.clear();
   wires.querySelectorAll('.wire-g').forEach(g=>g.remove());wireEls.clear();
   zTop=Math.max(1,...S.nodes.map(n=>n.z||0));
-  if(S.journeys&&S.journeys.length){S.journeys.forEach(m=>{const n={id:m.id,type:'journey',x:m.x,y:m.y-JM_HD,z:0,text:'',title:'Journey map',ph:m.ph,rows:m.rows.map(r=>({id:r.id,l:r.l,k:r.k,h:r.h})),cw:m.cw,hw:m.hw,hh:m.hh,em:{}};jmFit(n);S.nodes.push(n)})}
+  if(S.journeys&&S.journeys.length){S.journeys.forEach(m=>{const n={id:m.id,type:'journey',x:m.x,y:m.y-JM_HD,z:0,text:'',title:'Journey map',ph:m.ph,rows:m.rows.map(r=>({id:r.id,l:r.l,k:r.k==='emotion'?'graph':r.k,h:r.h})),cw:m.cw,hw:m.hw,hh:m.hh,em:{}};jmFit(n);S.nodes.push(n)})}
   delete S.journeys;
   S.nodes.forEach(n=>build(n,false));jmSoon();$('#pname').value=S.name||'Untitled map';refreshAll();renderPen();
 }
@@ -1518,7 +1529,7 @@ vp.addEventListener('pointermove',e=>{
   else if(drag.k==='move'){
     const dx=(e.clientX-drag.sx)/view.z,dy=(e.clientY-drag.sy)/view.z;
     if(!drag.moved){if(Math.hypot(dx,dy)*view.z<3)return;drag.moved=true;pushHist();drag.start.forEach(s=>els.get(s.n.id).classList.add('dragging'))}
-    drag.start.forEach(s=>{s.n.x=sn(s.x+dx);s.n.y=sn(s.y+dy);sync(s.n)});drawEdges();jmSoon();
+    drag.start.forEach(s=>{s.n.x=sn(s.x+dx);s.n.y=sn(s.y+dy);sync(s.n)});drawEdges();jmSoon();spliceSoon();
   }
   else if(drag.k==='rz'){
     const dx=(e.clientX-drag.sx)/view.z,dy=(e.clientY-drag.sy)/view.z,o=drag.o,n=drag.n,[mw,mh]=MIN[n.type];
@@ -1550,7 +1561,7 @@ function endDrag(e){
   if(drag.k==='rz'&&drag.moved){const rzn=drag.n;setTimeout(()=>jmDropped(rzn.type==='journey'?S.nodes.filter(m=>!jmSkip(m)):[rzn]),0)}
   if(drag.k==='pan')vp.classList.remove('panning');
   if(drag.k==='marq')marquee.style.display='none';
-  if(drag.k==='move'){drag.start.forEach(s=>els.get(s.n.id).classList.remove('dragging'));if(drag.moved)jmDropped(drag.start.map(s=>s.n));
+  if(drag.k==='move'){drag.start.forEach(s=>els.get(s.n.id).classList.remove('dragging'));if(drag.moved){jmDropped(drag.start.map(s=>s.n));if(spl&&drag.start.length===1)spliceDo(drag.start[0].n);else spliceClear()}
     if(!drag.moved&&!e.shiftKey&&sel.size>1&&e.type==='pointerup'){}}
   if(drag.k==='wire'){
     document.body.classList.remove('wiring');tmpPath.remove();tmpPath=null;document.querySelectorAll('.port.hot').forEach(p=>p.classList.remove('hot'));
@@ -1991,6 +2002,22 @@ async function clusterAI(ns){
   const rest=ns.map((_,i)=>i).filter(i=>!seen.has(i));if(rest.length)groups.push({title:'Unsorted',idx:rest});
   return groups;
 }
+/* if the blocks already sit apart from each other, just line them up (rows by centre, columns by left edge); nothing is regrouped */
+function alignOnly(top){
+  if(top.length<2||top.some(n=>n.type==='canvas'))return false;
+  const ov=(a,b,m)=>a.x<b.x+b.w+m&&b.x<a.x+a.w+m&&a.y<b.y+b.h+m&&b.y<a.y+a.h+m;
+  if(top.some((a,i)=>top.slice(i+1).some(b=>ov(a,b,10))))return false;
+  const old=top.map(n=>({x:n.x,y:n.y})),pos=new Map(top.map(n=>[n,{x:n.x,y:n.y}]));
+  const rows=[];[...top].sort((a,b)=>(a.y+a.h/2)-(b.y+b.h/2)).forEach(n=>{const cy=n.y+n.h/2,r=rows.find(r=>Math.abs(r.cy-cy)<Math.min(r.mh,n.h)*.45+8);
+    if(r){r.m.push(n);r.cy=r.m.reduce((a,m)=>a+m.y+m.h/2,0)/r.m.length;r.mh=Math.min(r.mh,n.h)}else rows.push({cy,mh:n.h,m:[n]})});
+  rows.forEach(r=>r.m.forEach(n=>{pos.get(n).y=Math.round(r.cy-n.h/2)}));
+  const cols=[];[...top].sort((a,b)=>a.x-b.x).forEach(n=>{const c=cols.find(c=>Math.abs(c.x-n.x)<26);if(c){c.m.push(n);c.x=c.m.reduce((a,m)=>a+m.x,0)/c.m.length}else cols.push({x:n.x,m:[n]})});
+  cols.forEach(c=>c.m.forEach(n=>{pos.get(n).x=Math.round(c.x)}));
+  const t=top.map(n=>({n,x:pos.get(n).x,y:pos.get(n).y})),moved=t.some((q,i)=>q.x!==old[i].x||q.y!==old[i].y);
+  const A=t.map(q=>({x:q.x,y:q.y,w:q.n.w,h:q.n.h}));
+  if(A.some((a,i)=>A.slice(i+1).some(b=>ov(a,b,10))))return false;
+  if(moved){pushHist();tweenNodes(t,450)}
+  toast(moved?`${top.length} blocks aligned`:'Already tidy');return true}
 async function autoCluster(){
   let tg=[...sel].map(byId).filter(Boolean);
   if(!tg.length)tg=S.nodes.slice();
@@ -2001,7 +2028,10 @@ async function autoCluster(){
   // canvases in the selection (and any canvases nested inside them) are laid out from the inside out
   const active=new Set(tg.filter(n=>n.type==='canvas').map(n=>n.id));
   for(let grow=true;grow;){grow=false;S.nodes.forEach(n=>{if(n.type==='canvas'&&!active.has(n.id)&&parentOf(n)&&active.has(parentOf(n).id)){active.add(n.id);grow=true}})}
-  const top=tg.filter(n=>!(parentOf(n)&&active.has(parentOf(n).id)));
+  routeOn=false;routeSig='';
+  const top=tg.filter(n=>!(parentOf(n)&&active.has(parentOf(n).id))&&n.type!=='journey'&&!jmHolds(n));
+  if(!top.length){toast('Nothing to arrange');return}
+  if(alignOnly(top))return;
   const size=new Map(),subs=new Map(),SZ=n=>size.get(n.id)||[n.w,n.h];
   const isTxt=n=>(n.type==='text'||n.type==='sticky')&&n.text?.trim();
   const rank=n=>n.type==='label'?0:(isTxt(n)?1:n.type==='combine'?3:2);
@@ -2114,7 +2144,7 @@ async function autoCluster(){
     IN=Math.round(46*scale);GAP=Math.round(140*scale);size.clear();subs.clear();
     const res=await layout(top,0);
     all=res.items.map(i=>({n:i.n,x:x0+i.x,y:y0+i.y}));
-    if(!S.edges.length)break;
+    break;
     const saved=all.map(m=>[m.n,m.n.x,m.n.y]),szs=[...size.keys()].map(id=>{const c=byId(id);return[c,c.w,c.h]});
     all.forEach(m=>{m.n.x=m.x;m.n.y=m.y});size.forEach(([w,h],id)=>{const c=byId(id);c.w=w;c.h=h});
     nudgeSkips=0;computeRoutes(S.nodes.filter(n=>n.type!=='canvas'&&n.type!=='journey'));const skips=nudgeSkips;
@@ -2131,7 +2161,7 @@ async function autoCluster(){
   pushHist();
   size.forEach(([w,h],id)=>{const c=byId(id);if(c){c.w=w;c.h=h;sync(c)}});
   sel.clear();refreshAll();
-  tweenNodes(all,750,()=>{routeOn=true;routeSig='';drawEdges()});
+  tweenNodes(all,750,()=>{drawEdges()});
   setTimeout(()=>fit(),900);
   toast(`${top.length} ${top.length===1?'block':'blocks'} arranged${active.size?' · canvases resized to fit':''}`);
 }
@@ -3440,7 +3470,7 @@ function trapsUpdate(dt){
 }
 /* ---- journey map: a real node (colour, rename, wires, combine, copy, undo, sync all work as for any block) ---- */
 const JM_HD=41,JM_OX=1,JM_LEVELS=[.2,.5,.8],JM_LV=['Positive','Neutral','Negative'];
-const JM_ROWS=[['actions','User Actions','lane',170],['touchpoints','Touchpoints','lane',170],['emotion','Emotional State','emotion',220],['pains','Pain Points','lane',170]];
+const JM_ROWS=[['actions','User Actions','lane',170],['touchpoints','Touchpoints','lane',170],['emotion','Emotional State','graph',220],['pains','Pain Points','lane',170]];
 function jmDefaults(){return{ph:['Awareness','Consideration','Purchase','Onboarding','Retention'].map(n=>({id:uid(),n})),rows:JM_ROWS.map(([id,l,k,h])=>({id,l,k,h})),cw:280,hw:150,hh:48,em:{}}}
 function jmFit(n){n.w=n.hw+n.ph.length*n.cw+2;n.h=JM_HD+n.hh+n.rows.reduce((a,r)=>a+r.h,0)+1}
 const jmGX=n=>n.x+JM_OX+n.hw,jmGY=n=>n.y+JM_HD+n.hh;
@@ -3490,16 +3520,43 @@ function autoGrow(n){
   const d=box.scrollHeight-box.clientHeight;if(d<=1)return;
   const h=Math.min(n.type==='combine'?1000:1600,jmMaxH(n),Math.round(n.h+d+(n.type==='combine'?6:2)));
   if(h>n.h){n.h=h;sync(n);drawEdges();jmSoon()}}
-function jmDropped(list){list.forEach(jmSnap);jmSoon()}
-const jmEnd=n=>{const o={};(n.eg||[]).forEach(l=>[l.a,l.b].forEach(k=>{const[p,v]=k.split('|');if(o[p]===undefined)o[p]=+v}));return o};
-const jmDotXY=(n,pid,l)=>{const ei=n.rows.findIndex(r=>r.k==='emotion'),pi=n.ph.findIndex(p=>p.id===pid);return ei<0||pi<0?null:{x:n.hw+(pi+.5)*n.cw,y:jmRowRel(n,ei)+JM_LEVELS[l]*n.rows[ei].h}};
-function jmLinks(n){return(n.eg||[]).map(l=>{const[ap,al]=l.a.split('|'),[bp,bl]=l.b.split('|'),A=jmDotXY(n,ap,+al),B=jmDotXY(n,bp,+bl);if(!A||!B)return null;const dx=Math.abs(B.x-A.x)/2,d=`M${A.x},${A.y} C${A.x+(B.x>=A.x?dx:-dx)},${A.y} ${B.x-(B.x>=A.x?dx:-dx)},${B.y} ${B.x},${B.y}`;return{id:l.id,d}}).filter(Boolean)}
-function jmPts(n){
-  const ei=n.rows.findIndex(r=>r.k==='emotion');if(ei<0)return[];const rr=n.rows[ei],top=jmRowRel(n,ei),out=[];
+/* Blender-style auto connect: drag a loose block onto a wire and it is inserted into that wire */
+let spl=null,splQ=0;
+function spliceClear(){if(spl){const g=wireEls.get(spl.id);g&&g.classList.remove('splice');spl=null}}
+function spliceSoon(){if(splQ)return;splQ=requestAnimationFrame(()=>{splQ=0;spliceFind()})}
+function spliceFind(){
+  if(!drag||drag.k!=='move'||drag.start.length!==1){spliceClear();return}
+  const n=drag.start[0].n;
+  if(n.type==='canvas'||n.type==='journey'||S.edges.some(e=>e.from===n.id||e.to===n.id)){spliceClear();return}
+  let hit=null;
+  for(const e of S.edges){const g=wireEls.get(e.id),p=g&&g.children[0];if(!p||!g.isConnected)continue;
+    const L=p.getTotalLength();if(!L)continue;
+    for(let t=0;t<=L;t+=10){const q=p.getPointAtLength(t);if(q.x>n.x&&q.x<n.x+n.w&&q.y>n.y&&q.y<n.y+n.h){hit=e;break}}
+    if(hit)break}
+  if(hit===spl)return;spliceClear();
+  if(hit){spl=hit;const g=wireEls.get(hit.id);g&&g.classList.add('splice')}}
+function spliceDo(n){
+  const e=spl;spliceClear();if(!e||!byId(e.from)||!byId(e.to))return false;
+  S.edges=S.edges.filter(x=>x!==e);S.edges.push({id:uid(),from:e.from,to:n.id},{id:uid(),from:n.id,to:e.to});
+  refreshAll();toast('Block connected into the wire');return true}
+function jmDropped(list){list.forEach(jmSnap);jmSoon();softCombine()}
+const jmLvT=(r,i)=>(r.lv&&r.lv[i])||JM_LV[i];
+const jmRI=(n,rid)=>n.rows.findIndex(r=>r.id===rid);
+function jmMigrate(n){
+  n.rows.forEach(r=>{if(r.k==='emotion')r.k='graph'});
+  const fg=(n.rows.find(r=>r.k==='graph')||n.rows[0]||{}).id,fix=k=>k.split('|').length===1+(k.includes('|')?0:0)&&k.split('|').length<2?k:k;
+  const em={};Object.keys(n.em||{}).forEach(k=>{em[k.includes('|')?k:fg+'|'+k]=n.em[k]});n.em=em;
+  (n.eg||[]).forEach(l=>{['a','b'].forEach(f=>{if(l[f].split('|').length===2)l[f]=fg+'|'+l[f]})})}
+const jmEnd=n=>{const o={};(n.eg||[]).forEach(l=>[l.a,l.b].forEach(k=>{const[r,p,v]=k.split('|'),kk=r+'|'+p;if(o[kk]===undefined)o[kk]=+v}));return o};
+function jmVal(n,E,rid,pid){const k=rid+'|'+pid;return n.em&&n.em[k]!==undefined?n.em[k]:E[k]}
+const jmDotXY=(n,rid,pid,l)=>{const ri=jmRI(n,rid),pi=n.ph.findIndex(p=>p.id===pid);return ri<0||pi<0?null:{x:n.hw+(pi+.5)*n.cw,y:jmRowRel(n,ri)+JM_LEVELS[l]*n.rows[ri].h}};
+function jmLinks(n){return(n.eg||[]).map(l=>{const[ar,ap,al]=l.a.split('|'),[br,bp,bl]=l.b.split('|'),A=jmDotXY(n,ar,ap,+al),B=jmDotXY(n,br,bp,+bl);if(!A||!B)return null;const dx=Math.abs(B.x-A.x)/2,sg=B.x>=A.x?1:-1,d=`M${A.x},${A.y} C${A.x+sg*dx},${A.y} ${B.x-sg*dx},${B.y} ${B.x},${B.y}`;return{id:l.id,r:ar,d}}).filter(Boolean)}
+function jmPts(n,ri){
+  const rr=n.rows[ri],top=jmRowRel(n,ri),out=[],E=jmEnd(n);
   n.ph.forEach((p,pi)=>{
-    const v=n.em&&n.em[p.id];let y=null;
+    const v=jmVal(n,E,rr.id,p.id);let y=null;
     if(v!==undefined)y=top+JM_LEVELS[v]*rr.h;
-    else{const ns=S.nodes.filter(m=>!jmSkip(m)&&m.type!=='combine'&&(c=>c&&c.pi===pi&&c.ri===ei)(jmCellOf(n,m)));
+    else{const ns=S.nodes.filter(m=>!jmSkip(m)&&m.type!=='combine'&&(c=>c&&c.pi===pi&&c.ri===ri)(jmCellOf(n,m)));
       if(ns.length)y=ns.reduce((a,m)=>a+m.y+m.h/2,0)/ns.length-jmGY(n)+n.hh}
     if(y!==null)out.push({x:n.hw+(pi+.5)*n.cw,y})});
   return out}
@@ -3507,29 +3564,34 @@ function jmPath(pts,t=.5){if(pts.length<2)return'';let d=`M${pts[0].x},${pts[0].
   for(let i=0;i<pts.length-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2,k=t/3;
     d+=` C${p1.x+(p2.x-p0.x)*k},${p1.y+(p2.y-p0.y)*k} ${p2.x-(p3.x-p1.x)*k},${p2.y-(p3.y-p1.y)*k} ${p2.x},${p2.y}`}return d}
 const jmStruct=n=>JSON.stringify([n.hw,n.hh,n.cw,n.ph,n.rows]);
+const JM_IC={graph:'<svg viewBox="0 0 24 24"><path d="M3 17c3 0 3-9 6-9s3 8 6 8 3-6 6-6"/></svg>'};
 function jmBuild(n,el){
-  jmFit(n);n.em=n.em||{};
+  jmMigrate(n);jmFit(n);
   const bd=el.querySelector('.bd');let g=bd.querySelector('.jg');if(!g){g=document.createElement('div');g.className='jg';bd.appendChild(g)}
   const W=n.hw+n.ph.length*n.cw,H=n.hh+n.rows.reduce((a,r)=>a+r.h,0);g.style.width=W+'px';g.style.height=H+'px';
   let h=`<div class="jcorner" style="width:${n.hw}px;height:${n.hh}px">Phases</div>`;
-  n.rows.forEach((r,ri)=>{const t=jmRowRel(n,ri);h+=`<div class="jl${ri%2?' alt':''}" style="left:${n.hw}px;right:0;top:${t}px;height:${r.h}px"></div><div class="jrl" style="top:${t}px;width:${n.hw}px;height:${r.h}px"><input data-r="${r.id}" value="${esc(r.l)}" spellcheck="false">${n.rows.length>1?`<button class="jx" data-delr="${r.id}" title="Remove row">×</button>`:''}</div>`});
-  n.ph.forEach((p,i)=>{h+=`<div class="jv" style="left:${n.hw+i*n.cw}px;top:${n.hh}px;bottom:0"></div><div class="jph" style="left:${n.hw+i*n.cw}px;width:${n.cw}px;height:${n.hh}px"><input data-p="${p.id}" value="${esc(p.n)}" spellcheck="false">${n.ph.length>1?`<button class="jx" data-delp="${p.id}" title="Remove phase">×</button>`:''}${i===n.ph.length-1?'<button class="jx jadd" data-addp="1" title="Add phase">+</button>':''}</div>`});
-  const ei=n.rows.findIndex(r=>r.k==='emotion');
+  n.rows.forEach((r,ri)=>{const t=jmRowRel(n,ri),last=ri===n.rows.length-1;
+    h+=`<div class="jl${ri%2?' alt':''}" style="left:${n.hw}px;right:0;top:${t}px;height:${r.h}px"></div><div class="jrl${r.k==='graph'?' isg':''}" style="top:${t}px;width:${n.hw}px;height:${r.h}px"><input data-r="${r.id}" value="${esc(r.l)}" spellcheck="false"><span class="jtools"><button class="jx jgt${r.k==='graph'?' on':''}" data-tgr="${r.id}" title="${r.k==='graph'?'Graph row — click to make a plain row':'Make this a graph row (plot a curve)'}">${JM_IC.graph}</button>${n.rows.length>1?`<button class="jx" data-delr="${r.id}" title="Remove row">×</button>`:''}</span>${last?'<button class="jx jadd jrowadd" data-addr="1" title="Add row">+</button>':''}</div>`});
+  n.ph.forEach((p,i)=>{h+=`<div class="jv" style="left:${n.hw+i*n.cw}px;top:${n.hh}px;bottom:0"></div><div class="jph" style="left:${n.hw+i*n.cw}px;width:${n.cw}px;height:${n.hh}px"><input data-p="${p.id}" value="${esc(p.n)}" spellcheck="false"><span class="jtools">${n.ph.length>1?`<button class="jx" data-delp="${p.id}" title="Remove phase">×</button>`:''}</span>${i===n.ph.length-1?'<button class="jx jadd" data-addp="1" title="Add phase">+</button>':''}</div>`});
   h+=`<svg width="${W}" height="${H}">`;
-  if(ei>=0)JM_LEVELS.forEach((l,i)=>{const y=jmRowRel(n,ei)+l*n.rows[ei].h;h+=`<line class="jgl" x1="${n.hw}" x2="${W}" y1="${y}" y2="${y}"/><text x="${n.hw+8}" y="${y-8}">${JM_LV[i]}</text>`});
+  n.rows.forEach((r,ri)=>{if(r.k!=='graph')return;JM_LEVELS.forEach(l=>{const y=jmRowRel(n,ri)+l*r.h;h+=`<line class="jgl" x1="${n.hw}" x2="${W}" y1="${y}" y2="${y}"/>`})});
   h+=`<g class="jcv"></g><g class="jlk"></g></svg>`;
-  if(ei>=0)n.ph.forEach((p,pi)=>JM_LEVELS.forEach((l,li)=>{h+=`<button class="jdp" data-p="${p.id}" data-l="${li}" title="${JM_LV[li]}" style="left:${n.hw+(pi+.5)*n.cw}px;top:${jmRowRel(n,ei)+l*n.rows[ei].h}px"></button>`}));
-  h+=`<button class="jaddr" style="top:${H+4}px">+ row</button>`;
+  n.rows.forEach((r,ri)=>{if(r.k!=='graph')return;JM_LEVELS.forEach((l,li)=>{const y=jmRowRel(n,ri)+l*r.h;
+    h+=`<input class="jlv" data-r="${r.id}" data-lv="${li}" value="${esc(jmLvT(r,li))}" spellcheck="false" style="left:${n.hw+8}px;top:${y-19}px">`;
+    n.ph.forEach((p,pi)=>{h+=`<button class="jdp" data-r="${r.id}" data-p="${p.id}" data-l="${li}" title="${esc(jmLvT(r,li))}" style="left:${n.hw+(pi+.5)*n.cw}px;top:${y}px"></button>`})})});
   g.innerHTML=h;g._st=jmStruct(n);g._pg=null;
 }
 function jmRefresh(n){
   const el=els.get(n.id);if(!el)return;const bd=el.querySelector('.bd');if(!bd)return;let g=bd.querySelector('.jg');
   if(!g||g._st!==jmStruct(n)){jmBuild(n,el);g=bd.querySelector('.jg');sync(n);drawEdges()}
-  const lk=jmLinks(n),pts=lk.length?[]:jmPts(n),sg=lk.map(l=>l.d).join('|')+'#'+pts.map(q=>Math.round(q.x)+','+Math.round(q.y)).join(';');
-  if(g._pg!==sg){g._pg=sg;g.querySelector('.jcv').innerHTML=(pts.length>1?`<path class="jcurve" d="${jmPath(pts)}"/>`:'')+pts.map(q=>`<circle class="jpt" cx="${q.x}" cy="${q.y}" r="3"/>`).join('');
+  const lk=jmLinks(n),linked=new Set(lk.map(l=>l.r));let pc='',cv='';
+  n.rows.forEach((r,ri)=>{if(r.k!=='graph'||linked.has(r.id))return;const pts=jmPts(n,ri);pc+=r.id+pts.map(q=>Math.round(q.x)+','+Math.round(q.y)).join(';');
+    cv+=(pts.length>1?`<path class="jcurve" d="${jmPath(pts)}"/>`:'')+pts.map(q=>`<circle class="jpt" cx="${q.x}" cy="${q.y}" r="3"/>`).join('')});
+  const sg=lk.map(l=>l.d).join('|')+'#'+pc;
+  if(g._pg!==sg){g._pg=sg;g.querySelector('.jcv').innerHTML=cv;
     g.querySelector('.jlk').innerHTML=lk.map(l=>`<path class="jcurve" d="${l.d}"/><path class="jhit" data-lk="${l.id}" d="${l.d}"><title>Click to remove this link</title></path>`).join('')}
   const ends=new Set((n.eg||[]).flatMap(l=>[l.a,l.b]));
-  g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('on',(n.em||{})[b.dataset.p]===+b.dataset.l||ends.has(b.dataset.p+'|'+b.dataset.l)));
+  g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('on',(n.em||{})[b.dataset.r+'|'+b.dataset.p]===+b.dataset.l||ends.has(b.dataset.r+'|'+b.dataset.p+'|'+b.dataset.l)));
 }
 let jmQ=0;function jmSoon(){if(jmQ)return;jmQ=requestAnimationFrame(()=>{jmQ=0;S.nodes.forEach(n=>{if(n.type==='journey')jmRefresh(n)})})}
 function jmWire(n,el){
@@ -3543,43 +3605,47 @@ function jmWire(n,el){
     const mv=ev=>{if(!dd)return;if(!dd.moved&&Math.hypot(ev.clientX-dd.sx,ev.clientY-dd.sy)<5)return;dd.moved=true;
       if(!dd.p){dd.p=document.createElementNS(SVGNS,'path');dd.p.setAttribute('class','jcurve jtmp');g.querySelector('.jlk').appendChild(dd.p);b.classList.add('on')}
       const q=dd.loc(ev),a=dd.start,dx=Math.abs(q.x-a.x)/2,sg=q.x>=a.x?1:-1;dd.p.setAttribute('d',`M${a.x},${a.y} C${a.x+sg*dx},${a.y} ${q.x-sg*dx},${q.y} ${q.x},${q.y}`);
-      const t=document.elementFromPoint(ev.clientX,ev.clientY);bd.querySelectorAll('.jdp.hot').forEach(x=>x.classList.remove('hot'));if(t&&t.classList&&t.classList.contains('jdp')&&t!==b)t.classList.add('hot')};
+      const t=document.elementFromPoint(ev.clientX,ev.clientY);bd.querySelectorAll('.jdp.hot').forEach(x=>x.classList.remove('hot'));if(t&&t.classList&&t.classList.contains('jdp')&&t!==b&&t.dataset.r===b.dataset.r)t.classList.add('hot')};
     const up=ev=>{removeEventListener('pointermove',mv,true);removeEventListener('pointerup',up,true);const d=dd;dd=null;if(!d)return;
       if(d.p)d.p.remove();bd.querySelectorAll('.jdp.hot').forEach(x=>x.classList.remove('hot'));
       if(!d.moved)return;d.b._dragged=true;setTimeout(()=>{d.b._dragged=false},0);
       const t=document.elementFromPoint(ev.clientX,ev.clientY),o=t&&t.closest&&t.closest('.jdp');
-      if(o&&o!==d.b&&o.closest('.node')===el){const A=d.b.dataset.p+'|'+d.b.dataset.l,B=o.dataset.p+'|'+o.dataset.l;
+      if(o&&o!==d.b&&o.closest('.node')===el&&o.dataset.r===d.b.dataset.r){const k=x=>x.dataset.r+'|'+x.dataset.p+'|'+x.dataset.l,A=k(d.b),B=k(o);
         n.eg=n.eg||[];if(!n.eg.some(l=>(l.a===A&&l.b===B)||(l.a===B&&l.b===A))){pushHist();n.eg.push({id:uid(),a:A,b:B});save()}}
       jmRefresh(n);refreshCombines()};
     addEventListener('pointermove',mv,true);addEventListener('pointerup',up,true)});
   bd.addEventListener('click',e=>{
     const hit=e.target.closest&&e.target.closest('.jhit');if(hit){pushHist();n.eg=(n.eg||[]).filter(l=>l.id!==hit.dataset.lk);jmRefresh(n);save();return}
     const b=e.target.closest('button');if(!b||b._dragged)return;
-    if(b.dataset.delp){pushHist();n.ph=n.ph.filter(p=>p.id!==b.dataset.delp);if(n.em)delete n.em[b.dataset.delp];n.eg=(n.eg||[]).filter(l=>l.a.split('|')[0]!==b.dataset.delp&&l.b.split('|')[0]!==b.dataset.delp);S.nodes.forEach(m=>{if(m.jm&&m.jm.m===n.id&&m.jm.p===b.dataset.delp)delete m.jm})}
+    const dropKeys=f=>{Object.keys(n.em||{}).forEach(k=>{if(f(k.split('|')))delete n.em[k]});n.eg=(n.eg||[]).filter(l=>!f(l.a.split('|'))&&!f(l.b.split('|')))};
+    if(b.dataset.delp){pushHist();const id=b.dataset.delp;n.ph=n.ph.filter(p=>p.id!==id);dropKeys(k=>k[1]===id);S.nodes.forEach(m=>{if(m.jm&&m.jm.m===n.id&&m.jm.p===id)delete m.jm})}
     else if(b.dataset.addp){pushHist();n.ph.push({id:uid(),n:'New phase'})}
-    else if(b.dataset.delr){pushHist();n.rows=n.rows.filter(r=>r.id!==b.dataset.delr)}
-    else if(b.classList.contains('jaddr')){pushHist();n.rows.push({id:uid(),l:'New row',k:'lane',h:170})}
-    else if(b.classList.contains('jdp')){pushHist();n.em=n.em||{};const pid=b.dataset.p,l=+b.dataset.l;if(n.em[pid]===l)delete n.em[pid];else n.em[pid]=l}
+    else if(b.dataset.delr){pushHist();const id=b.dataset.delr;n.rows=n.rows.filter(r=>r.id!==id);dropKeys(k=>k[0]===id);S.nodes.forEach(m=>{if(m.jm&&m.jm.m===n.id&&m.jm.r===id)delete m.jm})}
+    else if(b.dataset.addr){pushHist();n.rows.push({id:uid(),l:'New row',k:'lane',h:170})}
+    else if(b.dataset.tgr){pushHist();const r=n.rows.find(q=>q.id===b.dataset.tgr);if(r)r.k=r.k==='graph'?'lane':'graph'}
+    else if(b.classList.contains('jdp')){pushHist();n.em=n.em||{};const k=b.dataset.r+'|'+b.dataset.p,l=+b.dataset.l;if(n.em[k]===l)delete n.em[k];else n.em[k]=l}
     else return;
-    jmRefresh(n);refreshCombines();save();
+    jmFit(n);sync(n);jmRefresh(n);drawEdges();refreshCombines();save();
   });
   bd.addEventListener('input',e=>{const i=e.target;if(!i.matches('input'))return;if(!i._h){pushHist();i._h=1}
-    if(i.dataset.p){const p=n.ph.find(q=>q.id===i.dataset.p);if(p)p.n=i.value}else if(i.dataset.r){const r=n.rows.find(q=>q.id===i.dataset.r);if(r)r.l=i.value}
+    if(i.dataset.lv!==undefined){const r=n.rows.find(q=>q.id===i.dataset.r);if(r){r.lv=r.lv||[...JM_LV];r.lv[+i.dataset.lv]=i.value}}
+    else if(i.dataset.p){const p=n.ph.find(q=>q.id===i.dataset.p);if(p)p.n=i.value}else if(i.dataset.r){const r=n.rows.find(q=>q.id===i.dataset.r);if(r)r.l=i.value}
     const g=bd.querySelector('.jg');g._st=jmStruct(n);refreshCombines();save()});
   jmBuild(n,el);
 }
 function addJourney(){
   const c=centerWorld(),d=jmDefaults(),tmp={...d};jmFit(tmp);
   const n=addNode('journey',c.x,c.y,{title:'Journey map',...d,w:tmp.w,h:tmp.h});
-  jmRefresh(n);toast('Journey map added — drag blocks into its cells, click the dots to plot emotion');
+  jmRefresh(n);toast('Journey map added — drop blocks in its cells; click a dot to plot a graph row');
   const k=Math.min(1,(innerWidth-120)/n.w);animateTo({z:k,x:innerWidth/2-(n.x+n.w/2)*k,y:innerHeight/2-(n.y+n.h/2)*k},500);
 }
 $('#bJourney').onclick=addJourney;
-/* sentiment of every journey wired into a combine block */
-function jmEmo(c){const out=[];S.edges.filter(e=>e.to===c.id).map(e=>byId(e.from)).filter(j=>j&&j.type==='journey').forEach(j=>{const E=jmEnd(j);j.ph.forEach(p=>{const v=(j.em&&j.em[p.id]!==undefined)?j.em[p.id]:E[p.id];if(v!==undefined)out.push({p:(j.title&&S.nodes.filter(q=>q.type==='journey').length>1?j.title+' · ':'')+p.n,l:v})})});return out}
+/* values plotted on the graph rows of every journey wired into a combine block */
+function jmEmo(c){const out=[];S.edges.filter(e=>e.to===c.id).map(e=>byId(e.from)).filter(j=>j&&j.type==='journey').forEach(j=>{jmMigrate(j);const E=jmEnd(j),gr=j.rows.filter(r=>r.k==='graph'),multi=S.nodes.filter(q=>q.type==='journey').length>1;
+  gr.forEach(r=>j.ph.forEach(p=>{const v=jmVal(j,E,r.id,p.id);if(v!==undefined)out.push({p:(multi&&j.title?j.title+' · ':'')+(gr.length>1?r.l+' · ':'')+p.n,l:v,t:jmLvT(r,v)})}))});return out}
 function combineMd(n){
   const sm=getSummary(n),L=['# '+(S.name||'Affinity map')+' — summary'];
-  if(sm.emo.length){L.push('','**Emotional curve:** '+sm.emo.map(e=>e.p+' → '+JM_LV[e.l]).join(' · '))}
+  if(sm.emo.length){L.push('','**Emotional curve:** '+sm.emo.map(e=>e.p+' → '+e.t).join(' · '))}
   if(sm.common.length)L.push('','**Common themes:** '+sm.common.join(', '));
   sm.sections.forEach(sec=>{L.push('');if(sec.title)L.push('## '+sec.title+(sec.common.length?' (shared: '+sec.common.join(', ')+')':''));
     sec.rows.forEach(r=>{if(r.t==='text')L.push('- '+r.text.replace(/\n+/g,' '));else if(r.t==='img')L.push('- *(image)*');else if(r.t==='draw')L.push('- *(drawing)*')})});
