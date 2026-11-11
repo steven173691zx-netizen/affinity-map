@@ -13,4 +13,5 @@ Open `index.html`, or visit the published site. Press `/` for all commands and `
 | `B` | Magic pencil |
 | `P` | Stickman mode |
 | `⇧D` | Themes |
-| `E` | Export area to PDF |
+| `E` | Delete empty blocks |
+| `⇧E` | Export area to PDF |
