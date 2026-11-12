@@ -756,27 +756,6 @@ html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
 #vp{touch-action:none;-webkit-touch-callout:none}
 .node{-webkit-touch-callout:none}
 .node .edit{-webkit-user-select:text;user-select:text}
-#mbar,#smpad{display:none}
-#mbar{position:fixed;left:8px;right:8px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:99;gap:2px;padding:6px;border-radius:16px;overflow-x:auto;scrollbar-width:none;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .22s var(--ease),transform .3s var(--ease)}
-#mbar::-webkit-scrollbar{display:none}
-body.coarse #mbar{display:flex}
-#mbar.on{opacity:1;transform:none;pointer-events:auto}
-#mbar button{all:unset;box-sizing:border-box;flex:0 0 auto;min-width:54px;height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:12px;color:var(--t2);font-size:10px;font-weight:600;cursor:pointer}
-#mbar button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-#mbar button:active{background:rgba(var(--ovc),.12)}
-#mbar button.on{background:var(--accent);color:var(--on-accent)}
-#mbar button.dis{opacity:.35}
-body.sm #mbar{display:none}
-body.coarse.sm #smpad{display:flex}
-#smpad{position:fixed;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));justify-content:space-between;align-items:flex-end;padding:0 18px;z-index:101;pointer-events:none}
-#smpad .pl,#smpad .pr{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
-#smpad .pr{flex-wrap:wrap;width:170px;justify-content:flex-end}
-#smpad button{all:unset;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:22px;color:var(--t1);background:rgba(var(--gl),.8);border:1.5px solid var(--line2);touch-action:none;-webkit-user-select:none;user-select:none}
-#smpad button.dn{background:var(--accent);color:var(--on-accent)}
-#smpad button.big{width:70px;height:70px}
-#smpad button.fire{background:#e5534b;color:#fff;border-color:transparent}
-#smpad button.xit{width:40px;height:40px;font-size:15px;position:fixed;top:calc(10px + env(safe-area-inset-top));right:10px;background:rgba(var(--gl),.9)}
-body.coarse.sm #smbar{bottom:calc(172px + env(safe-area-inset-bottom));max-width:96vw;overflow-x:auto;scrollbar-width:none}
 body.coarse .tb,body.coarse .mi{min-height:44px}
 body.coarse .tb{min-width:44px}
 body.coarse .port{width:20px;height:20px;margin-top:-10px;border-width:2.5px}
@@ -802,7 +781,7 @@ body.multi #vp{outline:3px solid var(--accent);outline-offset:-3px}
   #toolbar{bottom:calc(10px + env(safe-area-inset-bottom));max-width:calc(100vw - 12px);overflow-x:auto;scrollbar-width:none;--k:1!important}
   #toolbar::-webkit-scrollbar{display:none}
   #toolbar .tb{flex:0 0 auto}
-  #hint{width:86vw}#hint p{display:none}
+  #hint{width:86vw}
   #filemenu{left:8px;right:8px;width:auto;top:calc(58px + env(safe-area-inset-top))}
   #more{left:8px!important;right:8px!important;width:auto;bottom:calc(70px + env(safe-area-inset-bottom))!important;top:auto!important;max-height:62vh;overflow:auto}
   #mini{display:none}
@@ -815,6 +794,42 @@ body.multi #vp{outline:3px solid var(--accent);outline-offset:-3px}
   #smchat,#smwatch,#smfeed{max-width:60vw}
 }
 @media (max-height:480px) and (pointer:coarse){#toolbar{bottom:4px}#brand,#topright{top:4px}}
+
+/* ===== phone mode (touch + small screen only; desktop is untouched) ===== */
+body.phone #toolbar{gap:4px;padding:6px 8px;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));border-radius:22px}
+body.phone #toolbar>.tb:not([data-tool=select]):not([data-tool=hand]):not(#pAdd):not(#pUndo):not(#bMore),body.phone #toolbar>.sep{display:none}
+body.phone #toolbar .tb{width:62px;height:54px;flex-direction:column;gap:3px;border-radius:15px;font-size:10px;font-weight:600;letter-spacing:.01em}
+body.phone #toolbar .tb svg{width:22px;height:22px}
+#toolbar .tb>i{display:none}
+body.phone #toolbar .tb>i{display:block;font-style:normal;font-size:10px;font-weight:600;line-height:1}
+body.phone #toolbar .tb[data-tip]::before{display:none!important}
+#pAdd,#pUndo,#psheet,#psel{display:none}
+body.phone #pAdd,body.phone #pUndo{display:flex}
+body.phone #pAdd{background:var(--accent);color:var(--on-accent);width:74px}
+body.phone #pAdd.on svg{transform:rotate(45deg)}
+body.phone #pAdd svg{transition:transform .3s var(--ease)}
+body.phone #pAdd span,body.phone #pUndo span{font-size:10px;font-weight:600}
+body.phone #psheet{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));padding:8px;border-radius:20px;z-index:102;opacity:0;transform:translateY(14px) scale(.97);pointer-events:none;transform-origin:50% 100%;transition:opacity .2s var(--ease),transform .35s var(--ease)}
+body.phone #psheet.on{opacity:1;transform:none;pointer-events:auto}
+#psheet button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:72px;border-radius:14px;color:var(--t1);font-size:11px;font-weight:600}
+#psheet button:active{background:rgba(var(--ovc),.12)}
+#psheet svg,#psel svg,#pAdd svg,#pUndo svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+body.phone #psel{display:flex;position:fixed;right:10px;bottom:calc(150px + env(safe-area-inset-bottom));flex-direction:column;gap:2px;padding:4px;border-radius:18px;z-index:99;opacity:0;transform:scale(.85);pointer-events:none;transition:opacity .2s var(--ease),transform .3s var(--ease)}
+body.phone #psel.on{opacity:1;transform:none;pointer-events:auto}
+#psel button{all:unset;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;color:var(--t1)}
+#psel button:active{background:rgba(var(--ovc),.14)}
+#psel .red{color:#e5534b}
+/* More menu: only the basics */
+body.phone #mStick,body.phone #mCluster,body.phone [data-tool=area].mi,body.phone #bSnap,body.phone #mKeys,body.phone #bSettings,body.phone #mPal,body.phone #more .msep:nth-of-type(n+3){display:none}
+body.phone #more .mi,body.phone #more .mz button{min-height:48px;font-size:15px}
+body.phone #more kbd{display:none}
+body.phone #mx,body.phone #areabar,body.phone #mini,body.phone #gbox{display:none!important}
+/* bigger, calmer touch targets on blocks */
+body.phone .node .hd{min-height:34px}
+body.phone .swt{width:30px;height:30px}
+body.phone #stylebar,body.phone .sbgrid{grid-template-columns:repeat(6,34px)}
+body.phone #brand{border-radius:16px}
+body.phone #bShare{height:40px;border-radius:14px}
 </style>
 </head>
 <body>
@@ -1159,10 +1174,10 @@ function build(n,spawn){
   else hd+=`<span class="tt">${TITLES[t]}</span>`;
   if(t==='combine')hd+=`<span class="badge">0</span>`;
   hd+=`<span class="sp"></span>`;
-  if(t==='combine')hd+=`<button class="hbtn" data-act="ai" title="Re-summarize">${ico('spark')}</button><button class="hbtn" data-act="copy" title="Copy merged text">${ico('copy')}</button><button class="hbtn" data-act="totext" title="Convert to text block">${ico('totext')}</button>`;
-  if(t==='image')hd+=`<button class="hbtn" data-act="fitimg" title="Toggle fill / contain">${ico('fitimg')}</button>`;
-  if(t==='combine')hd+=`<button class="hbtn" data-act="md" title="Copy as Markdown report">${ico('md')}</button><button class="hbtn" data-act="stickies" title="Turn shared themes into notes">${ico('notes')}</button>`;
-  hd+=`<button class="hbtn" data-act="del" title="Delete">${ico('x')}</button></div>`;
+  if(t==='combine')hd+=`<button class="hbtn" data-act="ai" title="Re-summarize">${phIco('spark')}</button><button class="hbtn" data-act="copy" title="Copy merged text">${phIco('copy')}</button><button class="hbtn" data-act="totext" title="Convert to text block">${phIco('totext')}</button>`;
+  if(t==='image')hd+=`<button class="hbtn" data-act="fitimg" title="Toggle fill / contain">${phIco('fitimg')}</button>`;
+  if(t==='combine')hd+=`<button class="hbtn" data-act="md" title="Copy as Markdown report">${phIco('md')}</button><button class="hbtn" data-act="stickies" title="Turn shared themes into notes">${phIco('notes')}</button>`;
+  hd+=`<button class="hbtn" data-act="del" title="Delete">${phIco('x')}</button></div>`;
   let bd='<div class="bd">';
   if(t==='text'||t==='sticky'||t==='label')bd+=`<div class="edit" contenteditable="true" spellcheck="false" data-ph="${t==='label'?'Heading':t==='sticky'?'Write a note…':'Type something…'}"></div>`;
   if(t==='image')bd+=`<div class="imgwrap"></div>`;
@@ -1258,7 +1273,7 @@ function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=
 function initDraw(n,el){
   n.strokes=n.strokes||[];
   const svg=el.querySelector('.dsvg'),tools=el.querySelector('.dtools');
-  tools.innerHTML=PENCOLS.map(c=>`<i class="pc" data-pc="${c}" style="background:${c==='auto'?'var(--ink)':c}"></i>`).join('')+'<span class="dsep"></span>'+[1.5,3,6].map(w=>`<i class="pw" data-pw="${w}"><b style="width:${3+w*1.6}px;height:${3+w*1.6}px"></b></i>`).join('')+'<span class="dsep"></span><button data-d="erase" title="Eraser">'+ico('eraser')+'</button><button data-d="clear" title="Clear board">'+ico('trash')+'</button>';
+  tools.innerHTML=PENCOLS.map(c=>`<i class="pc" data-pc="${c}" style="background:${c==='auto'?'var(--ink)':c}"></i>`).join('')+'<span class="dsep"></span>'+[1.5,3,6].map(w=>`<i class="pw" data-pw="${w}"><b style="width:${3+w*1.6}px;height:${3+w*1.6}px"></b></i>`).join('')+'<span class="dsep"></span><button data-d="erase" title="Eraser">'+phIco('eraser')+'</button><button data-d="clear" title="Clear board">'+phIco('trash')+'</button>';
   renderDraw(n,el);toolsUI(n,el);
   tools.addEventListener('pointerdown',e=>e.stopPropagation());
   tools.addEventListener('click',e=>{
@@ -1919,7 +1934,7 @@ async function newFile(data){
   world.animate([{opacity:0},{opacity:1}],{duration:380,easing:'cubic-bezier(.22,1,.36,1)'});
 }
 function renderMenu(){
-  $('#flist').innerHTML=[...metas].sort((a,b)=>b.updated-a.updated).map(m=>`<div class="fi${m.id===fileId?' cur':''}" data-id="${m.id}"><span class="fdot"></span><div class="fn"><b>${esc(m.name)}</b><small>${m.count} blocks · ${ago(m.updated)}</small></div><button class="fdel" data-del="${m.id}" title="Delete file">${ico('x')}</button></div>`).join('');
+  $('#flist').innerHTML=[...metas].sort((a,b)=>b.updated-a.updated).map(m=>`<div class="fi${m.id===fileId?' cur':''}" data-id="${m.id}"><span class="fdot"></span><div class="fn"><b>${esc(m.name)}</b><small>${m.count} blocks · ${ago(m.updated)}</small></div><button class="fdel" data-del="${m.id}" title="Delete file">${phIco('x')}</button></div>`).join('');
 }
 async function openMenu(){await flush();renderMenu();$('#filemenu').classList.add('on');$('#brand').classList.add('open')}
 function closeMenu(){$('#filemenu').classList.remove('on');$('#brand').classList.remove('open')}
@@ -1972,7 +1987,7 @@ let ciHist=false;
   i.addEventListener('input',()=>{if(!ciHist){pushHist();ciHist=true}f(i.value)});i.addEventListener('change',()=>ciHist=false)});
 let barQ=0;function queueBar(){if(barQ)return;barQ=requestAnimationFrame(()=>{barQ=0;updBar();updMini();updGbox()})}
 function updBar(){
-  if(typeof updMbar==='function')updMbar();
+  updPhone();
   const ns=[...sel].map(byId).filter(Boolean);
   const hide=!colorsOn||!ns.length||tool==='area'||(drag&&drag.moved);
   bar.classList.toggle('on',!hide);if(hide)return;
@@ -3192,7 +3207,7 @@ function renderPin(n){
   const cm=n.cm||[];if(!cm.length)return;
   const d=document.createElement('div');d.className='cpin'+(el._pinOpen?' open':'');
   d.style.animation='none';
-  d.innerHTML=`<button class="cpb" title="Comments">${ico('comment')}<span>${cm.length}</span></button><div class="cpl glass">${cm.map(c=>`<div class="cr" data-k="${esc(String(c.id||c.at))}"><i style="background:${esc(c.c||'#999')}"></i><div style="flex:1;min-width:0"><b>${esc(c.n||'?')}</b>${esc(c.t)}</div><button title="Delete comment">${ico('x')}</button></div>`).join('')}</div>`;
+  d.innerHTML=`<button class="cpb" title="Comments">${phIco('comment')}<span>${cm.length}</span></button><div class="cpl glass">${cm.map(c=>`<div class="cr" data-k="${esc(String(c.id||c.at))}"><i style="background:${esc(c.c||'#999')}"></i><div style="flex:1;min-width:0"><b>${esc(c.n||'?')}</b>${esc(c.t)}</div><button title="Delete comment">${phIco('x')}</button></div>`).join('')}</div>`;
   d.addEventListener('pointerdown',e=>e.stopPropagation());
   d.addEventListener('dblclick',e=>e.stopPropagation());
   d.querySelector('.cpb').onclick=e=>{e.stopPropagation();el._pinOpen=!d.classList.contains('open');d.classList.toggle('open',el._pinOpen)};
@@ -4507,9 +4522,8 @@ addEventListener('resize',()=>{applyView();fitBar()});fitBar();
 const TOUCH={multi:false,preSel:new Set(),lastTap:0,lastX:0,lastY:0};
 const COARSE=()=>matchMedia('(pointer:coarse)').matches||innerWidth<720;
 function NARROW(){return innerWidth<720}
-const mbarH=()=>{const m=document.getElementById('mbar');return m&&m.classList.contains('on')?m.offsetHeight+8:0};
-function syncCoarse(){document.body.classList.toggle('coarse',COARSE());document.body.classList.toggle('narrow',NARROW())}
-syncCoarse();addEventListener('resize',()=>{syncCoarse();queueBar()});
+const mbarH=()=>0;
+addEventListener('resize',()=>{syncCoarse();queueBar()});
 /* two fingers: pinch to zoom, drag to pan */
 const tPts=new Map();let pinch=null;
 vp.addEventListener('pointerdown',e=>{
@@ -4550,27 +4564,35 @@ function kbLift(){
   if(r.bottom>room){view.y-=r.bottom-room+24;applyView()}else if(r.top<70){view.y+=70-r.top;applyView()}}
 document.addEventListener('focusin',e=>{if(COARSE()&&e.target.closest&&e.target.closest('.node'))setTimeout(kbLift,320)});
 if(window.visualViewport)visualViewport.addEventListener('resize',()=>{if(COARSE())setTimeout(kbLift,60)});
-/* selection action bar (everything the keyboard shortcuts do, as buttons) */
-const MB_IC={multi:'<rect x="4" y="4" width="7" height="7" rx="1.5"/><path d="M14 8l2 2 4-4M4 15h7v5H4z"/>',dup:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>',del:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/>',align:'<path d="M4 6h10M4 12h16M4 18h12"/>',row:'<rect x="3" y="9" width="5" height="6"/><rect x="10" y="9" width="5" height="6"/><rect x="17" y="9" width="4" height="6"/>',col:'<rect x="9" y="3" width="6" height="5"/><rect x="9" y="10" width="6" height="5"/><rect x="9" y="17" width="6" height="4"/>',matrix:'<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7" stroke-dasharray="2 2"/><rect x="4" y="13" width="7" height="7" stroke-dasharray="2 2"/><rect x="13" y="13" width="7" height="7" stroke-dasharray="2 2"/>',org:'<path d="M12 3v5M5 21v-5h14v5M12 8v8M5 16V13h14v3"/>',group:'<rect x="3" y="4" width="18" height="16" rx="3" stroke-dasharray="3 3"/><rect x="8" y="9" width="8" height="6" rx="1"/>',empty:'<path d="M5 5l14 14M19 5L5 19"/>',all:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>'};
-const MB=[['multi','Multi'],['all','All'],['dup','Copy'],['del','Delete'],['align','Align'],['row','Row'],['col','Column'],['matrix','Matrix'],['org','Organise'],['group','Group'],['empty','Empty']];
-const mbar=document.createElement('div');mbar.id='mbar';mbar.className='glass';
-mbar.innerHTML=MB.map(([k,l])=>`<button data-mb="${k}"><svg viewBox="0 0 24 24">${MB_IC[k]}</svg><span>${l}</span></button>`).join('');document.body.appendChild(mbar);
-mbar.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.mb;
-  if(k==='multi'){TOUCH.multi=!TOUCH.multi;b.classList.toggle('on',TOUCH.multi);document.body.classList.toggle('multi',TOUCH.multi);toast(TOUCH.multi?'Multi-select on: tap blocks, drag to box-select':'Multi-select off');updMbar();return}
-  if(k==='all'){ACT.selall();queueBar();return}
-  if(k==='dup')ACT.dup();else if(k==='del')ACT.del();else if(k==='align')ACT.cluster();else if(k==='row')ACT.arrx();else if(k==='col')ACT.arry();
-  else if(k==='matrix')ACT.matrix();else if(k==='org')ACT.organize();else if(k==='group')ACT.group();else if(k==='empty')deleteEmpty();
-  updMbar()});
-function updMbar(){const on=COARSE()&&!SM.on&&(sel.size>0||TOUCH.multi||MX.on===false&&false);mbar.classList.toggle('on',!!on);
-  mbar.querySelectorAll('[data-mb=multi]').forEach(b=>b.classList.toggle('on',TOUCH.multi));
-  mbar.querySelectorAll('[data-mb=dup],[data-mb=del],[data-mb=align],[data-mb=row],[data-mb=col],[data-mb=matrix],[data-mb=group]').forEach(b=>b.classList.toggle('dis',!sel.size))}
-/* stickman on a phone: a small d-pad + fire button that feed the same key handlers */
-const smpad=document.createElement('div');smpad.id='smpad';
-smpad.innerHTML='<div class="pl"><button data-c="KeyA">◀</button><button data-c="KeyD">▶</button></div><div class="pr"><button data-c="Escape" class="xit">✕</button><button data-c="KeyS">▼</button><button data-c="KeyW" class="big">▲</button><button data-c="Space" class="fire">●</button></div>';document.body.appendChild(smpad);
-smpad.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();b.setPointerCapture(e.pointerId);b.classList.add('dn');const c=b.dataset.c;b._c=c;
-  document.dispatchEvent(new KeyboardEvent('keydown',{code:c,key:c==='Space'?' ':c.slice(-1).toLowerCase(),bubbles:true}))});
-const smUp=e=>{const b=e.target.closest&&e.target.closest('button');if(!b||!b._c)return;b.classList.remove('dn');const c=b._c;b._c=null;document.dispatchEvent(new KeyboardEvent('keyup',{code:c,key:c==='Space'?' ':c.slice(-1).toLowerCase(),bubbles:true}))};
-smpad.addEventListener('pointerup',smUp);smpad.addEventListener('pointercancel',smUp);smpad.addEventListener('lostpointercapture',smUp);
+/* ---------- phone mode: a small, friendly subset of the app (desktop untouched) ---------- */
+function updMbar(){}
+const PHONE=()=>matchMedia('(pointer:coarse)').matches&&Math.min(innerWidth,innerHeight)<720;
+const PH_IC={note:'<path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5"/>',text:'<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',head:'<path d="M6 4v16M18 4v16M6 12h12"/>',img:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',draw:'<path d="M4 20l1-4L16 5a2.100 2.100 0 013 3L8 19z"/>',plus:'<path d="M12 5v14M5 12h14"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>',del:'<path d="M4 7h16M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/>',undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>'};
+const phIco=k=>`<svg viewBox="0 0 24 24">${PH_IC[k]}</svg>`;
+/* "+" button opens a sheet of the basic blocks */
+const pAdd=document.createElement('button');pAdd.id='pAdd';pAdd.className='tb';pAdd.innerHTML=phIco('plus')+'<span>Add</span>';
+$('#toolbar').insertBefore(pAdd,$('#bMore'));
+const pUndo=document.createElement('button');pUndo.id='pUndo';pUndo.className='tb';pUndo.innerHTML=phIco('undo')+'<span>Undo</span>';
+$('#toolbar').insertBefore(pUndo,$('#bMore'));pUndo.onclick=()=>undo();
+const psheet=document.createElement('div');psheet.id='psheet';psheet.className='glass';
+psheet.innerHTML=[['text','Text','text'],['text','Note','note'],['label','Heading','head'],['image','Image','img'],['draw','Drawing','draw']].map(([t,l,i])=>`<button data-pa="${t}" data-note="${l==='Note'?1:0}">${phIco(i)}<span>${l}</span></button>`).join('');
+document.body.appendChild(psheet);
+const closeSheet=()=>psheet.classList.remove('on');
+pAdd.onclick=e=>{e.stopPropagation();psheet.classList.toggle('on');pAdd.classList.toggle('on',psheet.classList.contains('on'))};
+psheet.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.pa;closeSheet();pAdd.classList.remove('on');setTool('select');
+  if(b.dataset.note==='1')addFromTool('sticky');
+  else addFromTool(t)});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#psheet,#pAdd'))closeSheet()},true);
+/* selected block(s): just Copy + Delete, next to the colour bar */
+const psel=document.createElement('div');psel.id='psel';psel.className='glass';
+psel.innerHTML=`<button data-s="dup">${phIco('copy')}</button><button data-s="del" class="red">${phIco('del')}</button>`;document.body.appendChild(psel);
+psel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.s==='dup')dupSelected();else ACT.del();queueBar()});
+function updPhone(){const on=PHONE()&&!SM.on&&sel.size>0;psel.classList.toggle('on',on);if(!on)return}
+/* phone body class, simpler hint */
+[['[data-tool=select]','Select'],['[data-tool=hand]','Move'],['#bMore','More']].forEach(([q,t])=>{const b=document.querySelector('#toolbar '+q);if(b){const l=document.createElement('i');l.textContent=t;b.appendChild(l)}});
+function syncCoarse(){const p=PHONE();document.body.classList.toggle('phone',p);document.body.classList.toggle('coarse',COARSE());document.body.classList.toggle('narrow',NARROW());
+  const h=document.getElementById('hint');if(h){if(p&&!h._p){h._o=h.innerHTML;h._p=1;h.innerHTML='<h1>Start mapping</h1><p>Tap <b>Add</b> to place a note · double-tap to write · pinch to zoom</p>'}else if(!p&&h._p){h.innerHTML=h._o;h._p=0}}}
+syncCoarse();
 
 window.__affinity={cloneArea,renderArea,pdfFromJpeg,setArea:a=>{area=a;updArea()},addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{const t=performance.now();drawEdges();return Math.round(performance.now()-t)},get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
 })();
