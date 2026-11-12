@@ -788,8 +788,6 @@ body.rcm #vp,body.rcm #toolbar,body.rcm #brand,body.rcm #topright,body.rcm #hint
 #rcui .rcb:active{background:rgba(var(--ovc),.16)}
 #rcui .rcb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #rcui .fld{all:unset;box-sizing:border-box;width:100%;height:48px;padding:0 14px;border-radius:14px;background:rgba(var(--ovc),.07);border:1px solid var(--line2);font-size:17px;letter-spacing:.04em;user-select:text}
-#rcui .rcspin{width:28px;height:28px;border-radius:50%;border:3px solid var(--line2);border-top-color:var(--accent);animation:rcs 1s linear infinite;align-self:flex-start}
-@keyframes rcs{to{transform:rotate(360deg)}}
 #rcui .rcbody{width:100%;box-sizing:border-box;padding:16px;display:flex;flex-direction:column;gap:18px;max-width:520px;margin:0 auto}
 #rcui .rcsec{display:flex;flex-direction:column;gap:10px}
 #rcui .sbgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
@@ -816,6 +814,78 @@ body.rcm #vp,body.rcm #toolbar,body.rcm #brand,body.rcm #topright,body.rcm #hint
 #rcui .dsep{width:1px;height:22px;background:var(--line2)}
 #rcui .rcundo{display:flex;gap:10px}
 #rcui .rcfoot{width:100%;box-sizing:border-box;padding:8px 16px 28px;max-width:520px;margin:0 auto}
+
+/* ===== remote control v2: header, radar, quick buttons, theme sheet, motion ===== */
+#rcui{--rce:cubic-bezier(.22,1,.36,1)}
+#rcui .rch{gap:12px;padding:12px 16px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:rgba(var(--bgc,0,0,0),0);background:color-mix(in srgb,var(--bg) 88%,transparent)}
+#rcui .rcht b{font-size:15px;letter-spacing:-.005em}
+#rcui .rcst{width:34px;height:34px;border-radius:11px;background:rgba(var(--ovc),.07);display:grid;place-items:center;position:relative;flex:none}
+#rcui .rcst i{width:10px;height:10px;border-radius:50%;background:var(--t3);position:relative;transition:background .3s var(--rce)}
+#rcui .rcst.live i{background:#3fa66b}
+#rcui .rcst.live i::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid #3fa66b;opacity:0;animation:rcping 2.4s var(--rce) infinite}
+@keyframes rcping{0%{transform:scale(.4);opacity:.7}80%,100%{transform:scale(1.5);opacity:0}}
+#rcui .rcib{all:unset;box-sizing:border-box;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(var(--ovc),.07);color:var(--t1);cursor:pointer;transition:transform .14s var(--rce),background .14s linear}
+#rcui .rcib:active{transform:scale(.92);background:rgba(var(--ovc),.16)}
+#rcui .rcib svg,#rcui .rcq svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* press feedback everywhere */
+#rcui .rcb,#rcui .rcc,#rcui .rcq,#rcui .sbb,#rcui .swt,#rcui .pc,#rcui .pw,#rcui .rctools button{transition:transform .14s var(--rce),background-color .14s linear,box-shadow .2s var(--rce),border-color .2s var(--rce),opacity .2s linear}
+#rcui .rcb:active,#rcui .rcc:active,#rcui .rcq:active,#rcui .sbb:active,#rcui .rctools button:active{transform:scale(.95)}
+#rcui .swt:active,#rcui .pc:active,#rcui .pw:active{transform:scale(.88)}
+/* quick buttons */
+#rcui .rcrow4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#rcui .rcrow4.act3{grid-template-columns:repeat(3,1fr)}
+#rcui .rcq{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:62px;padding:8px 4px;border-radius:14px;background:rgba(var(--ovc),.06);border:1px solid var(--line);color:var(--t1);font-size:11px;font-weight:600;cursor:pointer;text-align:center}
+#rcui .rcq:active{background:rgba(var(--ovc),.14)}
+#rcui .rcq[disabled]{opacity:.35;pointer-events:none}
+#rcui .rcq[data-red]{color:#e5534b}
+#rcui .rcsec{padding:14px;border-radius:18px;background:rgba(var(--ovc),.04);border:1px solid var(--line);gap:10px}
+#rcui .sbl{font-size:10.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+#rcui .swt{position:relative;box-shadow:0 0 0 0 transparent;border:2px solid transparent}
+#rcui .swt.act{box-shadow:0 0 0 2.5px var(--bg),0 0 0 5px var(--accent);transform:scale(1.04)}
+#rcui .rcta{all:unset;box-sizing:border-box;width:100%;min-height:76px;padding:12px 14px;border-radius:14px;background:rgba(var(--ovc),.07);border:1px solid var(--line2);font-size:16px;line-height:1.4;user-select:text;-webkit-user-select:text;white-space:pre-wrap;transition:border-color .2s var(--rce),box-shadow .2s var(--rce)}
+#rcui .rcta:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft,rgba(var(--ovc),.12))}
+#rcui .rcfoot{display:flex;justify-content:center}
+/* radar / waiting animation */
+#rcui .rcradar{position:relative;width:96px;height:96px;margin:6px auto 4px;display:grid;place-items:center}
+#rcui .rcradar.sm{width:64px;height:64px}
+#rcui .rcradar i{width:44px;height:44px;border-radius:14px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;position:relative;z-index:1}
+#rcui .rcradar.sm i{width:32px;height:32px;border-radius:10px}
+#rcui .rcradar i svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#rcui .rcradar b{position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--accent);opacity:0;animation:rcrad 2.8s var(--rce) infinite}
+#rcui .rcradar b:nth-child(2){animation-delay:.9s}#rcui .rcradar b:nth-child(3){animation-delay:1.8s}
+#rcui .rcradar.idle b{animation:none;opacity:.18}
+#rcui .rcradar.idle b:nth-child(2){inset:-12px;opacity:.1}
+@keyframes rcrad{0%{transform:scale(.45);opacity:.55}100%{transform:scale(1.7);opacity:0}}
+/* screen transitions: new screen slides/fades in with a stagger; in-screen updates only fade softly */
+#rcui[data-m=fresh] .rcwrap>*,#rcui[data-m=fresh] .rcbody>*,#rcui[data-m=fresh] .rcfoot{animation:rcup .5s var(--rce) both}
+#rcui[data-m=soft] .rcbody>*{animation:rcfade .28s var(--rce) both}
+#rcui[data-m=fresh] .rcwrap>*:nth-child(2),#rcui[data-m=fresh] .rcbody>*:nth-child(2){animation-delay:.05s}
+#rcui[data-m=fresh] .rcwrap>*:nth-child(3),#rcui[data-m=fresh] .rcbody>*:nth-child(3){animation-delay:.1s}
+#rcui[data-m=fresh] .rcwrap>*:nth-child(4),#rcui[data-m=fresh] .rcbody>*:nth-child(4){animation-delay:.15s}
+#rcui[data-m=fresh] .rcwrap>*:nth-child(n+5),#rcui[data-m=fresh] .rcbody>*:nth-child(n+5){animation-delay:.2s}
+@keyframes rcup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes rcfade{from{opacity:.0;transform:translateY(5px)}to{opacity:1;transform:none}}
+#rcui.on{animation:rcshow .35s var(--rce)}
+@keyframes rcshow{from{opacity:0}to{opacity:1}}
+#rcui .rcidle{padding:4vh 20px 0}
+#rcui .rcpulse{width:44px;height:44px;border-radius:14px;border:2px dashed var(--t3);animation:rcp 2.6s var(--rce) infinite}
+/* theme sheet */
+#rcthemes{position:fixed;inset:0;z-index:400;background:rgba(var(--veil,0,0,0),.0);display:flex;align-items:flex-end;pointer-events:none;transition:background .3s var(--ease)}
+#rcthemes.on{background:rgba(var(--veil,0,0,0),.5);pointer-events:auto}
+#rcthemes .rcsheet{width:100%;box-sizing:border-box;background:var(--surface,var(--bg));border-radius:24px 24px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .45s var(--ease);display:flex;flex-direction:column;gap:6px;color:var(--t1);box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+#rcthemes.on .rcsheet{transform:none}
+#rcthemes .rcgrab{width:38px;height:4px;border-radius:2px;background:var(--line2);margin:0 auto 8px}
+#rcthemes b{font-size:17px}
+#rcthemes .note{color:var(--t3);font-size:13px;margin:0 0 6px}
+#rcthemes .rcthg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+#rcthemes .rcthg button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--t2);padding:6px 2px;border-radius:14px;cursor:pointer;transition:transform .14s var(--ease),background-color .14s linear}
+#rcthemes .rcthg button:active{transform:scale(.94)}
+#rcthemes .rcthg button span{width:100%;aspect-ratio:1;border-radius:16px;border:2px solid var(--line2);display:flex;align-items:flex-end;gap:5px;padding:9px;box-sizing:border-box;transition:border-color .2s var(--ease),box-shadow .25s var(--ease),transform .25s var(--ease)}
+#rcthemes .rcthg button span i{width:16px;height:16px;border-radius:50%}
+#rcthemes .rcthg button.on{color:var(--t1)}
+#rcthemes .rcthg button.on span{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft,rgba(var(--ovc),.15));transform:scale(1.04)}
+#rcthemes .rcb{all:unset;box-sizing:border-box;height:46px;border-radius:14px;background:rgba(var(--ovc),.08);display:flex;align-items:center;justify-content:center;font-weight:650;font-size:14px;cursor:pointer;margin-top:10px}
+@media (prefers-reduced-motion:reduce){#rcui *,#rcui,#rcthemes,#rcthemes *{animation:none!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -2674,6 +2744,8 @@ function rcCtx(){
   const ns=[...sel].map(byId).filter(Boolean);if(!ns.length)return{n:0};
   const tx=ns.filter(isText),one=s=>s.size===1?[...s][0]:null,cs=new Set(ns.map(n=>n.color||(n.type==='sticky'?COLORS[0]:'')));
   const c={n:ns.length,fill:cs.size===1?[...cs][0]:'*'};
+  const ty=new Set(ns.map(n=>n.type));if(ty.size===1)c.type=TITLES[[...ty][0]]||[...ty][0];
+  if(ns.length===1&&['text','sticky','label'].includes(ns[0].type)){c.ed=1;c.tv=ns[0].text||''}
   if(tx.length){const ts=new Set(tx.map(n=>n.tc||'')),fz=new Set(tx.map(effFs)),al=new Set(tx.map(n=>n.align||'left'));c.text={tc:ts.size===1?[...ts][0]:'*',fs:one(fz)!=null?Math.round(one(fz)):null,al:one(al)}}
   if(ns.length===1&&ns[0].type==='draw'){const n=ns[0];c.draw={id:n.id,vw:Math.max(10,(n.w-12)/(n.k||1)),vh:Math.max(10,(n.h-38)/(n.k||1)),pc:penColor(n),pw:n.pw||3,er:!!n.er,bg:n.color||''}}
   return c}
@@ -2712,6 +2784,17 @@ function rcHost(d,id){
     else if(d.k==='fd'){pushHist();eachText(n=>n.fs=clamp(effFs(n)+d.v*(effFs(n)>=40?4:effFs(n)>=20?2:1),8,160))}
     else if(d.k==='al'){pushHist();eachText(n=>n.align=d.v)}
     return}
+  if(d.t==='v'){if(d.k==='zi')animateTo({...zoomTarget(1.25)},300);else if(d.k==='zo')animateTo({...zoomTarget(.8)},300);else fit();return}
+  if(d.t==='sn'){
+    if(!d.d){sel.clear();selEdge=null;S.nodes.forEach(sync);drawEdges();queueBar();return}
+    const L=S.nodes.slice().sort((a,b)=>Math.round(a.y/140)-Math.round(b.y/140)||a.x-b.x);if(!L.length)return;
+    const cur=L.findIndex(n=>sel.has(n.id)),i=cur<0?(d.d>0?0:L.length-1):(cur+d.d+L.length)%L.length,n=L[i];
+    select([n.id]);const z=Math.max(.4,Math.min(view.z,1.2));animateTo({z,x:innerWidth/2-(n.x+n.w/2)*z,y:innerHeight/2-(n.y+n.h/2)*z},350);return}
+  if(d.t==='add'){if(!['text','sticky','label','draw'].includes(d.k))return;const w=centerWorld();cascade=(cascade+1)%6;addNode(d.k,w.x+cascade*26-65,w.y+cascade*26-65);return}
+  if(d.t==='act'){if(!sel.size)return;if(d.k==='dup')dupSelected();else if(d.k==='del')removeNodes([...sel]);else if(d.k==='align')alignBlocks();return}
+  if(d.t==='tx'){const n=sel.size===1&&byId([...sel][0]);if(!n||!['text','sticky','label'].includes(n.type))return;const el=els.get(n.id),ed=el&&el.querySelector('.edit');if(!ed||document.activeElement===ed)return;
+    const now=performance.now();if(now-RC.hh>1500)pushHist();RC.hh=now;
+    n.text=String(d.v||'').slice(0,5000);ed.textContent=n.text;autoGrow(n);refreshCombines();save();return}
   const n=byId(d.id);if(!n||n.type!=='draw')return;const el=els.get(n.id);
   if(d.t==='dp'){if(d.pc!==undefined){n.pc=d.pc;n.er=false}if(d.pw)n.pw=d.pw;if(d.er!==undefined)n.er=!!d.er;toolsUI(n,el);save();return}
   if(d.t==='dc'){if(n.strokes.length){pushHist();n.strokes=[];renderDraw(n,el);refreshCombines();save()}return}
@@ -2762,7 +2845,7 @@ async function rcConnect(room){
   RCP.state='connecting';rcRender();
   setTimeout(()=>{if(RCP.state==='connecting'){RCP.state='pick';rcRender()}},6000)}
 function rcClient(d,id){
-  if(d.t==='ok'&&RCP.pend===id){RCP.pair=id;RCP.pairName=d.n||(RCP.desks.get(id)||{}).name||'desktop';RCP.state='paired';rcRender()}
+  if(d.t==='ok'&&RCP.pend===id){RCP.pair=id;RCP.pairName=d.n||(RCP.desks.get(id)||{}).name||'desktop';RCP.state='paired';rcAwake(true);rcRender()}
   else if(d.t==='no'&&RCP.pend===id){RCP.state='pick';RCP.msg='Request declined.';rcRender()}
   else if(d.t==='busy'&&RCP.pend===id){RCP.state='pick';RCP.msg='That desktop is already paired with another phone.';rcRender()}
   else if(d.t==='bye'&&RCP.pair===id){RCP.pair=null;RCP.state='pick';RCP.msg='Disconnected by the desktop.';rcRender()}
@@ -2773,48 +2856,77 @@ function rcClient(d,id){
 const rcTx=(d,to)=>{try{RCP.send&&RCP.send(d,to===undefined?RCP.pair:to)}catch{}};
 let rcRQ=0;
 function rcRender(){if(rcRQ)return;rcRQ=requestAnimationFrame(()=>{rcRQ=0;rcDraw()})}
+const RI={prev:'<path d="M15 6l-6 6 6 6"/>',next:'<path d="M9 6l6 6-6 6"/>',zi:'<path d="M12 5v14M5 12h14"/>',zo:'<path d="M5 12h14"/>',fit:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',dup:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>',del:'<path d="M4 7h16M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/>',align:'<path d="M4 6h10M4 12h16M4 18h12"/>',text:'<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',note:'<path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5"/>',head:'<path d="M6 4v16M18 4v16M6 12h12"/>',draw:'<path d="M4 20l1-4L16 5a2.100 2.100 0 013 3L8 19z"/>',undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',redo:'<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h3"/>',theme:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 010 16z" fill="currentColor"/>',clr:'<path d="M6 6l12 12M18 6L6 18"/>'};
+const rcI=k=>`<svg viewBox="0 0 24 24">${RI[k]}</svg>`;
+const rcBtn=(a,k,l,x='')=>`<button class="rcq" data-a="${a}"${x}>${rcI(k)}<span>${l}</span></button>`;
 function rcDraw(){
   if(!RCP.on)return;const el=rcEl();
-  if(document.activeElement&&el.contains(document.activeElement)&&document.activeElement.type==='color')return;
-  const hd=(sub)=>`<div class="rch"><div><b>Remote control</b><span>${sub}</span></div><span class="sp"></span></div>`;
+  if(document.activeElement&&el.contains(document.activeElement)&&(document.activeElement.type==='color'||document.activeElement.tagName==='TEXTAREA')){rcSync();return}
+  const live=RCP.state==='paired';
+  const hd=(sub)=>`<div class="rch"><div class="rcst ${live?'live':''}"><i></i></div><div class="rcht"><b>${live?esc(RCP.pairName):'Remote control'}</b><span>${sub}</span></div><span class="sp"></span><button class="rcib" data-a="theme" aria-label="Theme">${rcI('theme')}</button></div>`;
   let h='';
-  if(RCP.state==='code')h=hd('Join a desktop')+`<div class="rcwrap"><h2>Enter the room code</h2><p class="note">On your desktop open <b>Share → Pair a phone</b> and type the code shown, or scan its QR code.</p><input id="rcCode" class="fld" placeholder="e.g. k3x9a2bq" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="rcc go" data-a="join"><b>Connect</b></button></div>`;
-  else if(RCP.state==='connecting')h=hd('Connecting…')+`<div class="rcwrap"><div class="rcspin"></div><h2>Looking for desktops</h2><p class="note">Room ${esc(RCP.room||'')} · this can take up to 20 seconds</p><button class="rcb" data-a="code">Change room</button></div>`;
+  if(RCP.state==='code')h=hd('Join a desktop')+`<div class="rcwrap"><div class="rcradar idle"><b></b><b></b><i>${rcI('fit')}</i></div><h2>Enter the room code</h2><p class="note">On your desktop open <b>More → Pair a phone</b>, then type the code or scan the QR.</p><input id="rcCode" class="fld" placeholder="room code" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="rcc go" data-a="join"><b>Connect</b></button></div>`;
+  else if(RCP.state==='connecting')h=hd('Connecting…')+`<div class="rcwrap"><div class="rcradar"><b></b><b></b><b></b><i>${rcI('fit')}</i></div><h2>Looking for desktops</h2><p class="note">Room <b>${esc(RCP.room||'')}</b> · can take up to 20 seconds</p><button class="rcb" data-a="code">Change room</button></div>`;
   else if(RCP.state==='pick'||RCP.state==='lost'||RCP.state==='error'){const l=[...RCP.desks.entries()];
-    h=hd('Room '+esc(RCP.room||''))+`<div class="rcwrap"><h2>Pair with a desktop</h2>${RCP.msg?`<p class="rcmsg">${esc(RCP.msg)}</p>`:''}`+(l.length?l.map(([id,x])=>`<button class="rcc" data-pair="${id}"><i style="background:${esc(x.color)}"></i><b>${esc(x.name)}</b><span>Tap to pair</span></button>`).join(''):`<p class="note">No desktop found yet. Keep this page open — it appears here as soon as it joins.</p><div class="rcspin"></div>`)+`<button class="rcb" data-a="code">Change room</button></div>`}
-  else if(RCP.state==='waiting')h=hd('Waiting…')+`<div class="rcwrap"><div class="rcspin"></div><h2>Waiting for ${esc((RCP.desks.get(RCP.pend)||{}).name||'the desktop')}</h2><p class="note">Tap <b>Allow</b> on the desktop.</p><button class="rcb" data-a="cancel">Cancel</button></div>`;
+    h=hd('Room '+esc(RCP.room||''))+`<div class="rcwrap"><h2>Pair with a desktop</h2>${RCP.msg?`<p class="rcmsg">${esc(RCP.msg)}</p>`:''}`+(l.length?l.map(([id,x])=>`<button class="rcc" data-pair="${id}"><i style="background:${esc(x.color)}"></i><b>${esc(x.name)}</b><span>Tap to pair</span></button>`).join(''):`<div class="rcradar sm"><b></b><b></b><i>${rcI('fit')}</i></div><p class="note">No desktop found yet. Keep this page open — it appears here as soon as it joins.</p>`)+`<button class="rcb" data-a="code">Change room</button></div>`}
+  else if(RCP.state==='waiting')h=hd('Waiting…')+`<div class="rcwrap"><div class="rcradar"><b></b><b></b><i>${rcI('fit')}</i></div><h2>Waiting for ${esc((RCP.desks.get(RCP.pend)||{}).name||'the desktop')}</h2><p class="note">Tap <b>Allow</b> on the desktop.</p><button class="rcb" data-a="cancel">Cancel</button></div>`;
   else if(RCP.state==='paired')h=rcCtrl(hd);
-  el.className='';el.classList.add('on');
-  const keep=RCP.state==='paired'&&el._pairedBuilt&&RCP._sig===JSON.stringify([RCP.ctx.n,!!RCP.ctx.text,RCP.ctx.draw&&RCP.ctx.draw.id]);
-  if(keep){rcSync()}else{el.innerHTML=h;el._pairedBuilt=RCP.state==='paired';RCP._sig=JSON.stringify([RCP.ctx.n,!!RCP.ctx.text,RCP.ctx.draw&&RCP.ctx.draw.id]);if(RCP.state==='paired')rcSync();const ci=el.querySelector('#rcCode');if(ci)ci.focus()}
-}
+  const sig=RCP.state+'|'+(live?JSON.stringify([RCP.ctx.n,RCP.ctx.type,!!RCP.ctx.text,!!RCP.ctx.ed,RCP.ctx.draw&&RCP.ctx.draw.id]):'')+'|'+RCP.desks.size+'|'+RCP.msg;
+  if(!el.classList.contains('on'))el.classList.add('on');
+  if(el._sig===sig){rcSync();return}
+  const fresh=el._st!==RCP.state;el._st=RCP.state;el._sig=sig;
+  el.innerHTML=h;el.dataset.m=fresh?'fresh':'soft';
+  rcSync();const ci=el.querySelector('#rcCode');if(ci&&fresh)setTimeout(()=>ci.focus(),350)}
 function rcCtrl(hd){
   const c=RCP.ctx;let b='';
-  if(!c.n)b=`<div class="rcidle"><div class="rcpulse"></div><h2>Select a block on your desktop</h2><p class="note">Its format controls will appear here.</p></div>`;
+  const board=`<div class="rcsec"><span class="sbl">Board</span><div class="rcrow4">${rcBtn('sn-1','prev','Prev')}${rcBtn('sn1','next','Next')}${rcBtn('zo','zo','Zoom −')}${rcBtn('zi','zi','Zoom +')}</div><div class="rcrow4">${rcBtn('fit','fit','Fit all')}${rcBtn('un','undo','Undo')}${rcBtn('rd','redo','Redo')}${rcBtn('clr','clr','Deselect',c.n?'':' disabled')}</div></div>
+  <div class="rcsec"><span class="sbl">Add to board</span><div class="rcrow4">${rcBtn('add:text','text','Text')}${rcBtn('add:sticky','note','Note')}${rcBtn('add:label','head','Heading')}${rcBtn('add:draw','draw','Drawing')}</div></div>`;
+  if(!c.n)b=`<div class="rcidle"><div class="rcpulse"></div><p class="note">Nothing selected. Use <b>Prev / Next</b> to pick a block, or select one on your desktop.</p></div>`+board;
   else{
-    b+=`<div class="rcsec"><span class="sbl">Fill</span><div class="sbgrid">${COLORS.map(x=>`<i class="swt" data-fc="${x}" style="background:${x}"></i>`).join('')}<i class="swt none" data-fc="" title="Default"></i><label class="swt custom"><input type="color" value="#f29b62" data-fx="c"></label></div></div>`;
-    if(c.text)b+=`<div class="rcsec"><span class="sbl">Text</span><div class="sbrow"><button class="sbb" data-fd="-1">A−</button><b class="rcfs" id="rcfs"></b><button class="sbb" data-fd="1">A+</button><span class="sbsep"></span>${['left','center','right'].map(a=>`<button class="sbb" data-al="${a}"><svg viewBox="0 0 24 24">${P['align'+a[0]]}</svg></button>`).join('')}</div><div class="sbgrid">${TCOLS.map(x=>`<i class="swt" data-tcc="${x}" style="background:${x}"></i>`).join('')}<i class="swt none" data-tcc=""></i><label class="swt custom"><input type="color" value="#f29b62" data-fx="tc"></label></div></div>`;
+    b+=`<div class="rcsec"><span class="sbl">Selected · ${c.n} block${c.n>1?'s':''}${c.type?' · '+esc(c.type):''}</span><div class="rcrow4 act3">${rcBtn('act:dup','dup','Duplicate')}${rcBtn('act:align','align','Align')}${rcBtn('act:del','del','Delete',' data-red="1"')}</div></div>`;
     if(c.draw)b+=`<div class="rcsec rcdraw"><span class="sbl">Draw here</span><div class="rcpad"><svg id="rcpad" preserveAspectRatio="xMidYMid meet"></svg></div><div class="rctools">${PENCOLS.map(x=>`<i class="pc" data-pc="${x}" style="background:${x==='auto'?'var(--ink)':x}"></i>`).join('')}<span class="dsep"></span>${[1.5,3,6].map(w=>`<i class="pw" data-pw="${w}"><b style="width:${3+w*1.6}px;height:${3+w*1.6}px"></b></i>`).join('')}<span class="dsep"></span><button data-dt="erase">${ico('eraser')}</button><button data-dt="clear">${ico('trash')}</button></div></div>`;
-    b+=`<div class="rcundo"><button class="rcb" data-a="un">Undo</button><button class="rcb" data-a="rd">Redo</button></div>`}
-  return hd('Paired with '+esc(RCP.pairName))+`<div class="rcbody">${b}</div><div class="rcfoot"><button class="rcb" data-a="unpair">Unpair</button></div>`}
+    if(c.ed)b+=`<div class="rcsec"><span class="sbl">Text</span><textarea id="rctx" class="rcta" rows="3" placeholder="Type here — it appears on your desktop"></textarea></div>`;
+    b+=`<div class="rcsec"><span class="sbl">Fill</span><div class="sbgrid">${COLORS.map(x=>`<i class="swt" data-fc="${x}" style="background:${x}"></i>`).join('')}<i class="swt none" data-fc="" title="Default"></i><label class="swt custom"><input type="color" value="#f29b62" data-fx="c"></label></div></div>`;
+    if(c.text)b+=`<div class="rcsec"><span class="sbl">Text style</span><div class="sbrow"><button class="sbb" data-fd="-1">A−</button><b class="rcfs" id="rcfs"></b><button class="sbb" data-fd="1">A+</button><span class="sbsep"></span>${['left','center','right'].map(a=>`<button class="sbb" data-al="${a}"><svg viewBox="0 0 24 24">${P['align'+a[0]]}</svg></button>`).join('')}</div><div class="sbgrid">${TCOLS.map(x=>`<i class="swt" data-tcc="${x}" style="background:${x}"></i>`).join('')}<i class="swt none" data-tcc=""></i><label class="swt custom"><input type="color" value="#f29b62" data-fx="tc"></label></div></div>`;
+    b+=board}
+  return hd('Connected')+`<div class="rcbody">${b}</div><div class="rcfoot"><button class="rcb" data-a="unpair">Unpair</button></div>`}
 function rcSync(){
-  const el=rcEl(),c=RCP.ctx;if(!c.n)return;
+  const el=rcEl(),c=RCP.ctx;if(RCP.state!=='paired'||!c.n)return;
   el.querySelectorAll('[data-fc]').forEach(s=>s.classList.toggle('act',c.fill!=='*'&&c.fill===s.dataset.fc));
   if(c.text){el.querySelectorAll('[data-tcc]').forEach(s=>s.classList.toggle('act',c.text.tc!=='*'&&c.text.tc===s.dataset.tcc));
     el.querySelectorAll('[data-al]').forEach(s=>s.classList.toggle('on',c.text.al===s.dataset.al));const f=el.querySelector('#rcfs');if(f)f.textContent=c.text.fs==null?'–':c.text.fs}
+  const ta=el.querySelector('#rctx');if(ta&&c.tv!==undefined&&document.activeElement!==ta&&ta.value!==c.tv)ta.value=c.tv;
   if(c.draw&&RCP.d){const d=RCP.d,svg=el.querySelector('#rcpad');if(svg){svg.setAttribute('viewBox',`0 0 ${d.vw} ${d.vh}`);svg.style.aspectRatio=d.vw+'/'+d.vh;svg.style.background=d.bg||'rgba(var(--ovc),.06)';if(!RCP.pen)svg.innerHTML=d.strokes.map(strokeSvg).join('')}
     el.querySelectorAll('.pc').forEach(x=>x.classList.toggle('on',!d.er&&x.dataset.pc===d.pc));el.querySelectorAll('.pw').forEach(x=>x.classList.toggle('on',+x.dataset.pw===d.pw));el.querySelector('[data-dt=erase]')?.classList.toggle('on',!!d.er)}}
+/* theme sheet (per device) */
+function rcTheme(){
+  let sh=document.getElementById('rcthemes');if(!sh){sh=document.createElement('div');sh.id='rcthemes';document.body.appendChild(sh);
+    sh.onclick=e=>{const b=e.target.closest('[data-th]');if(b){setTheme(b.dataset.th);sh.querySelectorAll('[data-th]').forEach(x=>x.classList.toggle('on',x.dataset.th===b.dataset.th));return}if(e.target===sh||e.target.closest('[data-x]'))sh.classList.remove('on')}}
+  const cur=document.documentElement.dataset.theme;
+  sh.innerHTML=`<div class="rcsheet"><div class="rcgrab"></div><b>Theme</b><p class="note">Saved on this phone only.</p><div class="rcthg">${Object.keys(THEMES).filter(t=>t!=='glitch').map(t=>`<button data-th="${t}" class="${t===cur?'on':''}"><span style="background:${THEMES[t][0]}"><i style="background:${THEMES[t][1]}"></i><i style="background:${THEMES[t][2]};opacity:.7"></i></span>${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div><button class="rcb" data-x style="margin-top:6px">Done</button></div>`;
+  requestAnimationFrame(()=>sh.classList.add('on'))}
+let rcWake=null;
+async function rcAwake(on){try{if(on&&navigator.wakeLock&&!rcWake){rcWake=await navigator.wakeLock.request('screen');rcWake.addEventListener('release',()=>{rcWake=null})}else if(!on&&rcWake){await rcWake.release();rcWake=null}}catch{}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&RCP.state==='paired')rcAwake(true)});
 /* phone input */
 document.addEventListener('click',e=>{
   const el=document.getElementById('rcui');if(!el||!el.contains(e.target))return;const t=e.target;
+  if(navigator.vibrate&&t.closest('button,.swt,.pc,.pw'))navigator.vibrate(6);
   const a=t.closest('[data-a]'),p=t.closest('[data-pair]');
   if(p){RCP.pend=p.dataset.pair;RCP.msg='';RCP.state='waiting';rcTx({t:'pr',n:me.name},RCP.pend);rcRender();return}
-  if(a){const k=a.dataset.a;
-    if(k==='code'){rcLeave();RCP.state='code';RCP.msg='';rcRender()}
+  if(a&&!a.disabled){const k=a.dataset.a;
+    if(k==='theme')rcTheme();
+    else if(k==='code'){rcLeave();RCP.state='code';RCP.msg='';rcRender()}
     else if(k==='join'){const v=(el.querySelector('#rcCode').value||'').trim().replace(/^.*room=/,'');if(v){history.replaceState(null,'','#room='+v);rcConnect(v)}}
     else if(k==='cancel'){RCP.state='pick';RCP.pend=null;rcRender()}
-    else if(k==='unpair'){rcTx({t:'unpair'});RCP.pair=null;RCP.state='pick';RCP.msg='';rcRender()}
-    else if(k==='un')rcTx({t:'un'});else if(k==='rd')rcTx({t:'rd'});return}
+    else if(k==='unpair'){rcTx({t:'unpair'});RCP.pair=null;rcAwake(false);RCP.state='pick';RCP.msg='';rcRender()}
+    else if(k==='un')rcTx({t:'un'});else if(k==='rd')rcTx({t:'rd'});
+    else if(k==='zi'||k==='zo'||k==='fit')rcTx({t:'v',k});
+    else if(k==='clr')rcTx({t:'sn',d:0});
+    else if(k.startsWith('sn'))rcTx({t:'sn',d:+k.slice(2)});
+    else if(k.startsWith('add:'))rcTx({t:'add',k:k.slice(4)});
+    else if(k.startsWith('act:'))rcTx({t:'act',k:k.slice(4)});
+    return}
   const fc=t.closest('[data-fc]');if(fc){RCP.ctx.fill=fc.dataset.fc;rcTx({t:'f',k:'c',v:fc.dataset.fc});rcSync();return}
   const tc=t.closest('[data-tcc]');if(tc){RCP.ctx.text.tc=tc.dataset.tcc;rcTx({t:'f',k:'tc',v:tc.dataset.tcc});rcSync();return}
   const fd=t.closest('[data-fd]');if(fd){const s=+fd.dataset.fd,f=RCP.ctx.text.fs||14;RCP.ctx.text.fs=clamp(f+s*(f>=40?4:f>=20?2:1),8,160);rcTx({t:'f',k:'fd',v:s});rcSync();return}
@@ -2824,7 +2936,9 @@ document.addEventListener('click',e=>{
   const pw=t.closest('[data-pw]');if(pw){d.pw=+pw.dataset.pw;rcTx({t:'dp',id:d.id,pw:d.pw});rcSync();return}
   const dt=t.closest('[data-dt]');if(dt){if(dt.dataset.dt==='erase'){d.er=!d.er;rcTx({t:'dp',id:d.id,er:d.er})}else{d.strokes=[];rcTx({t:'dc',id:d.id})}rcSync()}
 });
-document.addEventListener('input',e=>{const i=e.target;if(!i.dataset||!i.dataset.fx||!RCP.pair)return;
+document.addEventListener('input',e=>{const i=e.target;if(!RCP.pair)return;
+  if(i.id==='rctx'){clearTimeout(i._t);i._t=setTimeout(()=>rcTx({t:'tx',v:i.value,x:1}),120);return}
+  if(!i.dataset||!i.dataset.fx)return;
   if(i.dataset.fx==='c'){RCP.ctx.fill=i.value;rcTx({t:'f',k:'c',v:i.value,x:1})}else{RCP.ctx.text.tc=i.value;rcTx({t:'f',k:'tc',v:i.value,x:1})}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='rcCode')document.querySelector('#rcui [data-a=join]')?.click()});
 /* drawing pad: strokes stream to the desktop as you draw */
