@@ -751,107 +751,10 @@ body.placing,body.placing *{cursor:grabbing!important}
 @media (prefers-reduced-motion:reduce){[data-theme="glitch"] *{animation:none!important}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
-/* ---------- phones & tablets ---------- */
 html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
-#vp{touch-action:none;-webkit-touch-callout:none}
-.node{-webkit-touch-callout:none}
-.node .edit{-webkit-user-select:text;user-select:text}
-body.coarse .tb,body.coarse .mi{min-height:44px}
-body.coarse .tb{min-width:44px}
-body.coarse .port{width:20px;height:20px;margin-top:-10px;border-width:2.5px}
-body.coarse .port.in{left:-11px}body.coarse .port.out{right:-11px}
-body.coarse .port::after{inset:-14px}
-body.coarse .rz[data-d=e],body.coarse .rz[data-d=w]{width:22px}
-body.coarse .rz[data-d=e]{right:-11px}body.coarse .rz[data-d=w]{left:-11px}
-body.coarse .rz[data-d=s],body.coarse .rz[data-d=n]{height:22px}
-body.coarse .rz[data-d=s]{bottom:-11px}body.coarse .rz[data-d=n]{top:-11px}
-body.coarse .rz[data-d=se],body.coarse .rz[data-d=sw],body.coarse .rz[data-d=ne],body.coarse .rz[data-d=nw]{width:30px;height:30px}
-body.coarse .rz[data-d=se]{right:-14px;bottom:-14px}body.coarse .rz[data-d=sw]{left:-14px;bottom:-14px}body.coarse .rz[data-d=ne]{right:-14px;top:-14px}body.coarse .rz[data-d=nw]{left:-14px;top:-14px}
-body.coarse .swt{width:28px;height:28px}
-body.coarse #stylebar,body.coarse .sbgrid{grid-template-columns:repeat(11,28px)}
-body.coarse .jap,body.coarse .jar{transform:scale(1.25)}
-@media (max-width:719px){
-  #brand{left:8px;top:calc(8px + env(safe-area-inset-top));padding:5px 8px 5px 6px;max-width:calc(100vw - 120px);gap:6px}
-  #pname{width:100%;min-width:0;font-size:14px}
-  #topright{right:8px;top:calc(8px + env(safe-area-inset-top));gap:6px}
-  #topright #status,#status{display:none}
-  #peers{display:none}
-  #bShare{height:38px;padding:0 12px}
-  #toolbar{bottom:calc(10px + env(safe-area-inset-bottom));max-width:calc(100vw - 12px);overflow-x:auto;scrollbar-width:none;--k:1!important}
-  #toolbar::-webkit-scrollbar{display:none}
-  #toolbar .tb{flex:0 0 auto}
-  #hint{width:86vw}
-  #filemenu{left:8px;right:8px;width:auto;top:calc(58px + env(safe-area-inset-top))}
-  #more{left:8px!important;right:8px!important;width:auto;bottom:calc(70px + env(safe-area-inset-bottom))!important;top:auto!important;max-height:62vh;overflow:auto}
-  #mini{display:none}
-  #mx{left:8px!important;right:8px!important;width:auto!important;bottom:calc(76px + env(safe-area-inset-bottom))!important;top:auto!important}
-  #stylebar{max-width:calc(100vw - 16px);overflow-x:auto}
-  #modal .card,#smodal .card,#tmodal .card,#kmodal .card{width:calc(100vw - 24px);max-height:86vh;overflow:auto}
-  .pcard{max-width:96vw}#pal{padding-top:8vh}
-  #toast{bottom:calc(150px + env(safe-area-inset-bottom));max-width:92vw;text-align:center}
-  #areabar{max-width:calc(100vw - 16px)}
-  #smchat,#smwatch,#smfeed{max-width:60vw}
-}
-@media (max-height:480px) and (pointer:coarse){#toolbar{bottom:4px}#brand,#topright{top:4px}}
-
-/* ===== phone mode (touch + small screen only; desktop is untouched) ===== */
-body.phone #toolbar{gap:4px;padding:6px 8px;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));border-radius:22px}
-body.phone #toolbar>.tb:not(#pBox):not(#pAdd):not(#pUndo):not(#bMore),body.phone #toolbar>.sep{display:none}
-body.phone #toolbar .tb{width:62px;height:54px;flex-direction:column;gap:3px;border-radius:15px;font-size:10px;font-weight:600;letter-spacing:.01em}
-body.phone #toolbar .tb svg{width:22px;height:22px}
-#toolbar .tb>i{display:none}
-body.phone #toolbar .tb>i{display:block;font-style:normal;font-size:10px;font-weight:600;line-height:1}
-body.phone #toolbar .tb[data-tip]::before{display:none!important}
-#pAdd,#pUndo,#psheet,#psel{display:none}
-body.phone #pAdd,body.phone #pUndo,body.phone #pBox{display:flex}
-body.phone #toolbar [data-tool=select],body.phone #toolbar [data-tool=hand]{display:none}
-#pBox{display:none}
-body.phone #pBox.on{background:var(--accent);color:var(--on-accent)}
-body.phone #pBox span{font-size:10px;font-weight:600}
-body.boxsel #vp{outline:2.5px dashed var(--accent);outline-offset:-4px}
-body.phone #pAdd{width:74px}
-body.phone #pAdd span,body.phone #pUndo span{font-size:10px;font-weight:600}
-body.phone #psheet{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));padding:8px;border-radius:20px;z-index:102;opacity:0;transform:translateY(14px) scale(.97);pointer-events:none;transform-origin:50% 100%;transition:opacity .2s var(--ease),transform .35s var(--ease)}
-body.placing #psheet{opacity:0!important;pointer-events:none!important}
-body.phone #psheet.on{opacity:1;transform:none;pointer-events:auto}
-#psheet button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:72px;border-radius:14px;color:var(--t1);font-size:11px;font-weight:600}
-#psheet button:active{background:rgba(var(--ovc),.12)}
-#psheet svg,#psel svg,#pAdd svg,#pUndo svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-body.phone #psel{display:flex;position:fixed;right:10px;bottom:calc(150px + env(safe-area-inset-bottom));flex-direction:column;gap:2px;padding:4px;border-radius:18px;z-index:99;opacity:0;transform:scale(.85);pointer-events:none;transition:opacity .2s var(--ease),transform .3s var(--ease)}
-body.phone #psel.on{opacity:1;transform:none;pointer-events:auto}
-#psel button{all:unset;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;color:var(--t1)}
-#psel button:active{background:rgba(var(--ovc),.14)}
-#psel .red{color:#e5534b}
-/* More menu: only the basics */
-body.phone #mStick,body.phone #mAlign,body.phone [data-tool=area].mi,body.phone #bSnap,body.phone #mKeys,body.phone #bSettings,body.phone #mPal,body.phone #more .msep:nth-of-type(n+3){display:none}
-body.phone #more .mi,body.phone #more .mz button{min-height:48px;font-size:15px}
-body.phone #more kbd{display:none}
-body.phone #mx,body.phone #areabar,body.phone #mini,body.phone #gbox{display:none!important}
-/* bigger, calmer touch targets on blocks */
-body.phone .node .hd{min-height:34px}
-body.phone .swt{width:30px;height:30px}
-body.phone #stylebar,body.phone .sbgrid{grid-template-columns:repeat(6,34px)}
-body.phone #brand{border-radius:16px}
-body.phone #bShare{height:40px;border-radius:14px}
-
-/* phone: calm, instant touch feedback - no sticky hover, no bounce, no tooltips */
-body.phone #toolbar .tb,body.phone #toolbar .tb svg{transition:background-color .12s linear,color .12s linear!important;animation:none!important;transform:none!important}
-body.phone #toolbar .tb:hover{background:none;color:var(--t2);transform:none!important}
-body.phone #toolbar .tb:hover svg{transform:none!important}
-body.phone #toolbar .tb::after{content:none!important}
-body.phone #toolbar .tb:active{background:rgba(var(--ovc),.12);color:var(--t1)}
-body.phone #toolbar .tb.on,body.phone #toolbar .tb.on:hover,body.phone #toolbar .tb.on:active{background:var(--accent);color:var(--on-accent)}
-body.phone #toolbar{animation:none!important;will-change:auto}
-body.phone #psheet{transition:opacity .14s linear,transform .14s linear}
-body.phone #psel{transition:opacity .14s linear,transform .14s linear}
-body.phone #psheet button,body.phone #psel button{transition:background-color .1s linear}
-body.phone .glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-
+#vp{touch-action:none}
 /* ===== remote control (phone pairs with a desktop) ===== */
-#mRemote{display:none}
 #mPair kbd{display:none}
-body.phone #mRemote{display:flex}
-body.phone #mPair{display:none}
 #pairSec .prow{display:flex;gap:14px;align-items:center;margin:10px 0}
 #pQR{width:116px;height:116px;flex:none;background:#fff;border-radius:10px;padding:4px;display:grid;place-items:center}
 #pQR svg{width:100%;height:100%;display:block}
@@ -969,7 +872,6 @@ body.rcm #vp,body.rcm #toolbar,body.rcm #brand,body.rcm #topright,body.rcm #hint
   <button class="mi" id="mStick"><span>Stickman mode</span><kbd></kbd></button>
   <button class="mi" id="mAlign"><span>Align blocks</span><kbd>J</kbd></button>
   <button class="mi" id="mPair"><span>Pair a phone…</span><kbd></kbd></button>
-  <button class="mi" id="mRemote"><span>Remote-control mode</span></button>
   <button class="mi" data-tool="area"><span>Export area to PDF</span><kbd>E</kbd></button>
   <button class="mi" id="bSnap"><span>Snap to grid</span><kbd>G</kbd></button>
   <div class="msep"></div>
@@ -1640,7 +1542,7 @@ function mxDraw(){if(mxQ||!MX.on)return;mxQ=requestAnimationFrame(()=>{mxQ=0;if(
 function mxPos(){
   const p=$('#mx');if(!MX.on)return;const b=MX.u.box,z=view.z,bw=p.offsetWidth,bh=p.offsetHeight;
   let x=b.x*z+view.x-bw-18;if(x<10)x=Math.min(innerWidth-bw-10,(b.x+b.w)*z+view.x+18);
-  const y=clamp(b.y*z+view.y,70,Math.max(70,innerHeight-bh-100));p.style.transform=NARROW()?`translate(${(innerWidth-bw)/2}px,${Math.max(70,innerHeight-bh-96)}px)`:`translate(${clamp(x,10,innerWidth-bw-10)}px,${y}px)`}
+  const y=clamp(b.y*z+view.y,70,Math.max(70,innerHeight-bh-100));p.style.transform=`translate(${clamp(x,10,innerWidth-bw-10)}px,${y}px)`}
 function mxUi(){
   if(!MX.u)return;
   document.querySelectorAll('#mxseg button').forEach(b=>b.classList.toggle('on',b.dataset.m===MX.mode));
@@ -1716,13 +1618,13 @@ vp.addEventListener('pointerdown',e=>{
       const textual=ty==='text'||ty==='sticky'||ty==='label';
       if(textual&&!hd){
         const ed=nd.querySelector('.edit');
-        if(ed&&e.pointerType!=='touch'&&nearText(e,ed)){e.preventDefault();if(!sel.has(nd.dataset.id)||sel.size>1)select([nd.dataset.id]);enterEdit(ed,e.clientX,e.clientY);return}
+        if(ed&&nearText(e,ed)){e.preventDefault();if(!sel.has(nd.dataset.id)||sel.size>1)select([nd.dataset.id]);enterEdit(ed,e.clientX,e.clientY);return}
       }
       if(hd||ty==='image'||ty==='combine'||ty==='draw'||textual){startDrag(e,nd);return}
     }
   }
   // empty space
-  if(pan||(e.pointerType==='touch'&&!TOUCH.box)){drag={k:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,touch:e.pointerType==='touch'};vp.classList.add('panning');cancelAnimationFrame(anim)}
+  if(pan){drag={k:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};vp.classList.add('panning');cancelAnimationFrame(anim)}
   else{
     if(!e.shiftKey){sel.clear();selEdge=null;S.nodes.forEach(sync);drawEdges()}
     document.activeElement?.blur?.();
@@ -1805,8 +1707,7 @@ function endDrag(e){
   if(drag.k==='pen'){const d=drag;drag=null;penFinish(d);return}
   if(drag.k==='area'){drag=null;if(area&&(area.w<20||area.h<20))area=null;updArea();return}
   if(drag.k==='rz'&&drag.moved){const rzn=drag.n;setTimeout(()=>jmDropped(rzn.type==='journey'?S.nodes.filter(m=>!jmSkip(m)):[rzn]),0)}
-  if(drag.k==='pan'){vp.classList.remove('panning');if(drag.touch)touchTap(e,drag)}
-  if(drag.k==='move'&&e.pointerType==='touch'&&!drag.moved&&drag.start.length===1)touchTapNode(drag.start[0].n)
+  if(drag.k==='pan')vp.classList.remove('panning');
   if(drag.k==='marq')marquee.style.display='none';
   if(drag.k==='move'){drag.start.forEach(s=>els.get(s.n.id).classList.remove('dragging'));if(drag.moved){jmDropped(drag.start.map(s=>s.n));if(spl&&drag.start.length===1)spliceDo(drag.start[0].n);else spliceClear()}
     if(!drag.moved&&!e.shiftKey&&sel.size>1&&e.type==='pointerup'){}}
@@ -1968,8 +1869,7 @@ function closeMore(){more.classList.remove('on')}
 $('#bMore').onclick=e=>{e.stopPropagation();if(more.classList.toggle('on')){const r=$('#bMore').getBoundingClientRect(),w=more.offsetWidth;more.style.left=clamp(r.right-w,10,innerWidth-w-10)+'px';more.style.bottom=(innerHeight-r.top+14)+'px'}};
 more.addEventListener('click',e=>{if(e.target.closest('.mi'))closeMore()});
 addEventListener('pointerdown',e=>{if(!e.target.closest('#more,#bMore'))closeMore()});
-$('#mAlign').onclick=()=>alignBlocks();
-$('#mRemote').onclick=()=>{closeMore();RCP.mode='remote';localStorage.setItem('affinity-phone-mode','remote');if(collab)disconnect(true);rcStart(localStorage.getItem('affinity-rc-room'))};$('#mPal').onclick=()=>openPal();
+$('#mAlign').onclick=()=>alignBlocks();$('#mPal').onclick=()=>openPal();
 
 /* ---------- files ---------- */
 const DBN=new URLSearchParams(location.search).get('db')||'affinity';
@@ -2079,7 +1979,7 @@ let ciHist=false;
   i.addEventListener('input',()=>{if(!ciHist){pushHist();ciHist=true}f(i.value)});i.addEventListener('change',()=>ciHist=false)});
 let barQ=0;function queueBar(){if(barQ)return;barQ=requestAnimationFrame(()=>{barQ=0;updBar();updMini();updGbox()})}
 function updBar(){
-  updPhone();rcPush();
+  rcPush();
   const ns=[...sel].map(byId).filter(Boolean);
   const hide=!colorsOn||!ns.length||tool==='area'||(drag&&drag.moved);
   bar.classList.toggle('on',!hide);if(hide)return;
@@ -2088,7 +1988,7 @@ function updBar(){
   const bw=bar.offsetWidth,bh=bar.offsetHeight;
   let cx=clamp((x1+x2)/2*z+view.x,bw/2+10,innerWidth-bw/2-10),top=y1*z+view.y-bh-14;
   if(top<64)top=y2*z+view.y+14;top=clamp(top,64,Math.max(64,innerHeight-bh-100));
-  bar.style.transform=NARROW()?`translate(${(innerWidth-bw)/2}px,${Math.max(70,innerHeight-bh-96)}px)`:`translate(${cx-bw/2}px,${top}px)`;
+  bar.style.transform=`translate(${cx-bw/2}px,${top}px)`;
   const cs=new Set(ns.map(n=>n.color||(n.type==='sticky'?COLORS[0]:'')));
   bar.querySelectorAll('.swt[data-c]').forEach(s=>s.classList.toggle('act',cs.size===1&&cs.has(s.dataset.c)));
   if(tx.length){
@@ -2149,7 +2049,7 @@ function updArea(){
   const bw=abar.offsetWidth,bh=abar.offsetHeight;
   const cx=clamp((area.x+area.w/2)*view.z+view.x,bw/2+10,innerWidth-bw/2-10);
   let y=(area.y+area.h)*view.z+view.y+14;if(y>innerHeight-bh-90)y=Math.max(70,(area.y)*view.z+view.y-bh-14);
-  abar.style.transform=NARROW()?`translate(${(innerWidth-bw)/2}px,${innerHeight-bh-96}px)`:`translate(${cx-bw/2}px,${clamp(y,64,innerHeight-bh-90)}px)`;
+  abar.style.transform=`translate(${cx-bw/2}px,${clamp(y,64,innerHeight-bh-90)}px)`;
 }
 const curTheme=()=>document.documentElement.dataset.theme||'night';
 const areaBg=()=>getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#161519';
@@ -2753,7 +2653,7 @@ $('#sCopy').onclick=async()=>{try{await navigator.clipboard.writeText(shareLink(
 $('#sLeave').onclick=async()=>{await disconnect();toast('Left the session')};
 async function joinFromHash(){
   const m=location.hash.match(/room=([\w-]+)/);if(!m)return false;const room=m[1];
-  if(rcBlock()){if(RCP.mode==='remote'&&RCP.room!==room)rcStart(room);return true}
+  if(PHONE()){if(RCP.room!==room)rcStart(room);return true}
   if(collab&&collab.roomId===room)return true;
   if(S.room!==room){
     const hit=metas.find(x=>x.room===room);
@@ -2840,24 +2740,12 @@ document.getElementById('pList').addEventListener('click',e=>{const b=e.target.c
 document.getElementById('mPair').onclick=()=>{closeMore();$('#myName').value=me.name;updPeers();$('#smodal').classList.add('on')};
 
 /* ---- phone side ---- */
-const RCP={mode:localStorage.getItem('affinity-phone-mode')||'',on:false,room:null,room$:null,desks:new Map(),pair:null,pairName:'',state:'',ctx:{n:0},d:null,msg:'',pen:false};
-const rcBlock=()=>PHONE()&&RCP.mode!=='normal';
-async function bootCollab(){if(!(await joinFromHash())&&S.room)connect(S.room)}
+const RCP={on:false,room:null,room$:null,desks:new Map(),pair:null,pairName:'',state:'',ctx:{n:0},d:null,msg:'',pen:false};
 async function rcBoot(){
   if(!PHONE())return false;
-  if(RCP.mode==='normal')return false;
   const hm=location.hash.match(/room=([\w-]+)/);
-  if(RCP.mode==='remote'){rcStart(hm?hm[1]:localStorage.getItem('affinity-rc-room'));return true}
-  rcInit();return true}
-function rcInit(){
-  const el=rcEl();document.body.classList.add('rcm');el.className='init';
-  el.innerHTML=`<div class="rcwrap"><div class="rclogo">${phIco('plus')}</div><h2>How do you want to use Affinity on this phone?</h2>
-  <button class="rcc" data-m="remote"><b>Remote control</b><span>Pair with a desktop. Your phone shows the format bar and lets you draw into the selected drawing block.</span></button>
-  <button class="rcc" data-m="normal"><b>Use on its own</b><span>Edit the board right here on the phone.</span></button><p class="note">You can switch any time from the menu.</p></div>`;
-  el.onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;RCP.mode=b.dataset.m;localStorage.setItem('affinity-phone-mode',RCP.mode);
-    if(RCP.mode==='normal'){rcHide();bootCollab()}else{const hm=location.hash.match(/room=([\w-]+)/);rcStart(hm?hm[1]:localStorage.getItem('affinity-rc-room'))}}}
+  rcStart(hm?hm[1]:localStorage.getItem('affinity-rc-room'));return true}
 function rcEl(){let el=document.getElementById('rcui');if(!el){el=document.createElement('div');el.id='rcui';document.body.appendChild(el)}return el}
-function rcHide(){document.body.classList.remove('rcm');const el=document.getElementById('rcui');if(el)el.className='';RCP.on=false}
 function rcStart(room){RCP.on=true;document.body.classList.add('rcm');RCP.pair=null;RCP.ctx={n:0};RCP.d=null;
   if(room)rcConnect(room);else{RCP.state='code';rcRender()}}
 async function rcLeave(){if(RCP.room$){try{await RCP.room$.leave()}catch{}}RCP.room$=null;RCP.send=null;RCP.desks=new Map();RCP.pair=null}
@@ -2888,7 +2776,7 @@ function rcRender(){if(rcRQ)return;rcRQ=requestAnimationFrame(()=>{rcRQ=0;rcDraw
 function rcDraw(){
   if(!RCP.on)return;const el=rcEl();
   if(document.activeElement&&el.contains(document.activeElement)&&document.activeElement.type==='color')return;
-  const hd=(sub)=>`<div class="rch"><div><b>Remote control</b><span>${sub}</span></div><span class="sp"></span><button class="rcb" data-a="normal">Use phone on its own</button></div>`;
+  const hd=(sub)=>`<div class="rch"><div><b>Remote control</b><span>${sub}</span></div><span class="sp"></span></div>`;
   let h='';
   if(RCP.state==='code')h=hd('Join a desktop')+`<div class="rcwrap"><h2>Enter the room code</h2><p class="note">On your desktop open <b>Share → Pair a phone</b> and type the code shown, or scan its QR code.</p><input id="rcCode" class="fld" placeholder="e.g. k3x9a2bq" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="rcc go" data-a="join"><b>Connect</b></button></div>`;
   else if(RCP.state==='connecting')h=hd('Connecting…')+`<div class="rcwrap"><div class="rcspin"></div><h2>Looking for desktops</h2><p class="note">Room ${esc(RCP.room||'')} · this can take up to 20 seconds</p><button class="rcb" data-a="code">Change room</button></div>`;
@@ -2907,7 +2795,7 @@ function rcCtrl(hd){
     b+=`<div class="rcsec"><span class="sbl">Fill</span><div class="sbgrid">${COLORS.map(x=>`<i class="swt" data-fc="${x}" style="background:${x}"></i>`).join('')}<i class="swt none" data-fc="" title="Default"></i><label class="swt custom"><input type="color" value="#f29b62" data-fx="c"></label></div></div>`;
     if(c.text)b+=`<div class="rcsec"><span class="sbl">Text</span><div class="sbrow"><button class="sbb" data-fd="-1">A−</button><b class="rcfs" id="rcfs"></b><button class="sbb" data-fd="1">A+</button><span class="sbsep"></span>${['left','center','right'].map(a=>`<button class="sbb" data-al="${a}"><svg viewBox="0 0 24 24">${P['align'+a[0]]}</svg></button>`).join('')}</div><div class="sbgrid">${TCOLS.map(x=>`<i class="swt" data-tcc="${x}" style="background:${x}"></i>`).join('')}<i class="swt none" data-tcc=""></i><label class="swt custom"><input type="color" value="#f29b62" data-fx="tc"></label></div></div>`;
     if(c.draw)b+=`<div class="rcsec rcdraw"><span class="sbl">Draw here</span><div class="rcpad"><svg id="rcpad" preserveAspectRatio="xMidYMid meet"></svg></div><div class="rctools">${PENCOLS.map(x=>`<i class="pc" data-pc="${x}" style="background:${x==='auto'?'var(--ink)':x}"></i>`).join('')}<span class="dsep"></span>${[1.5,3,6].map(w=>`<i class="pw" data-pw="${w}"><b style="width:${3+w*1.6}px;height:${3+w*1.6}px"></b></i>`).join('')}<span class="dsep"></span><button data-dt="erase">${ico('eraser')}</button><button data-dt="clear">${ico('trash')}</button></div></div>`;
-    b+=`<div class="rcundo"><button class="rcb" data-a="un">${phIco('undo')} Undo</button><button class="rcb" data-a="rd">Redo</button></div>`}
+    b+=`<div class="rcundo"><button class="rcb" data-a="un">Undo</button><button class="rcb" data-a="rd">Redo</button></div>`}
   return hd('Paired with '+esc(RCP.pairName))+`<div class="rcbody">${b}</div><div class="rcfoot"><button class="rcb" data-a="unpair">Unpair</button></div>`}
 function rcSync(){
   const el=rcEl(),c=RCP.ctx;if(!c.n)return;
@@ -2922,8 +2810,7 @@ document.addEventListener('click',e=>{
   const a=t.closest('[data-a]'),p=t.closest('[data-pair]');
   if(p){RCP.pend=p.dataset.pair;RCP.msg='';RCP.state='waiting';rcTx({t:'pr',n:me.name},RCP.pend);rcRender();return}
   if(a){const k=a.dataset.a;
-    if(k==='normal'){rcLeave();RCP.mode='normal';localStorage.setItem('affinity-phone-mode','normal');rcHide();bootCollab()}
-    else if(k==='code'){rcLeave();RCP.state='code';RCP.msg='';rcRender()}
+    if(k==='code'){rcLeave();RCP.state='code';RCP.msg='';rcRender()}
     else if(k==='join'){const v=(el.querySelector('#rcCode').value||'').trim().replace(/^.*room=/,'');if(v){history.replaceState(null,'','#room='+v);rcConnect(v)}}
     else if(k==='cancel'){RCP.state='pick';RCP.pend=null;rcRender()}
     else if(k==='unpair'){rcTx({t:'unpair'});RCP.pair=null;RCP.state='pick';RCP.msg='';rcRender()}
@@ -4230,7 +4117,6 @@ function jmRefresh(n){
 let jmQ=0;function jmSoon(){if(jmQ)return;jmQ=requestAnimationFrame(()=>{jmQ=0;S.nodes.forEach(n=>{if(n.type==='journey')jmRefresh(n)})})}
 /* graph dots only show for the graph row under the mouse (computed from data: no DOM reads), once per frame */
 let jmPM=null,jmPQ=0;
-addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){jmPM=e;setTimeout(()=>dispatchEvent(new PointerEvent('pointermove',{clientX:e.clientX,clientY:e.clientY})),0)}},true);
 addEventListener('pointermove',e=>{jmPM=e;if(!jmPQ)jmPQ=requestAnimationFrame(()=>{jmPQ=0;const e=jmPM,z=view.z;
   S.nodes.forEach(n=>{if(n.type!=='journey')return;const el=els.get(n.id),g=el&&el.querySelector('.jg');if(!g||g._keep||el.style.display==='none')return;
     const wx=(e.clientX-view.x)/z-(n.x+JM_OX),wy=(e.clientY-view.y)/z-(n.y+JM_HD),W=n.hw+n.ph.length*n.cw,H=n.hh+n.rows.reduce((a,r)=>a+r.h,0);
@@ -4799,81 +4685,9 @@ window.addEventListener('resize',()=>{if(SM.looping)fxSize()});
 function fitBar(){const t=$('#toolbar');t.style.setProperty('--k',1);const k=Math.min(1,(innerWidth-24)/t.scrollWidth);t.style.setProperty('--k',k)}
 addEventListener('resize',()=>{applyView();fitBar()});fitBar();
 
-/* ---------- phones & tablets: touch gestures, action bar, on-screen stickman pad ---------- */
-const TOUCH={box:false,preSel:new Set(),lastTap:0,lastX:0,lastY:0};
-const COARSE=()=>matchMedia('(pointer:coarse)').matches||innerWidth<720;
-function NARROW(){return innerWidth<720}
-addEventListener('resize',()=>{syncCoarse();queueBar()});
-/* two fingers: pinch to zoom, drag to pan */
-const tPts=new Map();let pinch=null;
-vp.addEventListener('pointerdown',e=>{
-  if(e.pointerType!=='touch')return;
-  tPts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(tPts.size===1)TOUCH.preSel=new Set(sel);
-  if(tPts.size===2){
-    e.stopImmediatePropagation();
-    if(drag){if(drag.k==='pan')vp.classList.remove('panning');if(drag.k==='marq')marquee.style.display='none';drag=null}
-    const [a,b]=[...tPts.values()];stopZoom();cancelAnimationFrame(anim);
-    pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1,cx:(a.x+b.x)/2,cy:(a.y+b.y)/2,z:view.z,vx:view.x,vy:view.y}}
-},true);
-addEventListener('pointermove',e=>{
-  if(e.pointerType!=='touch'||!tPts.has(e.pointerId))return;
-  tPts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(pinch&&tPts.size>=2){
-    e.stopImmediatePropagation();const [a,b]=[...tPts.values()],d=Math.hypot(a.x-b.x,a.y-b.y)||1,cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;
-    const nz=clamp(pinch.z*d/pinch.d,.1,3),wx=(pinch.cx-pinch.vx)/pinch.z,wy=(pinch.cy-pinch.vy)/pinch.z;
-    view.z=nz;view.x=cx-wx*nz;view.y=cy-wy*nz;queueView();saveView()}
-},true);
-const tEnd=e=>{if(e.pointerType!=='touch')return;tPts.delete(e.pointerId);if(tPts.size<2&&pinch){pinch=null;drag=null;vp.classList.remove('panning')}};
-addEventListener('pointerup',tEnd,true);addEventListener('pointercancel',tEnd,true);
-/* tap on empty space: deselect; double-tap: new text block */
-function touchTap(e,d){
-  if(Math.hypot(e.clientX-d.sx,e.clientY-d.sy)>10)return;
-  const now=performance.now(),dbl=now-TOUCH.lastTap<320&&Math.hypot(e.clientX-TOUCH.lastX,e.clientY-TOUCH.lastY)<30;
-  TOUCH.lastTap=now;TOUCH.lastX=e.clientX;TOUCH.lastY=e.clientY;
-  sel.clear();selEdge=null;S.nodes.forEach(sync);drawEdges();document.activeElement?.blur?.();
-  if(dbl){TOUCH.lastTap=0;addFromTool('text',toWorld(e.clientX,e.clientY))}}
-/* tap on an already-selected text block: edit it (first tap only selects, so dragging never opens the keyboard) */
-function touchTapNode(n){
-  if(!TOUCH.preSel.has(n.id))return;
-  if(n.type==='text'||n.type==='sticky'||n.type==='label'){const ed=els.get(n.id)?.querySelector('.edit');if(ed)enterEdit(ed)}}
-/* on-screen keyboard: keep the block being typed in above it */
-function kbLift(){
-  const vv=window.visualViewport,ed=document.activeElement;if(!vv||!ed||!ed.closest||!ed.closest('.node'))return;
-  const r=ed.closest('.node').getBoundingClientRect(),room=vv.height-16;
-  if(r.bottom>room){view.y-=r.bottom-room+24;applyView()}else if(r.top<70){view.y+=70-r.top;applyView()}}
-document.addEventListener('focusin',e=>{if(COARSE()&&e.target.closest&&e.target.closest('.node'))setTimeout(kbLift,320)});
-if(window.visualViewport)visualViewport.addEventListener('resize',()=>{if(COARSE())setTimeout(kbLift,60)});
-/* ---------- phone mode: a small, friendly subset of the app (desktop untouched) ---------- */
+/* a phone is only ever a remote control (see the remote-control section) */
 const PHONE=()=>matchMedia('(pointer:coarse)').matches&&Math.min(innerWidth,innerHeight)<720;
-const PH_IC={canvas:'<rect x="3" y="4" width="18" height="16" rx="3" stroke-dasharray="3 3"/><rect x="8" y="9" width="8" height="6" rx="1"/>',text:'<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',head:'<path d="M6 4v16M18 4v16M6 12h12"/>',img:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',draw:'<path d="M4 20l1-4L16 5a2.100 2.100 0 013 3L8 19z"/>',plus:'<path d="M12 5v14M5 12h14"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>',del:'<path d="M4 7h16M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/>',undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>'};
-const phIco=k=>`<svg viewBox="0 0 24 24">${PH_IC[k]}</svg>`;
-/* "+" button opens a sheet of the basic blocks */
-const pAdd=document.createElement('button');pAdd.id='pAdd';pAdd.className='tb';pAdd.innerHTML=phIco('plus')+'<span>Add</span>';
-$('#toolbar').insertBefore(pAdd,$('#bMore'));
-const pBox=document.createElement('button');pBox.id='pBox';pBox.className='tb';pBox.innerHTML='<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3.5 3"/><path d="M9 12l2.200 2.200L15.500 9.500"/></svg><span>Select</span>';
-$('#toolbar').insertBefore(pBox,$('#bMore'));
-function setBox(on){TOUCH.box=on;pBox.classList.toggle('on',on);document.body.classList.toggle('boxsel',on);if(on)toast('Drag on empty space to select blocks')}
-pBox.onclick=()=>setBox(!TOUCH.box);
-const pUndo=document.createElement('button');pUndo.id='pUndo';pUndo.className='tb';pUndo.innerHTML=phIco('undo')+'<span>Undo</span>';
-$('#toolbar').insertBefore(pUndo,$('#bMore'));pUndo.onclick=()=>undo();
-const psheet=document.createElement('div');psheet.id='psheet';psheet.className='glass';
-psheet.innerHTML=[['text','Text','text'],['canvas','Canvas','canvas'],['label','Heading','head'],['image','Image','img'],['draw','Drawing','draw']].map(([t,l,i])=>`<button data-pa="${t}" data-note="0">${phIco(i)}<span>${l}</span></button>`).join('');
-document.body.appendChild(psheet);
-psheet.querySelectorAll('button').forEach(b=>wirePlace(b,b.dataset.pa));
-pAdd.onclick=e=>{e.stopPropagation();psheet.classList.toggle('on');pAdd.classList.toggle('on',psheet.classList.contains('on'))};
-psheet.addEventListener('click',e=>{if(justPlaced)return;const b=e.target.closest('button');if(!b)return;const t=b.dataset.pa;setTool('select');
-  addFromTool(t)});
-/* selected block(s): just Copy + Delete, next to the colour bar */
-const psel=document.createElement('div');psel.id='psel';psel.className='glass';
-psel.innerHTML=`<button data-s="dup">${phIco('copy')}</button><button data-s="del" class="red">${phIco('del')}</button>`;document.body.appendChild(psel);
-psel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.s==='dup')dupSelected();else ACT.del();queueBar()});
-function updPhone(){const on=PHONE()&&!SM.on&&sel.size>0;psel.classList.toggle('on',on);if(!on)return}
-/* phone body class, simpler hint */
-[['#bMore','More']].forEach(([q,t])=>{const b=document.querySelector('#toolbar '+q);if(b){const l=document.createElement('i');l.textContent=t;b.appendChild(l)}});
-function syncCoarse(){const p=PHONE();document.body.classList.toggle('phone',p);document.body.classList.toggle('coarse',COARSE());document.body.classList.toggle('narrow',NARROW());
-  const h=document.getElementById('hint');if(h){if(p&&!h._p){h._o=h.innerHTML;h._p=1;h.innerHTML='<h1>Start mapping</h1><p>Tap <b>Add</b>, then tap or drag a block onto the board · pinch to zoom</p>'}else if(!p&&h._p){h.innerHTML=h._o;h._p=0}}}
-syncCoarse();
+document.body.classList.toggle('phone',PHONE());addEventListener('resize',()=>document.body.classList.toggle('phone',PHONE()));
 
 window.__affinity={RCP,RC,phones,cloneArea,renderArea,pdfFromJpeg,setArea:a=>{area=a;updArea()},addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{const t=performance.now();drawEdges();return Math.round(performance.now()-t)},get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},alignBlocks,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
 })();
