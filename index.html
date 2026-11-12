@@ -810,9 +810,7 @@ body.phone #toolbar [data-tool=select],body.phone #toolbar [data-tool=hand]{disp
 body.phone #pBox.on{background:var(--accent);color:var(--on-accent)}
 body.phone #pBox span{font-size:10px;font-weight:600}
 body.boxsel #vp{outline:2.5px dashed var(--accent);outline-offset:-4px}
-body.phone #pAdd{background:var(--accent);color:var(--on-accent);width:74px}
-body.phone #pAdd.on svg{transform:rotate(45deg)}
-body.phone #pAdd svg{transition:transform .3s var(--ease)}
+body.phone #pAdd{width:74px}
 body.phone #pAdd span,body.phone #pUndo span{font-size:10px;font-weight:600}
 body.phone #psheet{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));padding:8px;border-radius:20px;z-index:102;opacity:0;transform:translateY(14px) scale(.97);pointer-events:none;transform-origin:50% 100%;transition:opacity .2s var(--ease),transform .35s var(--ease)}
 body.placing #psheet{opacity:0!important;pointer-events:none!important}
@@ -836,6 +834,19 @@ body.phone .swt{width:30px;height:30px}
 body.phone #stylebar,body.phone .sbgrid{grid-template-columns:repeat(6,34px)}
 body.phone #brand{border-radius:16px}
 body.phone #bShare{height:40px;border-radius:14px}
+
+/* phone: calm, instant touch feedback - no sticky hover, no bounce, no tooltips */
+body.phone #toolbar .tb,body.phone #toolbar .tb svg{transition:background-color .12s linear,color .12s linear!important;animation:none!important;transform:none!important}
+body.phone #toolbar .tb:hover{background:none;color:var(--t2);transform:none!important}
+body.phone #toolbar .tb:hover svg{transform:none!important}
+body.phone #toolbar .tb::after{content:none!important}
+body.phone #toolbar .tb:active{background:rgba(var(--ovc),.12);color:var(--t1)}
+body.phone #toolbar .tb.on,body.phone #toolbar .tb.on:hover,body.phone #toolbar .tb.on:active{background:var(--accent);color:var(--on-accent)}
+body.phone #toolbar{animation:none!important;will-change:auto}
+body.phone #psheet{transition:opacity .14s linear,transform .14s linear}
+body.phone #psel{transition:opacity .14s linear,transform .14s linear}
+body.phone #psheet button,body.phone #psel button{transition:background-color .1s linear}
+body.phone .glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 </style>
 </head>
 <body>
@@ -1724,7 +1735,7 @@ function endDrag(e){
   if(drag.k==='rz'&&drag.moved){const rzn=drag.n;setTimeout(()=>jmDropped(rzn.type==='journey'?S.nodes.filter(m=>!jmSkip(m)):[rzn]),0)}
   if(drag.k==='pan'){vp.classList.remove('panning');if(drag.touch)touchTap(e,drag)}
   if(drag.k==='move'&&e.pointerType==='touch'&&!drag.moved&&drag.start.length===1)touchTapNode(drag.start[0].n)
-  if(drag.k==='marq'){marquee.style.display='none';if(TOUCH.box&&sel.size)setBox(false)}
+  if(drag.k==='marq')marquee.style.display='none';
   if(drag.k==='move'){drag.start.forEach(s=>els.get(s.n.id).classList.remove('dragging'));if(drag.moved){jmDropped(drag.start.map(s=>s.n));if(spl&&drag.start.length===1)spliceDo(drag.start[0].n);else spliceClear()}
     if(!drag.moved&&!e.shiftKey&&sel.size>1&&e.type==='pointerup'){}}
   if(drag.k==='wire'){
@@ -4588,11 +4599,10 @@ const psheet=document.createElement('div');psheet.id='psheet';psheet.className='
 psheet.innerHTML=[['text','Text','text'],['canvas','Canvas','canvas'],['label','Heading','head'],['image','Image','img'],['draw','Drawing','draw']].map(([t,l,i])=>`<button data-pa="${t}" data-note="0">${phIco(i)}<span>${l}</span></button>`).join('');
 document.body.appendChild(psheet);
 const closeSheet=()=>{psheet.classList.remove('on');pAdd.classList.remove('on')};
-psheet.querySelectorAll('button').forEach(b=>{wirePlace(b,b.dataset.pa);b.addEventListener('pointerdown',()=>{const f=()=>{removeEventListener('pointerup',f,true);removeEventListener('pointercancel',f,true);if(justPlaced)closeSheet()};addEventListener('pointerup',f,true);addEventListener('pointercancel',f,true)},false)});
+psheet.querySelectorAll('button').forEach(b=>wirePlace(b,b.dataset.pa));
 pAdd.onclick=e=>{e.stopPropagation();psheet.classList.toggle('on');pAdd.classList.toggle('on',psheet.classList.contains('on'))};
-psheet.addEventListener('click',e=>{if(justPlaced)return;const b=e.target.closest('button');if(!b)return;const t=b.dataset.pa;closeSheet();pAdd.classList.remove('on');setTool('select');
+psheet.addEventListener('click',e=>{if(justPlaced)return;const b=e.target.closest('button');if(!b)return;const t=b.dataset.pa;setTool('select');
   addFromTool(t)});
-document.addEventListener('pointerdown',e=>{if(!e.target.closest('#psheet,#pAdd'))closeSheet()},true);
 /* selected block(s): just Copy + Delete, next to the colour bar */
 const psel=document.createElement('div');psel.id='psel';psel.className='glass';
 psel.innerHTML=`<button data-s="dup">${phIco('copy')}</button><button data-s="del" class="red">${phIco('del')}</button>`;document.body.appendChild(psel);
