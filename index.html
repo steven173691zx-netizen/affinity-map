@@ -925,6 +925,7 @@ body.rcm #vp,body.rcm #toolbar,body.rcm #brand,body.rcm #topright,body.rcm #hint
   <button class="tb" id="bJourney" data-tip="Journey map · ⇧J" data-icon="journey"></button>
   <div class="sep"></div>
   <button class="tb" draggable="true" data-add="text" data-tip="Text · T" data-icon="text"></button>
+  <button class="tb" draggable="true" data-add="sticky" data-tip="Note · S" data-icon="sticky"></button>
   <button class="tb" draggable="true" data-add="draw" data-tip="Draw · D" data-icon="pen"></button>
   <button class="tb" draggable="true" data-add="image" data-tip="Image · I" data-icon="image"></button>
   <button class="tb" draggable="true" data-add="canvas" data-tip="Canvas · ⇧C" data-icon="canvas"></button>
@@ -1277,7 +1278,7 @@ function build(n,spawn){
 function sync(n){
   const el=els.get(n.id);if(!el)return;
   const z=(n.type==='canvas'||n.type==='journey')?0:2+(n.z||0),sg=n.x+'|'+n.y+'|'+n.w+'|'+n.h+'|'+z;
-  if(el._sg!==sg){el._sg=sg;const s=el.style;s.left=n.x+'px';s.top=n.y+'px';s.width=n.w+'px';s.height=n.h+'px';s.zIndex=z;if(n.type==='draw')drawView(n,el);cullSoon()}
+  if(el._sg!==sg){el._sg=sg;const s=el.style;s.left=n.x+'px';s.top=n.y+'px';s.width=n.w+'px';s.height=n.h+'px';s.zIndex=z;if(n.type==='draw')drawView(n,el);if(n.type==='sticky')autoGrow(n);cullSoon()}
   const sl=sel.has(n.id);if(el._sl!==sl){el._sl=sl;el.classList.toggle('sel',sl);cullSoon()}
   queueBar();
 }
@@ -2766,7 +2767,7 @@ function rcAsk(id){
     if(b.dataset.a==='ok'){RC.id=id;RC.last='';RC.did=null;rcSend({t:'ok',n:me.name},id);rcPush(true);toast('Phone paired');}else rcSend({t:'no'},id);
     rcPairUI()}}
 function rcHost(d,id){
-  if(d.t==='hi'){phones.set(id,{n:d.n||'Phone'});const p=peers.get(id);if(p){p.el&&p.el.remove();peers.delete(id);paintRemoteSel();updPeers()}rcPairUI();return}
+  if(d.t==='hi'){phones.set(id,{n:d.n||'Phone'});sendPresence(id);const p=peers.get(id);if(p){p.el&&p.el.remove();peers.delete(id);paintRemoteSel();updPeers()}rcPairUI();return}
   if(!phones.has(id))phones.set(id,{n:d.n||'Phone'});
   if(d.t==='pr'){phones.get(id).n=d.n||phones.get(id).n;
     if(RC.id===id){rcSend({t:'ok',n:me.name},id);rcPush(true)}
@@ -2827,11 +2828,11 @@ const RCP={on:false,room:null,room$:null,desks:new Map(),pair:null,pairName:'',s
 async function rcBoot(){
   if(!PHONE())return false;
   const hm=location.hash.match(/room=([\w-]+)/);
-  rcStart(hm?hm[1]:localStorage.getItem('affinity-rc-room'));return true}
+  rcStart(hm?hm[1]:null);return true}   /* a pairing room is new every time the desktop starts one, so never reuse a stale saved room */
 function rcEl(){let el=document.getElementById('rcui');if(!el){el=document.createElement('div');el.id='rcui';document.body.appendChild(el)}return el}
 function rcStart(room){RCP.on=true;document.body.classList.add('rcm');RCP.pair=null;RCP.ctx={n:0};RCP.d=null;
   if(room)rcConnect(room);else{RCP.state='code';rcRender()}}
-async function rcLeave(){if(RCP.room$){try{await RCP.room$.leave()}catch{}}RCP.room$=null;RCP.send=null;RCP.desks=new Map();RCP.pair=null}
+async function rcLeave(){clearInterval(RCP.hi);if(RCP.room$){try{await RCP.room$.leave()}catch{}}RCP.room$=null;RCP.send=null;RCP.desks=new Map();RCP.pair=null}
 async function rcConnect(room){
   await rcLeave();RCP.room=room;RCP.state='connecting';rcRender();localStorage.setItem('affinity-rc-room',room);
   let m;try{m=await loadTrys()}catch(e){RCP.state='error';RCP.msg='Could not reach the sync network.';rcRender();return}
@@ -2842,6 +2843,7 @@ async function rcConnect(room){
   getCur((d,id)=>{if(d.ph)return;if(d.n&&(!RCP.desks.has(id)||RCP.desks.get(id).name!==d.n)){RCP.desks.set(id,{name:d.n,color:d.c||'#999'});if(RCP.state==='connecting'||RCP.state==='pick')RCP.state='pick';rcRender()}});
   get((d,id)=>rcClient(d,id));
   send({t:'hi',n:me.name});
+  RCP.hi=setInterval(()=>{if(RCP.state==='connecting'||(RCP.state==='pick'&&!RCP.desks.size))send({t:'hi',n:me.name})},3000);   /* keep knocking until a desktop answers */
   RCP.state='connecting';rcRender();
   setTimeout(()=>{if(RCP.state==='connecting'){RCP.state='pick';rcRender()}},6000)}
 function rcClient(d,id){
@@ -2865,10 +2867,10 @@ function rcDraw(){
   const live=RCP.state==='paired';
   const hd=(sub)=>`<div class="rch"><div class="rcst ${live?'live':''}"><i></i></div><div class="rcht"><b>${live?esc(RCP.pairName):'Remote control'}</b><span>${sub}</span></div><span class="sp"></span><button class="rcib" data-a="theme" aria-label="Theme">${rcI('theme')}</button></div>`;
   let h='';
-  if(RCP.state==='code')h=hd('Join a desktop')+`<div class="rcwrap"><div class="rcradar idle"><b></b><b></b><i>${rcI('fit')}</i></div><h2>Enter the room code</h2><p class="note">On your desktop open <b>More → Pair a phone</b>, then type the code or scan the QR.</p><input id="rcCode" class="fld" placeholder="room code" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="rcc go" data-a="join"><b>Connect</b></button></div>`;
+  if(RCP.state==='code')h=hd('Join a desktop')+`<div class="rcwrap"><div class="rcradar idle"><b></b><b></b><i>${rcI('fit')}</i></div><h2>Enter the room code</h2><p class="note">On your desktop open <b>More → Pair a phone</b>, then type the code or scan the QR.</p><input id="rcCode" class="fld" placeholder="room code" value="${esc(localStorage.getItem('affinity-rc-room')||'')}" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="rcc go" data-a="join"><b>Connect</b></button></div>`;
   else if(RCP.state==='connecting')h=hd('Connecting…')+`<div class="rcwrap"><div class="rcradar"><b></b><b></b><b></b><i>${rcI('fit')}</i></div><h2>Looking for desktops</h2><p class="note">Room <b>${esc(RCP.room||'')}</b> · can take up to 20 seconds</p><button class="rcb" data-a="code">Change room</button></div>`;
   else if(RCP.state==='pick'||RCP.state==='lost'||RCP.state==='error'){const l=[...RCP.desks.entries()];
-    h=hd('Room '+esc(RCP.room||''))+`<div class="rcwrap"><h2>Pair with a desktop</h2>${RCP.msg?`<p class="rcmsg">${esc(RCP.msg)}</p>`:''}`+(l.length?l.map(([id,x])=>`<button class="rcc" data-pair="${id}"><i style="background:${esc(x.color)}"></i><b>${esc(x.name)}</b><span>Tap to pair</span></button>`).join(''):`<div class="rcradar sm"><b></b><b></b><i>${rcI('fit')}</i></div><p class="note">No desktop found yet. Keep this page open — it appears here as soon as it joins.</p>`)+`<button class="rcb" data-a="code">Change room</button></div>`}
+    h=hd('Room '+esc(RCP.room||''))+`<div class="rcwrap"><h2>Pair with a desktop</h2>${RCP.msg?`<p class="rcmsg">${esc(RCP.msg)}</p>`:''}`+(l.length?l.map(([id,x])=>`<button class="rcc" data-pair="${id}"><i style="background:${esc(x.color)}"></i><b>${esc(x.name)}</b><span>Tap to pair</span></button>`).join(''):`<div class="rcradar sm"><b></b><b></b><i>${rcI('fit')}</i></div><p class="note">No desktop found yet. Make sure the desktop has <b>Pair a phone</b> open and shows this room code — it appears here as soon as it answers.</p>`)+`<button class="rcb" data-a="retry">Search again</button><button class="rcb" data-a="code">Change room</button></div>`}
   else if(RCP.state==='waiting')h=hd('Waiting…')+`<div class="rcwrap"><div class="rcradar"><b></b><b></b><i>${rcI('fit')}</i></div><h2>Waiting for ${esc((RCP.desks.get(RCP.pend)||{}).name||'the desktop')}</h2><p class="note">Tap <b>Allow</b> on the desktop.</p><button class="rcb" data-a="cancel">Cancel</button></div>`;
   else if(RCP.state==='paired')h=rcCtrl(hd);
   const sig=RCP.state+'|'+(live?JSON.stringify([RCP.ctx.n,RCP.ctx.type,!!RCP.ctx.text,!!RCP.ctx.ed,RCP.ctx.draw&&RCP.ctx.draw.id]):'')+'|'+RCP.desks.size+'|'+RCP.msg;
@@ -2916,6 +2918,7 @@ document.addEventListener('click',e=>{
   if(p){RCP.pend=p.dataset.pair;RCP.msg='';RCP.state='waiting';rcTx({t:'pr',n:me.name},RCP.pend);rcRender();return}
   if(a&&!a.disabled){const k=a.dataset.a;
     if(k==='theme')rcTheme();
+    else if(k==='retry'){rcConnect(RCP.room)}
     else if(k==='code'){rcLeave();RCP.state='code';RCP.msg='';rcRender()}
     else if(k==='join'){const v=(el.querySelector('#rcCode').value||'').trim().replace(/^.*room=/,'');if(v){history.replaceState(null,'','#room='+v);rcConnect(v)}}
     else if(k==='cancel'){RCP.state='pick';RCP.pend=null;rcRender()}
@@ -3040,7 +3043,7 @@ readMM();updThemeUI();if(document.documentElement.dataset.theme==='glitch')setTi
 const IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform);
 const KEYDEFS=[
  ['Tools',[['stickman','Stickman mode',['P']],['select','Select tool',['V']],['hand','Pan tool',['H']],['pencil','Magic pencil',['B']],['journey','New Journey Map',['Shift+J']],['area','Export area to PDF',['Shift+E']],['empty','Delete empty blocks',['E']]]],
- ['Add blocks',[['text','Text',['T']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['Shift+C']],['combine','Combine',['C']],['label','Heading',['L']]]],
+ ['Add blocks',[['text','Text',['T']],['sticky','Sticky note',['S']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['Shift+C']],['combine','Combine',['C']],['label','Heading',['L']]]],
  ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['matrix','Matrix: spawn a pattern of the selection',['M']],['align','Align blocks (x with x, y with y)',['J']],['organize','Organise a messy board',['O']],['arrx','Arrange in a row',['X']],['arry','Arrange in a column',['Y']],['del','Delete',['Delete','Backspace']]]],
  ['View',[['fit','Fit all / selection',['Shift+1']],['zoomin','Zoom in',['=','Shift+=']],['zoomout','Zoom out',['-']],['snap','Snap to grid',['G']],['format','Format bar (colour, text)',['K']],['minimap','Minimap',['N']],['themes','Theme',['Shift+D']],['palette','Command palette',['/','Mod+K']],['keys','Keyboard shortcuts',['Shift+/']]]]
 ];
@@ -3069,7 +3072,7 @@ function saveKeys(){
   localStorage.setItem('affinity-keys',JSON.stringify(ov));loadKeys();refreshKeyLabels();
 }
 const kl=id=>(id&&KEYS[id]&&KEYS[id][0])?pretty(KEYS[id][0]):'';
-const KEYEL=[['[data-tool=select]','select'],['[data-tool=hand]','hand'],['[data-tool=pencil]','pencil'],['[data-add=text]','text'],['[data-add=draw]','draw'],['[data-add=image]','image'],['[data-add=canvas]','canvas'],['[data-add=combine]','combine'],['[data-add=label]','label'],['[data-tool=area]','area'],['#bSnap','snap'],['#mAlign','align'],['#mPal','palette'],['#bUndo','undo'],['#bRedo','redo'],['#mTheme','themes'],['#mStick','stickman'],['#mKeys','keys']];
+const KEYEL=[['[data-tool=select]','select'],['[data-tool=hand]','hand'],['[data-tool=pencil]','pencil'],['[data-add=text]','text'],['[data-add=sticky]','sticky'],['[data-add=draw]','draw'],['[data-add=image]','image'],['[data-add=canvas]','canvas'],['[data-add=combine]','combine'],['[data-add=label]','label'],['[data-tool=area]','area'],['#bSnap','snap'],['#mAlign','align'],['#mPal','palette'],['#bUndo','undo'],['#bRedo','redo'],['#mTheme','themes'],['#mStick','stickman'],['#mKeys','keys']];
 function refreshKeyLabels(){
   KEYEL.forEach(([q,id])=>document.querySelectorAll(q).forEach(el=>{
     const l=kl(id);if(el.dataset.tip!==undefined)el.dataset.tip=el.dataset.tip.split(' · ')[0]+(l?' · '+l:'');
@@ -3080,7 +3083,7 @@ const ACT={
   select:()=>setTool('select'),hand:()=>setTool('hand'),pencil:()=>setTool('pencil'),journey:()=>addJourney(),
   empty:()=>deleteEmpty(),
   area:()=>{setTool('area');if(sel.size){const ns=[...sel].map(byId);const x1=Math.min(...ns.map(n=>n.x))-40,y1=Math.min(...ns.map(n=>n.y))-40,x2=Math.max(...ns.map(n=>n.x+n.w))+40,y2=Math.max(...ns.map(n=>n.y+n.h))+40;area={x:x1,y:y1,w:x2-x1,h:y2-y1};updArea()}},
-  text:()=>addFromTool('text'),draw:()=>addFromTool('draw'),image:()=>addFromTool('image'),canvas:()=>addFromTool('canvas'),combine:()=>addFromTool('combine'),label:()=>addFromTool('label'),
+  text:()=>addFromTool('text'),sticky:()=>addFromTool('sticky'),draw:()=>addFromTool('draw'),image:()=>addFromTool('image'),canvas:()=>addFromTool('canvas'),combine:()=>addFromTool('combine'),label:()=>addFromTool('label'),
   undo:()=>undo(),redo:()=>doRedo(),dup:()=>dupSelected(),selall:()=>{S.nodes.forEach(n=>sel.add(n.id));S.nodes.forEach(sync)},
   group:()=>groupSel(),tidy:()=>tidySel(),matrix:()=>openMatrix(),align:()=>alignBlocks(),organize:()=>organizeBoard(),arrx:()=>arrangeLine(true),arry:()=>arrangeLine(false),
   del:()=>{if(selEdge){pushHist();S.edges=S.edges.filter(x=>x.id!==selEdge);selEdge=null;refreshAll();save()}else if(sel.size)removeNodes([...sel])},
@@ -4142,9 +4145,17 @@ function jmScale(n,d,handle){
 /* every text-like block grows to show all its text; a block inside a journey map makes the map grow */
 let growQ=new Set(),growT=0;
 function autoGrow(n){growQ.add(n.id);if(!growT)growT=requestAnimationFrame(flushGrow)}
+/* sticky notes keep their size: the text shrinks (down to 7px) until it fits, and grows back to the chosen size when there is room */
+function fitSticky(n,el){
+  const ed=el.querySelector('.edit');if(!ed)return;
+  const base=n.fs||DEFFS.sticky,fits=f=>{ed.style.fontSize=f+'px';return ed.scrollHeight<=ed.clientHeight+1&&ed.scrollWidth<=ed.clientWidth+1};
+  if(fits(base))return;
+  let lo=7,hi=base;for(let i=0;i<7&&hi-lo>.4;i++){const m=(lo+hi)/2;if(fits(m))lo=m;else hi=m}
+  ed.style.fontSize=lo+'px'}
 function flushGrow(){
   growT=0;const ids=[...growQ];growQ.clear();const jobs=[];
   ids.forEach(id=>{const n=byId(id),el=n&&els.get(id);if(!el)return;if(el.style.display==='none'){el._ng=1;return}
+    if(n.type==='sticky'){fitSticky(n,el);return}
     const box=n.type==='combine'?el.querySelector('.clist'):el.querySelector('.edit');if(!box)return;
     jobs.push({n,dh:box.scrollHeight-box.clientHeight,dw:box.scrollWidth-box.clientWidth})});   // reads first: one layout for all
   const js=new Set();let any=false;
