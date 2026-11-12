@@ -628,7 +628,7 @@ body.sm #pnbar{display:none}
 .jg .jrl{position:absolute;align-items:flex-start;padding-top:12px}
 .jg .jrl.isg .jgt,.jg .jgt.on{color:var(--c,var(--accent))}
 .jg .jgt svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
-.jg .jrowadd{position:absolute;left:auto;right:6px;top:auto;bottom:6px;border-radius:50%;width:22px;height:22px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+
 .jg .jlv{all:unset;position:absolute;width:96px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);cursor:text;user-select:text;pointer-events:auto;border-radius:5px;padding:1px 3px;margin-left:-3px}
 .jg .jlv:hover,.jg .jlv:focus{background:rgba(var(--ovc),.1);color:var(--t1)}
 .node .jadd2{position:absolute;pointer-events:auto;display:flex;align-items:center;gap:0;height:34px;min-width:34px;padding:0;border:1.5px dashed var(--c,var(--accent));background:var(--surface);color:var(--c,var(--accent));cursor:pointer;overflow:hidden;border-radius:17px!important;opacity:0;transform:scale(.4) rotate(-120deg);transform-origin:center;transition:opacity .25s var(--ease),transform .5s var(--bounce),background .2s,color .2s,border-color .2s,gap .3s var(--ease),padding .3s var(--ease);z-index:6}
@@ -664,14 +664,14 @@ body.sm #pnbar{display:none}
 .jg .jpt{fill:var(--c,var(--accent))}
 .jg .jdp{opacity:0;all:unset;position:absolute;box-sizing:border-box;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid var(--line2);background:var(--surface);cursor:pointer;pointer-events:auto;transition:transform .2s var(--ease),border-color .2s,background .2s}
 .jg .jdp{opacity:0;transition:opacity .12s linear,transform .2s var(--ease),border-color .2s,background .2s}
-.jg .jdp.hot,.jg .jdp.hot2{opacity:1;border-color:var(--c,var(--accent));background:var(--surface);box-shadow:0 0 0 4px var(--accent-soft)}
+.jg .jdp.hot{opacity:1;border-color:var(--c,var(--accent));background:var(--surface);box-shadow:0 0 0 4px var(--accent-soft)}
 .jg .jdp.hot.on{background:var(--c,var(--accent))}
 .jg .jdp.on:not(.hot){opacity:1;transform:scale(.55)}
 .jg .jdp:hover{opacity:1;transform:scale(1.35);border-color:var(--c,var(--accent))}
 .jg .jdp.on{background:var(--c,var(--accent));border-color:var(--surface);transform:scale(1.25)}
-.jg .jaddr{left:10px;all:unset;position:absolute;font-size:11px;font-weight:700;color:var(--t3);cursor:pointer;pointer-events:auto;padding:4px 8px;border-radius:8px;transition:all .2s}
-.jg .jaddr:hover{background:rgba(var(--ovc),.1);color:var(--t1)}
-.kw.emo0{background:rgba(63,166,107,.18);color:#3fa66b}.kw.emo1{background:rgba(var(--ovc),.1)}.kw.emo2{background:rgba(229,83,75,.18);color:#e5534b}
+
+
+
 /* no jumping: nothing lifts, scales, tilts or bounces when you pick up, drop or select a block */
 .node:hover,.node.dragging{transform:none!important}
 .wire-g.splice .wire{stroke:var(--accent)!important;stroke-width:4!important;filter:drop-shadow(0 0 6px var(--accent-soft))}
@@ -770,7 +770,6 @@ body.coarse .rz[data-d=se]{right:-14px;bottom:-14px}body.coarse .rz[data-d=sw]{l
 body.coarse .swt{width:28px;height:28px}
 body.coarse #stylebar,body.coarse .sbgrid{grid-template-columns:repeat(11,28px)}
 body.coarse .jap,body.coarse .jar{transform:scale(1.25)}
-body.multi #vp{outline:3px solid var(--accent);outline-offset:-3px}
 @media (max-width:719px){
   #brand{left:8px;top:calc(8px + env(safe-area-inset-top));padding:5px 8px 5px 6px;max-width:calc(100vw - 120px);gap:6px}
   #pname{width:100%;min-width:0;font-size:14px}
@@ -824,7 +823,7 @@ body.phone #psel.on{opacity:1;transform:none;pointer-events:auto}
 #psel button:active{background:rgba(var(--ovc),.14)}
 #psel .red{color:#e5534b}
 /* More menu: only the basics */
-body.phone #mStick,body.phone #mCluster,body.phone [data-tool=area].mi,body.phone #bSnap,body.phone #mKeys,body.phone #bSettings,body.phone #mPal,body.phone #more .msep:nth-of-type(n+3){display:none}
+body.phone #mStick,body.phone #mAlign,body.phone [data-tool=area].mi,body.phone #bSnap,body.phone #mKeys,body.phone #bSettings,body.phone #mPal,body.phone #more .msep:nth-of-type(n+3){display:none}
 body.phone #more .mi,body.phone #more .mz button{min-height:48px;font-size:15px}
 body.phone #more kbd{display:none}
 body.phone #mx,body.phone #areabar,body.phone #mini,body.phone #gbox{display:none!important}
@@ -875,7 +874,7 @@ body.phone .glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 <div id="hint">
   <h1>Start mapping</h1>
   <p>Double-click anywhere · drop images · or pick a block below</p>
-  <p style="margin-top:10px"><span class="kbd" data-k="palette">/</span> commands &nbsp;<span class="kbd" data-k="format">K</span> format &nbsp;<span class="kbd" data-k="cluster">J</span> auto-cluster</p>
+  <p style="margin-top:10px"><span class="kbd" data-k="palette">/</span> commands &nbsp;<span class="kbd" data-k="format">K</span> format &nbsp;<span class="kbd" data-k="align">J</span> align</p>
   <p style="margin-top:8px"><span class="kbd" data-k="text">T</span> text &nbsp;<span class="kbd" data-k="draw">D</span> draw &nbsp;<span class="kbd" data-k="canvas">C</span> canvas &nbsp;<span class="kbd" data-k="combine">M</span> combine</p>
 </div>
 
@@ -901,7 +900,7 @@ body.phone .glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   <div class="msep"></div>
   <button class="mi" data-add="label"><span>Heading</span><kbd>L</kbd></button>
   <button class="mi" id="mStick"><span>Stickman mode</span><kbd></kbd></button>
-  <button class="mi" id="mCluster"><span>Auto-cluster blocks</span><kbd>J</kbd></button>
+  <button class="mi" id="mAlign"><span>Align blocks</span><kbd>J</kbd></button>
   <button class="mi" data-tool="area"><span>Export area to PDF</span><kbd>E</kbd></button>
   <button class="mi" id="bSnap"><span>Snap to grid</span><kbd>G</kbd></button>
   <div class="msep"></div>
@@ -1568,7 +1567,7 @@ function mxDraw(){if(mxQ||!MX.on)return;mxQ=requestAnimationFrame(()=>{mxQ=0;if(
 function mxPos(){
   const p=$('#mx');if(!MX.on)return;const b=MX.u.box,z=view.z,bw=p.offsetWidth,bh=p.offsetHeight;
   let x=b.x*z+view.x-bw-18;if(x<10)x=Math.min(innerWidth-bw-10,(b.x+b.w)*z+view.x+18);
-  const y=clamp(b.y*z+view.y,70,Math.max(70,innerHeight-bh-100));p.style.transform=NARROW()?`translate(${(innerWidth-bw)/2}px,${Math.max(70,innerHeight-bh-mbarH()-96)}px)`:`translate(${clamp(x,10,innerWidth-bw-10)}px,${y}px)`}
+  const y=clamp(b.y*z+view.y,70,Math.max(70,innerHeight-bh-100));p.style.transform=NARROW()?`translate(${(innerWidth-bw)/2}px,${Math.max(70,innerHeight-bh-96)}px)`:`translate(${clamp(x,10,innerWidth-bw-10)}px,${y}px)`}
 function mxUi(){
   if(!MX.u)return;
   document.querySelectorAll('#mxseg button').forEach(b=>b.classList.toggle('on',b.dataset.m===MX.mode));
@@ -1650,7 +1649,7 @@ vp.addEventListener('pointerdown',e=>{
     }
   }
   // empty space
-  if(pan||(e.pointerType==='touch'&&!TOUCH.multi&&!TOUCH.box)){drag={k:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,touch:e.pointerType==='touch'};vp.classList.add('panning');cancelAnimationFrame(anim)}
+  if(pan||(e.pointerType==='touch'&&!TOUCH.box)){drag={k:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,touch:e.pointerType==='touch'};vp.classList.add('panning');cancelAnimationFrame(anim)}
   else{
     if(!e.shiftKey){sel.clear();selEdge=null;S.nodes.forEach(sync);drawEdges()}
     document.activeElement?.blur?.();
@@ -1660,7 +1659,7 @@ vp.addEventListener('pointerdown',e=>{
 });
 function startDrag(e,nd){
   const id=nd.dataset.id;
-  if(e.shiftKey||TOUCH.multi){sel.has(id)?sel.delete(id):sel.add(id)}
+  if(e.shiftKey){sel.has(id)?sel.delete(id):sel.add(id)}
   else if(!sel.has(id))select([id]);
   S.nodes.forEach(sync);
   const moving=new Set(sel);
@@ -1702,7 +1701,7 @@ vp.addEventListener('pointermove',e=>{
   if(drag.k==='pan'){stopZoom();view.x=drag.vx+e.clientX-drag.sx;view.y=drag.vy+e.clientY-drag.sy;queueView();saveView()}
   else if(drag.k==='move'){
     const dx=(e.clientX-drag.sx)/view.z,dy=(e.clientY-drag.sy)/view.z;
-    if(!drag.moved){if(Math.hypot(dx,dy)*view.z<3)return;drag.moved=true;pushHist();drag.start.forEach(s=>els.get(s.n.id).classList.add('dragging'))}
+    if(!drag.moved){if(Math.hypot(dx,dy)*view.z<3)return;drag.moved=true;pushHist();drag.start.forEach(s=>{delete s.n.vc});drag.start.forEach(s=>els.get(s.n.id).classList.add('dragging'))}
     drag.start.forEach(s=>{s.n.x=sn(s.x+dx);s.n.y=sn(s.y+dy);sync(s.n)});drawEdges();jmSoon();spliceSoon();
   }
   else if(drag.k==='rz'){
@@ -1756,7 +1755,9 @@ vp.addEventListener('dblclick',e=>{
   if(dn&&['text','sticky','label'].includes(dn.dataset.type)&&!hit.closest('.hd')){enterEdit(dn.querySelector('.edit'),e.clientX,e.clientY);return}
   if(dn&&dn.dataset.type!=='canvas'&&dn.dataset.type!=='journey')return;
   if(hit?.closest('.hd')||hit?.closest('input,.port'))return;
-  const w=toWorld(e.clientX,e.clientY);const n=addNode('text',w.x,w.y);
+  const w=toWorld(e.clientX,e.clientY),n=addNode('text',w.x,w.y);
+  n.x=sn(w.x-n.w/2);n.y=sn(w.y-n.h/2);sync(n);   /* centred on the click */
+  jmSnap(n);if(n.jm){n.vc=1;jmDropped([n])}   /* inside a journey cell: centred in that cell, and kept centred while it grows */
   setTimeout(()=>{const ed=els.get(n.id)?.querySelector('.edit');if(ed)enterEdit(ed)},60);
 });
 const panD={x:0,y:0};let panQ=0;
@@ -1894,7 +1895,7 @@ function closeMore(){more.classList.remove('on')}
 $('#bMore').onclick=e=>{e.stopPropagation();if(more.classList.toggle('on')){const r=$('#bMore').getBoundingClientRect(),w=more.offsetWidth;more.style.left=clamp(r.right-w,10,innerWidth-w-10)+'px';more.style.bottom=(innerHeight-r.top+14)+'px'}};
 more.addEventListener('click',e=>{if(e.target.closest('.mi'))closeMore()});
 addEventListener('pointerdown',e=>{if(!e.target.closest('#more,#bMore'))closeMore()});
-$('#mCluster').onclick=()=>autoCluster();$('#mPal').onclick=()=>openPal();
+$('#mAlign').onclick=()=>alignBlocks();$('#mPal').onclick=()=>openPal();
 
 /* ---------- files ---------- */
 const DBN=new URLSearchParams(location.search).get('db')||'affinity';
@@ -2013,7 +2014,7 @@ function updBar(){
   const bw=bar.offsetWidth,bh=bar.offsetHeight;
   let cx=clamp((x1+x2)/2*z+view.x,bw/2+10,innerWidth-bw/2-10),top=y1*z+view.y-bh-14;
   if(top<64)top=y2*z+view.y+14;top=clamp(top,64,Math.max(64,innerHeight-bh-100));
-  bar.style.transform=NARROW()?`translate(${(innerWidth-bw)/2}px,${Math.max(70,innerHeight-bh-mbarH()-96)}px)`:`translate(${cx-bw/2}px,${top}px)`;
+  bar.style.transform=NARROW()?`translate(${(innerWidth-bw)/2}px,${Math.max(70,innerHeight-bh-96)}px)`:`translate(${cx-bw/2}px,${top}px)`;
   const cs=new Set(ns.map(n=>n.color||(n.type==='sticky'?COLORS[0]:'')));
   bar.querySelectorAll('.swt[data-c]').forEach(s=>s.classList.toggle('act',cs.size===1&&cs.has(s.dataset.c)));
   if(tx.length){
@@ -2192,7 +2193,7 @@ function tweenNodes(list,dur=600,onDone){
     if(p<1)requestAnimationFrame(f);else{st.forEach(o=>{o.n.x=o.x;o.n.y=o.y;sync(o.n)});drawEdges();save();if(onDone)onDone()}})(t0);
 }
 
-/* ---------- group / tidy / auto-cluster ---------- */
+/* ---------- group / tidy / align ---------- */
 const themeTitle=texts=>{const f={};texts.forEach(t=>new Set(freq(t).order).forEach(w=>f[w]=(f[w]||0)+1));const top=Object.entries(f).sort((a,b)=>b[1]-a[1]||b[0].length-a[0].length).slice(0,2).filter(x=>x[1]>=Math.min(2,texts.length)).map(x=>cap(x[0]));return top.length?top.join(' & '):'Group'};
 function groupSel(){
   const ns=[...sel].map(byId).filter(Boolean);
@@ -2243,7 +2244,7 @@ async function clusterAI(ns){
   const rest=ns.map((_,i)=>i).filter(i=>!seen.has(i));if(rest.length)groups.push({title:'Unsorted',idx:rest});
   return groups;
 }
-/* ---- auto-cluster helpers: blocks line up in rows and columns with ONE spacing (the most common gap already on the board) ---- */
+/* ---- alignment helpers: blocks line up in rows and columns with ONE spacing (the most common gap already on the board) ---- */
 const ovr=(a,b,m=0)=>a.x<b.x+b.w+m&&b.x<a.x+a.w+m&&a.y<b.y+b.h+m&&b.y<a.y+a.h+m;
 function modeGap(gaps,dflt=48){
   const g=gaps.filter(v=>v>=8&&v<=260);if(!g.length)return dflt;
@@ -2252,7 +2253,6 @@ function modeGap(gaps,dflt=48){
   return Math.round(best.reduce((a,v)=>a+v,0)/best.length)}
 function nearGapsXY(u){const h=[],v=[];u.forEach(a=>{let bh=1e9,bv=1e9;u.forEach(b=>{if(a===b)return;const dx=Math.max(b.x-(a.x+a.w),a.x-(b.x+b.w)),dy=Math.max(b.y-(a.y+a.h),a.y-(b.y+b.h));
   if(dy<0&&dx>0&&dx<bh)bh=dx;if(dx<0&&dy>0&&dy<bv)bv=dy});if(bh<1e9)h.push(bh);if(bv<1e9)v.push(bv)});return{h,v}}
-function nearGaps(u){return u.map(a=>{let m=1e9;u.forEach(b=>{if(a===b)return;const dx=Math.max(b.x-(a.x+a.w),a.x-(b.x+b.w)),dy=Math.max(b.y-(a.y+a.h),a.y-(b.y+b.h)),d=Math.max(dx,dy);if(d>0&&d<m)m=d});return m<1e9?m:-1})}
 const KIND_ORDER=['h','t','c','i','d','v'],kindOf=n=>n.type==='label'?'h':(n.type==='text'||n.type==='sticky')?'t':n.type==='combine'?'c':n.type==='image'?'i':n.type==='draw'?'d':'v';
 /* blocks only ever align with blocks of the same kind AND the same size */
 function sizeGroups(list){
@@ -2260,11 +2260,6 @@ function sizeGroups(list){
   [...list].sort((a,b)=>b.w*b.h-a.w*a.h).forEach(n=>{let g=reps.find(r=>near(r.w,n.w)&&near(r.h,n.h));if(!g){g={w:n.w,h:n.h,i:reps.length};reps.push(g)}out.set(n,g.i)});return out}
 function groupKeys(u){const byKind={};u.forEach(n=>(byKind[kindOf(n)]=byKind[kindOf(n)]||[]).push(n));const key=new Map();
   for(const k in byKind){const sg=sizeGroups(byKind[k]);byKind[k].forEach(n=>key.set(n,k+'#'+sg.get(n)))}return key}
-function kindAlign(u){
-  const gk=groupKeys(u),g={};u.forEach(n=>(g[gk.get(n)]=g[gk.get(n)]||[]).push(n));const t=[],GH=[],GV=[];
-  for(const k in g){const l=g[k];if(l.length<2){t.push({n:l[0],x:l[0].x,y:l[0].y});continue}const r=gridAlign(l);if(!r)return false;t.push(...r.t);GH.push(r.Gh);GV.push(r.Gv)}
-  const R=t.map(q=>({x:q.x,y:q.y,w:q.n.w,h:q.n.h}));if(R.some((a,i)=>R.slice(i+1).some(b=>ovr(a,b,4))))return false;
-  const av=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):48;return{t,Gh:av(GH),Gv:av(GV)}}
 function gridAlign(u,kids){
   if(u.length<2)return false;
   if(u.some((a,i)=>u.slice(i+1).some(b=>ovr(a,b,4))))return false;                     // overlapping = out of order
@@ -2277,7 +2272,7 @@ function gridAlign(u,kids){
   const cell=new Set();for(const n of u){const k=ri.get(n)+'|'+ci.get(n);if(cell.has(k))return false;cell.add(k)}   // two blocks in one cell
   if(cols.length>Math.max(3,1.5*Math.max(...rows.map(r=>r.m.length)))||rows.length>Math.max(3,1.5*Math.max(...cols.map(c=>c.m.length))))return false;   // staggered = messy
   rows.sort((a,b)=>a.cy-b.cy);const rh=rows.map(r=>Math.max(...r.m.map(n=>n.h))),cw=cols.map(c=>Math.max(...c.m.map(n=>n.w)));
-  const rtop=rows.map((r,i)=>Math.min(...r.m.map(n=>n.y))),ctop=cols.map(c=>Math.min(...c.m.map(n=>n.x)));
+  const ctop=cols.map(c=>Math.min(...c.m.map(n=>n.x)));
   const gv=[],gh=[];for(let i=1;i<rows.length;i++)gv.push(Math.min(...rows[i].m.map(n=>n.y))-Math.max(...rows[i-1].m.map(n=>n.y+n.h)));
   for(let i=1;i<cols.length;i++)gh.push(Math.min(...cols[i].m.map(n=>n.x))-Math.max(...cols[i-1].m.map(n=>n.x+n.w)));
   const Gh=modeGap(gh),Gv=modeGap(gv),x0=Math.min(...u.map(n=>n.x)),y0=Math.min(...u.map(n=>n.y));   // horizontal and vertical spacing are measured separately
@@ -2303,7 +2298,7 @@ function snapAxes(l){
   cl(l.map(n=>({n,v:n.x})),tw).forEach(c=>c.l.forEach(o=>pos.get(o.n).x=Math.round(c.m)));
   cl(l.map(n=>({n,v:n.y})),th).forEach(c=>c.l.forEach(o=>pos.get(o.n).y=Math.round(c.m)));
   return l.map(n=>({n,x:pos.get(n).x,y:pos.get(n).y}))}
-function autoCluster(){
+function alignBlocks(){
   let tg=[...sel].map(byId).filter(Boolean);if(!tg.length)tg=S.nodes.slice();
   const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(innerCanvas(n)&&tg.includes(innerCanvas(n))));
   if(top.length<2){toast('Select 2+ blocks to align');return}
@@ -2321,10 +2316,9 @@ function autoCluster(){
 async function organizeBoard(){
   let tg=[...sel].map(byId).filter(Boolean);
   if(!tg.length)tg=S.nodes.slice();
-  if(!tg.length){toast('Nothing to cluster');return}
-  const parentOf=n=>innerCanvas(n),kidsOf=()=>[];
+  if(!tg.length){toast('Nothing to organise');return}
+  const parentOf=n=>innerCanvas(n);
   // a canvas counts as ONE block: its contents travel with it and are never rearranged
-  const active=new Set();
   const top=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(parentOf(n)&&tg.includes(parentOf(n))));
   if(!top.length){toast('Nothing to arrange');return}
   const kids=new Map(top.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!top.includes(m)&&inside(m,c))]));
@@ -2398,11 +2392,6 @@ async function organizeBoard(){
   }
   async function layout(units,depth){
     if(!units.length)return{items:[],W:0,H:0};
-    for(const c of units.filter(u=>u.type==='canvas'&&active.has(u.id))){
-      const inner=await layout(kidsOf(c),depth+1);
-      size.set(c.id,[Math.max(MIN.canvas[0],inner.W+2*PAD),Math.max(MIN.canvas[1],inner.H+TOP+PAD)]);
-      subs.set(c.id,inner.items.map(i=>({n:i.n,x:i.x+PAD,y:i.y+TOP})));
-    }
     const items=[],place=(n,x,y)=>{items.push({n,x,y});(subs.get(n.id)||[]).forEach(si=>items.push({n:si.n,x:x+si.x,y:y+si.y}))};
     const uset=new Set(units.map(u=>u.id)),um=new Map(units.map(u=>[u.id,u]));
     const unitOf=n=>{let c=n,g=0;while(c&&!uset.has(c.id)&&g++<20)c=parentOf(c);return c&&uset.has(c.id)?c:null};
@@ -2499,7 +2488,7 @@ mini.addEventListener('pointerup',()=>{mini._d=false;save()});
 /* ---------- command palette ---------- */
 const pal=$('#pal'),pin=$('#pin'),plist=$('#plist');let pItems=[],pIdx=0;
 const ACTIONS=[
-  {t:'Align blocks (J)',id:'cluster',f:()=>autoCluster()},
+  {t:'Align blocks (J)',id:'align',f:()=>alignBlocks()},
   {t:'Organise a messy board (O)',id:'organize',f:()=>organizeBoard()},
   {t:'Delete empty blocks (E)',id:'empty',f:()=>deleteEmpty()},
   {t:'Arrange in a row (X)',id:'arrx',f:()=>arrangeLine(true)},
@@ -2778,7 +2767,7 @@ const IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform);
 const KEYDEFS=[
  ['Tools',[['stickman','Stickman mode',['P']],['select','Select tool',['V']],['hand','Pan tool',['H']],['pencil','Magic pencil',['B']],['journey','New Journey Map',['Shift+J']],['area','Export area to PDF',['Shift+E']],['empty','Delete empty blocks',['E']]]],
  ['Add blocks',[['text','Text',['T']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['Shift+C']],['combine','Combine',['C']],['label','Heading',['L']]]],
- ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['matrix','Matrix: spawn a pattern of the selection',['M']],['cluster','Align blocks (x with x, y with y)',['J']],['organize','Organise a messy board',['O']],['arrx','Arrange in a row',['X']],['arry','Arrange in a column',['Y']],['del','Delete',['Delete','Backspace']]]],
+ ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['matrix','Matrix: spawn a pattern of the selection',['M']],['align','Align blocks (x with x, y with y)',['J']],['organize','Organise a messy board',['O']],['arrx','Arrange in a row',['X']],['arry','Arrange in a column',['Y']],['del','Delete',['Delete','Backspace']]]],
  ['View',[['fit','Fit all / selection',['Shift+1']],['zoomin','Zoom in',['=','Shift+=']],['zoomout','Zoom out',['-']],['snap','Snap to grid',['G']],['format','Format bar (colour, text)',['K']],['minimap','Minimap',['N']],['themes','Theme',['Shift+D']],['palette','Command palette',['/','Mod+K']],['keys','Keyboard shortcuts',['Shift+/']]]]
 ];
 const PUNCT={Slash:'/',Equal:'=',Minus:'-',Period:'.',Comma:',',Semicolon:';',Quote:"'",BracketLeft:'[',BracketRight:']',Backslash:'\\',Backquote:'`'};
@@ -2797,6 +2786,7 @@ function pretty(c){
 let KEYS={},KEYMAP={};
 function loadKeys(){
   let ov={};try{ov=JSON.parse(localStorage.getItem('affinity-keys')||'{}')}catch{}
+  if(ov.cluster&&!ov.align){ov.align=ov.cluster;delete ov.cluster}   /* renamed action */
   KEYS={};KEYDEFS.forEach(([g,l])=>l.forEach(([id,n,d])=>KEYS[id]=Array.isArray(ov[id])?ov[id]:d.slice()));
   KEYMAP={};Object.entries(KEYS).forEach(([id,cs])=>cs.forEach(c=>KEYMAP[c]=id));
 }
@@ -2805,7 +2795,7 @@ function saveKeys(){
   localStorage.setItem('affinity-keys',JSON.stringify(ov));loadKeys();refreshKeyLabels();
 }
 const kl=id=>(id&&KEYS[id]&&KEYS[id][0])?pretty(KEYS[id][0]):'';
-const KEYEL=[['[data-tool=select]','select'],['[data-tool=hand]','hand'],['[data-tool=pencil]','pencil'],['[data-add=text]','text'],['[data-add=draw]','draw'],['[data-add=image]','image'],['[data-add=canvas]','canvas'],['[data-add=combine]','combine'],['[data-add=label]','label'],['[data-tool=area]','area'],['#bSnap','snap'],['#mCluster','cluster'],['#mPal','palette'],['#bUndo','undo'],['#bRedo','redo'],['#mTheme','themes'],['#mStick','stickman'],['#mKeys','keys']];
+const KEYEL=[['[data-tool=select]','select'],['[data-tool=hand]','hand'],['[data-tool=pencil]','pencil'],['[data-add=text]','text'],['[data-add=draw]','draw'],['[data-add=image]','image'],['[data-add=canvas]','canvas'],['[data-add=combine]','combine'],['[data-add=label]','label'],['[data-tool=area]','area'],['#bSnap','snap'],['#mAlign','align'],['#mPal','palette'],['#bUndo','undo'],['#bRedo','redo'],['#mTheme','themes'],['#mStick','stickman'],['#mKeys','keys']];
 function refreshKeyLabels(){
   KEYEL.forEach(([q,id])=>document.querySelectorAll(q).forEach(el=>{
     const l=kl(id);if(el.dataset.tip!==undefined)el.dataset.tip=el.dataset.tip.split(' · ')[0]+(l?' · '+l:'');
@@ -2818,7 +2808,7 @@ const ACT={
   area:()=>{setTool('area');if(sel.size){const ns=[...sel].map(byId);const x1=Math.min(...ns.map(n=>n.x))-40,y1=Math.min(...ns.map(n=>n.y))-40,x2=Math.max(...ns.map(n=>n.x+n.w))+40,y2=Math.max(...ns.map(n=>n.y+n.h))+40;area={x:x1,y:y1,w:x2-x1,h:y2-y1};updArea()}},
   text:()=>addFromTool('text'),draw:()=>addFromTool('draw'),image:()=>addFromTool('image'),canvas:()=>addFromTool('canvas'),combine:()=>addFromTool('combine'),label:()=>addFromTool('label'),
   undo:()=>undo(),redo:()=>doRedo(),dup:()=>dupSelected(),selall:()=>{S.nodes.forEach(n=>sel.add(n.id));S.nodes.forEach(sync)},
-  group:()=>groupSel(),tidy:()=>tidySel(),matrix:()=>openMatrix(),cluster:()=>autoCluster(),organize:()=>organizeBoard(),arrx:()=>arrangeLine(true),arry:()=>arrangeLine(false),
+  group:()=>groupSel(),tidy:()=>tidySel(),matrix:()=>openMatrix(),align:()=>alignBlocks(),organize:()=>organizeBoard(),arrx:()=>arrangeLine(true),arry:()=>arrangeLine(false),
   del:()=>{if(selEdge){pushHist();S.edges=S.edges.filter(x=>x.id!==selEdge);selEdge=null;refreshAll();save()}else if(sel.size)removeNodes([...sel])},
   fit:()=>fit(sel.size?[...sel].map(byId):null),zoomin:()=>$('#bIn').click(),zoomout:()=>$('#bOut').click(),
   snap:()=>$('#bSnap').click(),format:()=>toggleColors(),minimap:()=>toggleMini(),themes:()=>openThemes(),palette:()=>openPal(),keys:()=>openKeys()
@@ -3853,7 +3843,7 @@ function jmArrange(j){
   j.cw=cw;j.rows.forEach((r,i)=>{r.h=rh[i]});jmFit(j);
   cells.forEach(c=>{const r=j.rows[c.ri],T=j.y+JM_HD+jmRowRel(j,c.ri),L=jmGX(j)+c.pi*j.cw;
     c.l.sort((a,b)=>a.y-b.y||a.x-b.x);
-    if(r.k==='graph')c.l.forEach(m=>{m.x=Math.round(L+(j.cw-m.w)/2);m.y=Math.round(Math.min(Math.max(m.y,T+pad),T+r.h-pad-m.h))});
+    if(r.k==='graph')c.l.forEach(m=>{m.x=Math.round(L+(j.cw-m.w)/2);m.y=Math.round(m.vc?T+(r.h-m.h)/2:Math.min(Math.max(m.y,T+pad),T+r.h-pad-m.h))});   /* vc: block made by double-click stays vertically centred until the user drags it */
     else{const tot=c.l.reduce((a,m)=>a+m.h,0)+gap*(c.l.length-1);let y=T+(r.h-tot)/2;c.l.forEach(m=>{m.x=Math.round(L+(j.cw-m.w)/2);m.y=Math.round(y);y+=m.h+gap})}});
   const ids=[];cells.forEach(c=>c.l.forEach(m=>{const el=els.get(m.id);if(el){el.classList.add('jfit');ids.push(el)}sync(m)}));
   setTimeout(()=>ids.forEach(e=>e.classList.remove('jfit')),340);
@@ -4536,10 +4526,9 @@ function fitBar(){const t=$('#toolbar');t.style.setProperty('--k',1);const k=Mat
 addEventListener('resize',()=>{applyView();fitBar()});fitBar();
 
 /* ---------- phones & tablets: touch gestures, action bar, on-screen stickman pad ---------- */
-const TOUCH={box:false,multi:false,preSel:new Set(),lastTap:0,lastX:0,lastY:0};
+const TOUCH={box:false,preSel:new Set(),lastTap:0,lastX:0,lastY:0};
 const COARSE=()=>matchMedia('(pointer:coarse)').matches||innerWidth<720;
 function NARROW(){return innerWidth<720}
-const mbarH=()=>0;
 addEventListener('resize',()=>{syncCoarse();queueBar()});
 /* two fingers: pinch to zoom, drag to pan */
 const tPts=new Map();let pinch=null;
@@ -4572,7 +4561,7 @@ function touchTap(e,d){
   if(dbl){TOUCH.lastTap=0;addFromTool('text',toWorld(e.clientX,e.clientY))}}
 /* tap on an already-selected text block: edit it (first tap only selects, so dragging never opens the keyboard) */
 function touchTapNode(n){
-  if(!TOUCH.preSel.has(n.id)||TOUCH.multi)return;
+  if(!TOUCH.preSel.has(n.id))return;
   if(n.type==='text'||n.type==='sticky'||n.type==='label'){const ed=els.get(n.id)?.querySelector('.edit');if(ed)enterEdit(ed)}}
 /* on-screen keyboard: keep the block being typed in above it */
 function kbLift(){
@@ -4582,7 +4571,6 @@ function kbLift(){
 document.addEventListener('focusin',e=>{if(COARSE()&&e.target.closest&&e.target.closest('.node'))setTimeout(kbLift,320)});
 if(window.visualViewport)visualViewport.addEventListener('resize',()=>{if(COARSE())setTimeout(kbLift,60)});
 /* ---------- phone mode: a small, friendly subset of the app (desktop untouched) ---------- */
-function updMbar(){}
 const PHONE=()=>matchMedia('(pointer:coarse)').matches&&Math.min(innerWidth,innerHeight)<720;
 const PH_IC={canvas:'<rect x="3" y="4" width="18" height="16" rx="3" stroke-dasharray="3 3"/><rect x="8" y="9" width="8" height="6" rx="1"/>',text:'<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',head:'<path d="M6 4v16M18 4v16M6 12h12"/>',img:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',draw:'<path d="M4 20l1-4L16 5a2.100 2.100 0 013 3L8 19z"/>',plus:'<path d="M12 5v14M5 12h14"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>',del:'<path d="M4 7h16M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/>',undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>'};
 const phIco=k=>`<svg viewBox="0 0 24 24">${PH_IC[k]}</svg>`;
@@ -4598,7 +4586,6 @@ $('#toolbar').insertBefore(pUndo,$('#bMore'));pUndo.onclick=()=>undo();
 const psheet=document.createElement('div');psheet.id='psheet';psheet.className='glass';
 psheet.innerHTML=[['text','Text','text'],['canvas','Canvas','canvas'],['label','Heading','head'],['image','Image','img'],['draw','Drawing','draw']].map(([t,l,i])=>`<button data-pa="${t}" data-note="0">${phIco(i)}<span>${l}</span></button>`).join('');
 document.body.appendChild(psheet);
-const closeSheet=()=>{psheet.classList.remove('on');pAdd.classList.remove('on')};
 psheet.querySelectorAll('button').forEach(b=>wirePlace(b,b.dataset.pa));
 pAdd.onclick=e=>{e.stopPropagation();psheet.classList.toggle('on');pAdd.classList.toggle('on',psheet.classList.contains('on'))};
 psheet.addEventListener('click',e=>{if(justPlaced)return;const b=e.target.closest('button');if(!b)return;const t=b.dataset.pa;setTool('select');
@@ -4614,7 +4601,7 @@ function syncCoarse(){const p=PHONE();document.body.classList.toggle('phone',p);
   const h=document.getElementById('hint');if(h){if(p&&!h._p){h._o=h.innerHTML;h._p=1;h.innerHTML='<h1>Start mapping</h1><p>Tap <b>Add</b>, then tap or drag a block onto the board · pinch to zoom</p>'}else if(!p&&h._p){h.innerHTML=h._o;h._p=0}}}
 syncCoarse();
 
-window.__affinity={cloneArea,renderArea,pdfFromJpeg,setArea:a=>{area=a;updArea()},addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{const t=performance.now();drawEdges();return Math.round(performance.now()-t)},get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
+window.__affinity={cloneArea,renderArea,pdfFromJpeg,setArea:a=>{area=a;updArea()},addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{const t=performance.now();drawEdges();return Math.round(performance.now()-t)},get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},alignBlocks,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
 })();
 </script>
 </body>

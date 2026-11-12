@@ -17,4 +17,7 @@ Open `index.html`, or visit the published site. Press `/` for all commands and `
 | `P` | Stickman mode |
 | `⇧D` | Themes |
 | `E` | Delete empty blocks |
+| double-click | New text block, centred on the click (inside a journey cell it is centred in that cell) |
 | `⇧E` | Export area to PDF |
+
+**Phones and tablets** get a simplified toolbar: Select (box-select), Add (tap or drag Text / Canvas / Heading / Image / Drawing onto the board), Undo, More. Pinch to zoom, one finger to pan, tap a selected text block to edit it.
