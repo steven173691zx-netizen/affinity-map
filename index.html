@@ -815,6 +815,7 @@ body.phone #pAdd.on svg{transform:rotate(45deg)}
 body.phone #pAdd svg{transition:transform .3s var(--ease)}
 body.phone #pAdd span,body.phone #pUndo span{font-size:10px;font-weight:600}
 body.phone #psheet{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));padding:8px;border-radius:20px;z-index:102;opacity:0;transform:translateY(14px) scale(.97);pointer-events:none;transform-origin:50% 100%;transition:opacity .2s var(--ease),transform .35s var(--ease)}
+body.placing #psheet{opacity:0!important;pointer-events:none!important}
 body.phone #psheet.on{opacity:1;transform:none;pointer-events:auto}
 #psheet button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:72px;border-radius:14px;color:var(--t1);font-size:11px;font-weight:600}
 #psheet button:active{background:rgba(var(--ovc),.12)}
@@ -4586,9 +4587,10 @@ $('#toolbar').insertBefore(pUndo,$('#bMore'));pUndo.onclick=()=>undo();
 const psheet=document.createElement('div');psheet.id='psheet';psheet.className='glass';
 psheet.innerHTML=[['text','Text','text'],['canvas','Canvas','canvas'],['label','Heading','head'],['image','Image','img'],['draw','Drawing','draw']].map(([t,l,i])=>`<button data-pa="${t}" data-note="0">${phIco(i)}<span>${l}</span></button>`).join('');
 document.body.appendChild(psheet);
-const closeSheet=()=>psheet.classList.remove('on');
+const closeSheet=()=>{psheet.classList.remove('on');pAdd.classList.remove('on')};
+psheet.querySelectorAll('button').forEach(b=>{wirePlace(b,b.dataset.pa);b.addEventListener('pointerdown',()=>{const f=()=>{removeEventListener('pointerup',f,true);removeEventListener('pointercancel',f,true);if(justPlaced)closeSheet()};addEventListener('pointerup',f,true);addEventListener('pointercancel',f,true)},false)});
 pAdd.onclick=e=>{e.stopPropagation();psheet.classList.toggle('on');pAdd.classList.toggle('on',psheet.classList.contains('on'))};
-psheet.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.pa;closeSheet();pAdd.classList.remove('on');setTool('select');
+psheet.addEventListener('click',e=>{if(justPlaced)return;const b=e.target.closest('button');if(!b)return;const t=b.dataset.pa;closeSheet();pAdd.classList.remove('on');setTool('select');
   addFromTool(t)});
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#psheet,#pAdd'))closeSheet()},true);
 /* selected block(s): just Copy + Delete, next to the colour bar */
@@ -4599,7 +4601,7 @@ function updPhone(){const on=PHONE()&&!SM.on&&sel.size>0;psel.classList.toggle('
 /* phone body class, simpler hint */
 [['#bMore','More']].forEach(([q,t])=>{const b=document.querySelector('#toolbar '+q);if(b){const l=document.createElement('i');l.textContent=t;b.appendChild(l)}});
 function syncCoarse(){const p=PHONE();document.body.classList.toggle('phone',p);document.body.classList.toggle('coarse',COARSE());document.body.classList.toggle('narrow',NARROW());
-  const h=document.getElementById('hint');if(h){if(p&&!h._p){h._o=h.innerHTML;h._p=1;h.innerHTML='<h1>Start mapping</h1><p>Tap <b>Add</b> to place a block · double-tap to write · pinch to zoom</p>'}else if(!p&&h._p){h.innerHTML=h._o;h._p=0}}}
+  const h=document.getElementById('hint');if(h){if(p&&!h._p){h._o=h.innerHTML;h._p=1;h.innerHTML='<h1>Start mapping</h1><p>Tap <b>Add</b>, then tap or drag a block onto the board · pinch to zoom</p>'}else if(!p&&h._p){h.innerHTML=h._o;h._p=0}}}
 syncCoarse();
 
 window.__affinity={cloneArea,renderArea,pdfFromJpeg,setArea:a=>{area=a;updArea()},addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{const t=performance.now();drawEdges();return Math.round(performance.now()-t)},get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},autoCluster,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
