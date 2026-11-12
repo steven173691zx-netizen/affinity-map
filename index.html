@@ -846,6 +846,73 @@ body.phone #psheet{transition:opacity .14s linear,transform .14s linear}
 body.phone #psel{transition:opacity .14s linear,transform .14s linear}
 body.phone #psheet button,body.phone #psel button{transition:background-color .1s linear}
 body.phone .glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+
+/* ===== remote control (phone pairs with a desktop) ===== */
+#mRemote{display:none}
+#mPair kbd{display:none}
+body.phone #mRemote{display:flex}
+body.phone #mPair{display:none}
+#pairSec .prow{display:flex;gap:14px;align-items:center;margin:10px 0}
+#pQR{width:116px;height:116px;flex:none;background:#fff;border-radius:10px;padding:4px;display:grid;place-items:center}
+#pQR svg{width:100%;height:100%;display:block}
+#pCode{font:700 20px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;color:var(--t1);margin-top:4px;user-select:all}
+#pList .pr{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px}
+#pList .pr i{width:9px;height:9px;border-radius:50%;flex:none}
+#pList .pr .btn{margin-left:auto;height:26px;font-size:11px}
+#rcask{position:fixed;left:50%;top:70px;transform:translate(-50%,-12px);display:flex;align-items:center;gap:10px;padding:10px 12px 10px 16px;border-radius:16px;z-index:170;opacity:0;pointer-events:none;transition:opacity .2s var(--ease),transform .3s var(--ease);font-size:13px;max-width:92vw}
+#rcask.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+#rcask .sp{flex:1;min-width:8px}
+#rcui{display:none}
+body.rcm #rcui{display:block;position:fixed;inset:0;z-index:300;background:var(--bg);color:var(--t1);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+body.rcm #vp,body.rcm #toolbar,body.rcm #brand,body.rcm #topright,body.rcm #hint,body.rcm #mini,body.rcm #stylebar{display:none!important}
+#rcui .rch{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2}
+#rcui .rch b{display:block;font-size:15px}
+#rcui .rch span:not(.sp){display:block;font-size:12px;color:var(--t3);margin-top:1px}
+#rcui .rcwrap{width:100%;box-sizing:border-box;max-width:420px;margin:0 auto;padding:28px 20px 40px;display:flex;flex-direction:column;gap:12px}
+#rcui.init .rcwrap{padding-top:12vh}
+#rcui h2{margin:4px 0;font-size:20px;letter-spacing:-.01em;line-height:1.25}
+#rcui .rclogo{width:48px;height:48px;border-radius:14px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+#rcui .rclogo svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#rcui .note{color:var(--t3);font-size:13px;margin:0;line-height:1.45}
+#rcui .rcmsg{margin:0;padding:10px 12px;border-radius:12px;background:rgba(229,83,75,.14);color:#e5534b;font-size:13px}
+#rcui .rcc{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:18px;background:rgba(var(--ovc),.06);border:1px solid var(--line);cursor:pointer;position:relative}
+#rcui .rcc:active{background:rgba(var(--ovc),.12)}
+#rcui .rcc b{font-size:16px}
+#rcui .rcc span{font-size:13px;color:var(--t3);line-height:1.4}
+#rcui .rcc i{position:absolute;right:16px;top:18px;width:12px;height:12px;border-radius:50%}
+#rcui .rcc.go{background:var(--accent);color:var(--on-accent);align-items:center;border:0}
+#rcui .rcb{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border-radius:12px;background:rgba(var(--ovc),.08);font-size:13px;font-weight:600;cursor:pointer;color:var(--t1)}
+#rcui .rcb:active{background:rgba(var(--ovc),.16)}
+#rcui .rcb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#rcui .fld{all:unset;box-sizing:border-box;width:100%;height:48px;padding:0 14px;border-radius:14px;background:rgba(var(--ovc),.07);border:1px solid var(--line2);font-size:17px;letter-spacing:.04em;user-select:text}
+#rcui .rcspin{width:28px;height:28px;border-radius:50%;border:3px solid var(--line2);border-top-color:var(--accent);animation:rcs 1s linear infinite;align-self:flex-start}
+@keyframes rcs{to{transform:rotate(360deg)}}
+#rcui .rcbody{width:100%;box-sizing:border-box;padding:16px;display:flex;flex-direction:column;gap:18px;max-width:520px;margin:0 auto}
+#rcui .rcsec{display:flex;flex-direction:column;gap:10px}
+#rcui .sbgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+#rcui .swt{width:auto;aspect-ratio:1;height:auto;min-height:40px;border-radius:50%}
+#rcui .sbrow{display:flex;align-items:center;gap:8px}
+#rcui .sbb{all:unset;box-sizing:border-box;min-width:46px;height:44px;display:grid;place-items:center;border-radius:12px;background:rgba(var(--ovc),.08);font-weight:700;font-size:15px;cursor:pointer}
+#rcui .sbb.on{background:var(--accent);color:var(--on-accent)}
+#rcui .sbb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+#rcui .rcfs{min-width:36px;text-align:center;font-size:17px}
+#rcui .rcidle{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:12vh 20px}
+#rcui .rcpulse{width:56px;height:56px;border-radius:18px;border:2px dashed var(--t3);animation:rcp 2.2s ease-in-out infinite}
+@keyframes rcp{50%{transform:scale(1.12);opacity:.5}}
+#rcui .rcpad{border-radius:14px;overflow:hidden;border:1px solid var(--line2);line-height:0}
+#rcpad{width:100%;display:block;touch-action:none;max-height:56vh}
+#rcui .rctools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#rcui .rctools .pc{width:30px;height:30px;border-radius:50%;border:2px solid transparent;box-sizing:border-box}
+#rcui .rctools .pc.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--bg) inset}
+#rcui .rctools .pw{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(var(--ovc),.06)}
+#rcui .rctools .pw b{background:var(--t1);border-radius:50%;display:block}
+#rcui .rctools .pw.on{background:var(--accent-soft,rgba(var(--ovc),.18))}
+#rcui .rctools button{all:unset;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(var(--ovc),.06)}
+#rcui .rctools button.on{background:var(--accent);color:var(--on-accent)}
+#rcui .rctools button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#rcui .dsep{width:1px;height:22px;background:var(--line2)}
+#rcui .rcundo{display:flex;gap:10px}
+#rcui .rcfoot{width:100%;box-sizing:border-box;padding:8px 16px 28px;max-width:520px;margin:0 auto}
 </style>
 </head>
 <body>
@@ -901,6 +968,8 @@ body.phone .glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   <button class="mi" data-add="label"><span>Heading</span><kbd>L</kbd></button>
   <button class="mi" id="mStick"><span>Stickman mode</span><kbd></kbd></button>
   <button class="mi" id="mAlign"><span>Align blocks</span><kbd>J</kbd></button>
+  <button class="mi" id="mPair"><span>Pair a phone…</span><kbd></kbd></button>
+  <button class="mi" id="mRemote"><span>Remote-control mode</span></button>
   <button class="mi" data-tool="area"><span>Export area to PDF</span><kbd>E</kbd></button>
   <button class="mi" id="bSnap"><span>Snap to grid</span><kbd>G</kbd></button>
   <div class="msep"></div>
@@ -939,6 +1008,10 @@ body.phone .glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   <div id="sOff"><button class="btn pri" id="sStart" style="width:100%;height:38px">Start live session</button></div>
   <div id="sOn" style="display:none"><p id="sWait" class="note" style="color:var(--accent);margin:0 0 10px">Waiting for others to open the link… connecting can take up to ~20 seconds.</p><label>Invite link<input id="sLink" class="fld" readonly></label><div id="sPeers"></div>
     <div class="row"><button class="btn" id="sLeave">Leave session</button><span class="sp"></span><button class="btn pri" id="sCopy">Copy link</button></div></div>
+  <div id="pairSec"><div class="fm-sep"></div><h3 style="font-size:14px;margin:12px 0 4px">Pair a phone <em style="font-weight:500;color:var(--t3);font-style:normal">· optional</em></h3>
+    <p class="note">Use your phone as a remote: it shows the format bar for whatever you select here, and lets you draw into a selected drawing block. Pairing starts a live session, so its invite link also lets teammates join.</p>
+    <button class="btn" id="pStart" style="width:100%;height:36px">Pair a phone</button>
+    <div id="pOn" style="display:none"><div class="prow"><div id="pQR"></div><div><span class="sbl">Room code</span><div id="pCode"></div><p class="note" style="margin:6px 0 0">Scan, or open the invite link on your phone → <b>Remote control</b>.</p></div></div><div id="pList"></div></div></div>
   <div class="row"><span class="sp"></span><button class="btn" id="sClose">Close</button></div>
 </div></div>
 <div id="tmodal"><div class="card glass"><h3>Theme</h3><p class="note">Saved on this device only — everyone picks their own.</p><div class="tgrid" id="tgrid"></div></div></div>
@@ -1190,10 +1263,10 @@ function build(n,spawn){
   else hd+=`<span class="tt">${TITLES[t]}</span>`;
   if(t==='combine')hd+=`<span class="badge">0</span>`;
   hd+=`<span class="sp"></span>`;
-  if(t==='combine')hd+=`<button class="hbtn" data-act="ai" title="Re-summarize">${phIco('spark')}</button><button class="hbtn" data-act="copy" title="Copy merged text">${phIco('copy')}</button><button class="hbtn" data-act="totext" title="Convert to text block">${phIco('totext')}</button>`;
-  if(t==='image')hd+=`<button class="hbtn" data-act="fitimg" title="Toggle fill / contain">${phIco('fitimg')}</button>`;
-  if(t==='combine')hd+=`<button class="hbtn" data-act="md" title="Copy as Markdown report">${phIco('md')}</button><button class="hbtn" data-act="stickies" title="Turn shared themes into notes">${phIco('notes')}</button>`;
-  hd+=`<button class="hbtn" data-act="del" title="Delete">${phIco('x')}</button></div>`;
+  if(t==='combine')hd+=`<button class="hbtn" data-act="ai" title="Re-summarize">${ico('spark')}</button><button class="hbtn" data-act="copy" title="Copy merged text">${ico('copy')}</button><button class="hbtn" data-act="totext" title="Convert to text block">${ico('totext')}</button>`;
+  if(t==='image')hd+=`<button class="hbtn" data-act="fitimg" title="Toggle fill / contain">${ico('fitimg')}</button>`;
+  if(t==='combine')hd+=`<button class="hbtn" data-act="md" title="Copy as Markdown report">${ico('md')}</button><button class="hbtn" data-act="stickies" title="Turn shared themes into notes">${ico('notes')}</button>`;
+  hd+=`<button class="hbtn" data-act="del" title="Delete">${ico('x')}</button></div>`;
   let bd='<div class="bd">';
   if(t==='text'||t==='sticky'||t==='label')bd+=`<div class="edit" contenteditable="true" spellcheck="false" data-ph="${t==='label'?'Heading':t==='sticky'?'Write a note…':'Type something…'}"></div>`;
   if(t==='image')bd+=`<div class="imgwrap"></div>`;
@@ -1289,7 +1362,7 @@ function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=
 function initDraw(n,el){
   n.strokes=n.strokes||[];
   const svg=el.querySelector('.dsvg'),tools=el.querySelector('.dtools');
-  tools.innerHTML=PENCOLS.map(c=>`<i class="pc" data-pc="${c}" style="background:${c==='auto'?'var(--ink)':c}"></i>`).join('')+'<span class="dsep"></span>'+[1.5,3,6].map(w=>`<i class="pw" data-pw="${w}"><b style="width:${3+w*1.6}px;height:${3+w*1.6}px"></b></i>`).join('')+'<span class="dsep"></span><button data-d="erase" title="Eraser">'+phIco('eraser')+'</button><button data-d="clear" title="Clear board">'+phIco('trash')+'</button>';
+  tools.innerHTML=PENCOLS.map(c=>`<i class="pc" data-pc="${c}" style="background:${c==='auto'?'var(--ink)':c}"></i>`).join('')+'<span class="dsep"></span>'+[1.5,3,6].map(w=>`<i class="pw" data-pw="${w}"><b style="width:${3+w*1.6}px;height:${3+w*1.6}px"></b></i>`).join('')+'<span class="dsep"></span><button data-d="erase" title="Eraser">'+ico('eraser')+'</button><button data-d="clear" title="Clear board">'+ico('trash')+'</button>';
   renderDraw(n,el);toolsUI(n,el);
   tools.addEventListener('pointerdown',e=>e.stopPropagation());
   tools.addEventListener('click',e=>{
@@ -1322,7 +1395,7 @@ function initDraw(n,el){
     };
     const up=()=>{
       svg.removeEventListener('pointermove',move);svg.removeEventListener('pointerup',up);svg.removeEventListener('pointercancel',up);
-      if(changed){hist.push(before);if(hist.length>120)hist.shift();redo=[];updHist();save();refreshCombines()}
+      if(changed){hist.push(before);if(hist.length>120)hist.shift();redo=[];updHist();save();refreshCombines();queueBar()}
     };
     svg.addEventListener('pointermove',move);svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
   });
@@ -1895,7 +1968,8 @@ function closeMore(){more.classList.remove('on')}
 $('#bMore').onclick=e=>{e.stopPropagation();if(more.classList.toggle('on')){const r=$('#bMore').getBoundingClientRect(),w=more.offsetWidth;more.style.left=clamp(r.right-w,10,innerWidth-w-10)+'px';more.style.bottom=(innerHeight-r.top+14)+'px'}};
 more.addEventListener('click',e=>{if(e.target.closest('.mi'))closeMore()});
 addEventListener('pointerdown',e=>{if(!e.target.closest('#more,#bMore'))closeMore()});
-$('#mAlign').onclick=()=>alignBlocks();$('#mPal').onclick=()=>openPal();
+$('#mAlign').onclick=()=>alignBlocks();
+$('#mRemote').onclick=()=>{closeMore();RCP.mode='remote';localStorage.setItem('affinity-phone-mode','remote');if(collab)disconnect(true);rcStart(localStorage.getItem('affinity-rc-room'))};$('#mPal').onclick=()=>openPal();
 
 /* ---------- files ---------- */
 const DBN=new URLSearchParams(location.search).get('db')||'affinity';
@@ -1952,7 +2026,7 @@ async function newFile(data){
   world.animate([{opacity:0},{opacity:1}],{duration:380,easing:'cubic-bezier(.22,1,.36,1)'});
 }
 function renderMenu(){
-  $('#flist').innerHTML=[...metas].sort((a,b)=>b.updated-a.updated).map(m=>`<div class="fi${m.id===fileId?' cur':''}" data-id="${m.id}"><span class="fdot"></span><div class="fn"><b>${esc(m.name)}</b><small>${m.count} blocks · ${ago(m.updated)}</small></div><button class="fdel" data-del="${m.id}" title="Delete file">${phIco('x')}</button></div>`).join('');
+  $('#flist').innerHTML=[...metas].sort((a,b)=>b.updated-a.updated).map(m=>`<div class="fi${m.id===fileId?' cur':''}" data-id="${m.id}"><span class="fdot"></span><div class="fn"><b>${esc(m.name)}</b><small>${m.count} blocks · ${ago(m.updated)}</small></div><button class="fdel" data-del="${m.id}" title="Delete file">${ico('x')}</button></div>`).join('');
 }
 async function openMenu(){await flush();renderMenu();$('#filemenu').classList.add('on');$('#brand').classList.add('open')}
 function closeMenu(){$('#filemenu').classList.remove('on');$('#brand').classList.remove('open')}
@@ -2005,7 +2079,7 @@ let ciHist=false;
   i.addEventListener('input',()=>{if(!ciHist){pushHist();ciHist=true}f(i.value)});i.addEventListener('change',()=>ciHist=false)});
 let barQ=0;function queueBar(){if(barQ)return;barQ=requestAnimationFrame(()=>{barQ=0;updBar();updMini();updGbox()})}
 function updBar(){
-  updPhone();
+  updPhone();rcPush();
   const ns=[...sel].map(byId).filter(Boolean);
   const hide=!colorsOn||!ns.length||tool==='area'||(drag&&drag.moved);
   bar.classList.toggle('on',!hide);if(hide)return;
@@ -2491,6 +2565,7 @@ const ACTIONS=[
   {t:'Align blocks (J)',id:'align',f:()=>alignBlocks()},
   {t:'Organise a messy board (O)',id:'organize',f:()=>organizeBoard()},
   {t:'Delete empty blocks (E)',id:'empty',f:()=>deleteEmpty()},
+  {t:'Pair a phone as remote control',id:'pair',f:()=>$('#mPair').click()},
   {t:'Arrange in a row (X)',id:'arrx',f:()=>arrangeLine(true)},
   {t:'Arrange in a column (Y)',id:'arry',f:()=>arrangeLine(false)},
   {t:'Group selection into a canvas',id:'group',f:()=>groupSel()},
@@ -2610,7 +2685,7 @@ function tick(){
   const ss=[...sel].join(',');if(ss!==lastSelSig){lastSelSig=ss;sendPresence()}
   const now=Date.now();peers.forEach(p=>{if(p.el)p.el.style.opacity=(p.t&&now-p.t<8000)?1:0});
 }
-function sendPresence(to,extra){if(!collab)return;collab.sendCur({n:me.name,c:me.color,s:[...sel],...extra},to)}
+function sendPresence(to,extra){if(!collab)return;collab.sendCur({n:me.name,c:me.color,s:[...sel],ph:PHONE()?1:0,...extra},to)}
 function applyCur(d,id){
   let p=peers.get(id);if(!p){p={name:'Guest',color:'#999',sel:[]};peers.set(id,p)}
   if(d.n)p.name=d.n;if(d.c)p.color=d.c;if(d.s)p.sel=d.s;
@@ -2633,32 +2708,33 @@ function paintRemoteSel(){
   document.querySelectorAll('.node.psel').forEach(el=>{el.classList.remove('psel');el.removeAttribute('data-pn')});
   peers.forEach(p=>(p.sel||[]).forEach(id=>{const el=els.get(id);if(el){el.classList.add('psel');el.style.setProperty('--pc',p.color);el.dataset.pn=p.name}}));
 }
-function removePeer(id){dropTraps(id);reviveBy(id);toast((peers.get(id)?.name||'Someone')+' left');const p=peers.get(id);if(p?.el)p.el.remove();peers.delete(id);paintRemoteSel();updPeers()}
+function removePeer(id){if(rcGone(id)){const q=peers.get(id);if(q?.el)q.el.remove();peers.delete(id);paintRemoteSel();updPeers();return}dropTraps(id);reviveBy(id);toast((peers.get(id)?.name||'Someone')+' left');const p=peers.get(id);if(p?.el)p.el.remove();peers.delete(id);paintRemoteSel();updPeers()}
 function shareLink(){return location.href.split('#')[0]+'#room='+collab.roomId}
 function updPeers(){
   const on=!!collab;
   $('#peers').innerHTML=on?[[me.name,me.color],...[...peers.values()].map(p=>[p.name,p.color])].map(([n,c])=>`<div class="pav" title="${esc(n)}" style="background:${c}">${esc((n[0]||'?').toUpperCase())}</div>`).join(''):'';
   const b=$('#bShare');b.textContent=on?(peers.size?`● Live · ${peers.size+1}`:'● Waiting…'):'Share';b.classList.toggle('live',on);
   $('#sOff').style.display=on?'none':'block';$('#sOn').style.display=on?'block':'none';
+  rcPairUI();
   if(on){$('#sWait').style.display=peers.size?'none':'block';$('#sLink').value=shareLink();$('#sPeers').innerHTML=[['You · '+me.name,me.color],...[...peers.values()].map(p=>[p.name,p.color])].map(([n,c])=>`<div class="pr"><i style="background:${c}"></i>${esc(n)}</div>`).join('')}
 }
 async function connect(roomId){
   if(collab)await disconnect(true);
-  let m;try{m=await import(TRYS)}catch(e){toast('Could not reach the sync network');return}
+  let m;try{m=await loadTrys()}catch(e){toast('Could not reach the sync network');return}
   selfId=m.selfId;me.color=pickColor();
   const room=m.joinRoom({appId:APPID,relayRedundancy:7},roomId);
-  const [sendOps,getOps]=room.makeAction('ops'),[sendState,getState]=room.makeAction('state'),[sendCur,getCur]=room.makeAction('cur'),[sendSm,getSm]=room.makeAction('sm');
-  collab={room,roomId,sendOps,sendCur,sendSm};
+  const [sendOps,getOps]=room.makeAction('ops'),[sendState,getState]=room.makeAction('state'),[sendCur,getCur]=room.makeAction('cur'),[sendSm,getSm]=room.makeAction('sm'),[sendRc,getRc]=room.makeAction('rc');
+  collab={room,roomId,sendOps,sendCur,sendSm,sendRc};
   baseline();
   room.onPeerJoin(id=>{toast('Someone joined');if(!peers.has(id))peers.set(id,{name:'Guest',color:'#999',sel:[]});sendState(packAll(),id);sendPresence(id);SM.sendT=0;SM.trapResend=true;updPeers()});
   room.onPeerLeave(removePeer);
-  getState(d=>applyState(d));getOps((d,id)=>applyOps(d));getCur((d,id)=>applyCur(d,id));getSm((d,id)=>onSm(d,id));
+  getState(d=>applyState(d));getOps((d,id)=>applyOps(d));getCur((d,id)=>applyCur(d,id));getSm((d,id)=>onSm(d,id));getRc((d,id)=>rcHost(d,id));
   clearInterval(tickT);tickT=setInterval(tick,100);
   S.room=roomId;save();updPeers();toast('Live — waiting for others (can take ~20 s to connect)');
   history.replaceState(null,'','#room='+roomId);
 }
 async function disconnect(keepRoom){
-  if(!collab)return;clearInterval(tickT);
+  if(!collab)return;clearInterval(tickT);RC.id=null;phones.clear();
   try{await collab.room.leave()}catch{}
   peers.forEach(p=>p.el?.remove());peers=new Map();collab=null;
   if(!keepRoom){S.room=null;history.replaceState(null,'',location.pathname+location.search);save()}
@@ -2677,6 +2753,7 @@ $('#sCopy').onclick=async()=>{try{await navigator.clipboard.writeText(shareLink(
 $('#sLeave').onclick=async()=>{await disconnect();toast('Left the session')};
 async function joinFromHash(){
   const m=location.hash.match(/room=([\w-]+)/);if(!m)return false;const room=m[1];
+  if(rcBlock()){if(RCP.mode==='remote'&&RCP.room!==room)rcStart(room);return true}
   if(collab&&collab.roomId===room)return true;
   if(S.room!==room){
     const hit=metas.find(x=>x.room===room);
@@ -2685,6 +2762,202 @@ async function joinFromHash(){
   await connect(room);return true;
 }
 addEventListener('hashchange',()=>{joinFromHash()});
+
+/* ---------- phone as a remote control (optional) ----------
+   desktop = host: shares the current selection's format state, applies format / drawing messages from a paired phone
+   phone   = client: joins the same room, lists desktop users, pairs with ONE, then shows only the format bar (+ a drawing pad) */
+const loadTrys=()=>window.__TRYS_MOCK?Promise.resolve(window.__TRYS_MOCK):import(TRYS);
+const RC={id:null,ask:null,last:'',dsig:'',lastPhoneOp:0,sid:new Map(),hh:0,did:null};
+const phones=new Map();
+const rcSend=(d,to)=>{try{collab&&collab.sendRc&&collab.sendRc(d,to)}catch{}};
+function rcCtx(){
+  const ns=[...sel].map(byId).filter(Boolean);if(!ns.length)return{n:0};
+  const tx=ns.filter(isText),one=s=>s.size===1?[...s][0]:null,cs=new Set(ns.map(n=>n.color||(n.type==='sticky'?COLORS[0]:'')));
+  const c={n:ns.length,fill:cs.size===1?[...cs][0]:'*'};
+  if(tx.length){const ts=new Set(tx.map(n=>n.tc||'')),fz=new Set(tx.map(effFs)),al=new Set(tx.map(n=>n.align||'left'));c.text={tc:ts.size===1?[...ts][0]:'*',fs:one(fz)!=null?Math.round(one(fz)):null,al:one(al)}}
+  if(ns.length===1&&ns[0].type==='draw'){const n=ns[0];c.draw={id:n.id,vw:Math.max(10,(n.w-12)/(n.k||1)),vh:Math.max(10,(n.h-38)/(n.k||1)),pc:penColor(n),pw:n.pw||3,er:!!n.er,bg:n.color||''}}
+  return c}
+function rcPush(force){
+  if(!RC.id||!collab)return;
+  const c=rcCtx(),d=c.draw,n=d&&byId(d.id),sg=n?n.id+':'+n.strokes.length+':'+((n.strokes[n.strokes.length-1]||{p:[]}).p.length):'',now=performance.now();
+  const idChanged=(d?d.id:null)!==RC.did;
+  if(d&&(force||idChanged||(sg!==RC.dsig&&now-RC.lastPhoneOp>800)))c.sv=n.strokes;
+  RC.dsig=sg;RC.did=d?d.id:null;
+  const k=JSON.stringify(c);if(!force&&k===RC.last)return;RC.last=k;
+  rcSend({t:'ctx',...c},RC.id)}
+function rcAsk(id){
+  let el=document.getElementById('rcask');if(!el){el=document.createElement('div');el.id='rcask';el.className='glass';document.body.appendChild(el)}
+  const n=(phones.get(id)||{}).n||'A phone';
+  el.innerHTML=`<b>${esc(n)}</b> wants to use this screen as a remote<span class="sp"></span><button class="btn" data-a="no">Deny</button><button class="btn pri" data-a="ok">Allow</button>`;
+  el.classList.add('on');RC.ask=id;
+  el.onclick=e=>{const b=e.target.closest('button');if(!b)return;el.classList.remove('on');RC.ask=null;
+    if(b.dataset.a==='ok'){RC.id=id;RC.last='';RC.did=null;rcSend({t:'ok',n:me.name},id);rcPush(true);toast('Phone paired');}else rcSend({t:'no'},id);
+    rcPairUI()}}
+function rcHost(d,id){
+  if(d.t==='hi'){phones.set(id,{n:d.n||'Phone'});const p=peers.get(id);if(p){p.el&&p.el.remove();peers.delete(id);paintRemoteSel();updPeers()}rcPairUI();return}
+  if(!phones.has(id))phones.set(id,{n:d.n||'Phone'});
+  if(d.t==='pr'){phones.get(id).n=d.n||phones.get(id).n;
+    if(RC.id===id){rcSend({t:'ok',n:me.name},id);rcPush(true)}
+    else if(RC.id||RC.ask)rcSend({t:'busy'},id);
+    else rcAsk(id);rcPairUI();return}
+  if(RC.id!==id)return;
+  RC.lastPhoneOp=performance.now();
+  if(d.t==='unpair'){RC.id=null;toast('Phone disconnected');rcPairUI();return}
+  if(d.t==='un'||d.t==='rd'){const keep=[...sel];d.t==='un'?undo():doRedo();keep.forEach(i=>{if(byId(i))sel.add(i)});S.nodes.forEach(sync);queueBar();return}
+  if(d.t==='f'){
+    const hist1=()=>{const now=performance.now();if(!d.x||now-RC.hh>1500)pushHist();RC.hh=d.x?now:0};
+    if(d.k==='c'){hist1();setColor(d.v||null)}
+    else if(d.k==='tc'){hist1();eachText(n=>n.tc=d.v||null)}
+    else if(d.k==='fs'){pushHist();const v=clamp(+d.v||14,8,160);eachText(n=>n.fs=v)}
+    else if(d.k==='fd'){pushHist();eachText(n=>n.fs=clamp(effFs(n)+d.v*(effFs(n)>=40?4:effFs(n)>=20?2:1),8,160))}
+    else if(d.k==='al'){pushHist();eachText(n=>n.align=d.v)}
+    return}
+  const n=byId(d.id);if(!n||n.type!=='draw')return;const el=els.get(n.id);
+  if(d.t==='dp'){if(d.pc!==undefined){n.pc=d.pc;n.er=false}if(d.pw)n.pw=d.pw;if(d.er!==undefined)n.er=!!d.er;toolsUI(n,el);save();return}
+  if(d.t==='dc'){if(n.strokes.length){pushHist();n.strokes=[];renderDraw(n,el);refreshCombines();save()}return}
+  if(d.t==='ds'){let s=RC.sid.get(d.sid);if(!s){pushHist();s={c:d.c||'auto',w:d.w||3,p:[]};n.strokes.push(s);RC.sid.set(d.sid,s)}s.p.push(...d.p);renderDraw(n,el);return}
+  if(d.t==='er'){if(!RC.sid.has(d.sid)){pushHist();RC.sid.set(d.sid,1)}const k=n.k||1,r=9/k;let ch=false;
+    for(let j=0;j+1<d.p.length;j+=2){const x=d.p[j],y=d.p[j+1],len=n.strokes.length;
+      n.strokes=n.strokes.filter(s=>{for(let i=0;i+1<s.p.length;i+=2){const nx=s.p[i+2]??s.p[i],ny=s.p[i+3]??s.p[i+1];if(segDist(x,y,s.p[i],s.p[i+1],nx,ny)<r+s.w/2)return false}return true});if(n.strokes.length!==len)ch=true}
+    if(ch)renderDraw(n,el);return}
+  if(d.t==='de'){RC.sid.delete(d.sid);save();refreshCombines();rcPush(true)}
+}
+function rcGone(id){if(!phones.has(id))return false;phones.delete(id);if(RC.id===id){RC.id=null;toast('Phone disconnected')}if(RC.ask===id){RC.ask=null;document.getElementById('rcask')?.classList.remove('on')}rcPairUI();return true}
+/* desktop: pair section inside the Share panel */
+let QRM=null;
+async function rcQR(url){if(!QRM){try{QRM=(await import('https://esm.sh/qrcode-generator@1.4.4')).default}catch{return''}}
+  try{const q=QRM(0,'M');q.addData(url);q.make();return q.createSvgTag({cellSize:5,margin:2,scalable:true})}catch{return''}}
+let qrFor='';
+async function rcPairUI(){
+  const on=!!collab,box=document.getElementById('pOn'),st=document.getElementById('pStart');if(!box)return;
+  st.style.display=on?'none':'block';box.style.display=on?'block':'none';if(!on)return;
+  const url=shareLink();document.getElementById('pCode').textContent=collab.roomId;
+  if(qrFor!==url){qrFor=url;const s=await rcQR(url);if(qrFor===url)document.getElementById('pQR').innerHTML=s||'<span class="note">QR unavailable — use the code</span>'}
+  const l=[...phones.entries()].map(([id,p])=>`<div class="pr"><i style="background:${RC.id===id?'#3fa66b':'var(--t3)'}"></i>${esc(p.n)} — ${RC.id===id?'paired':RC.ask===id?'waiting for you to allow':'connected'}${RC.id===id?' <button class="btn" data-un="'+id+'">Disconnect</button>':''}</div>`).join('');
+  document.getElementById('pList').innerHTML=l||'<p class="note" style="margin:0">No phone yet. Open the link or scan the code on your phone and choose “Remote control”.</p>'}
+document.getElementById('pStart').onclick=async()=>{await connect(Math.random().toString(36).slice(2,10));rcPairUI()};
+document.getElementById('pList').addEventListener('click',e=>{const b=e.target.closest('[data-un]');if(b){rcSend({t:'bye'},b.dataset.un);RC.id=null;rcPairUI()}});
+document.getElementById('mPair').onclick=()=>{closeMore();$('#myName').value=me.name;updPeers();$('#smodal').classList.add('on')};
+
+/* ---- phone side ---- */
+const RCP={mode:localStorage.getItem('affinity-phone-mode')||'',on:false,room:null,room$:null,desks:new Map(),pair:null,pairName:'',state:'',ctx:{n:0},d:null,msg:'',pen:false};
+const rcBlock=()=>PHONE()&&RCP.mode!=='normal';
+async function bootCollab(){if(!(await joinFromHash())&&S.room)connect(S.room)}
+async function rcBoot(){
+  if(!PHONE())return false;
+  if(RCP.mode==='normal')return false;
+  const hm=location.hash.match(/room=([\w-]+)/);
+  if(RCP.mode==='remote'){rcStart(hm?hm[1]:localStorage.getItem('affinity-rc-room'));return true}
+  rcInit();return true}
+function rcInit(){
+  const el=rcEl();document.body.classList.add('rcm');el.className='init';
+  el.innerHTML=`<div class="rcwrap"><div class="rclogo">${phIco('plus')}</div><h2>How do you want to use Affinity on this phone?</h2>
+  <button class="rcc" data-m="remote"><b>Remote control</b><span>Pair with a desktop. Your phone shows the format bar and lets you draw into the selected drawing block.</span></button>
+  <button class="rcc" data-m="normal"><b>Use on its own</b><span>Edit the board right here on the phone.</span></button><p class="note">You can switch any time from the menu.</p></div>`;
+  el.onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;RCP.mode=b.dataset.m;localStorage.setItem('affinity-phone-mode',RCP.mode);
+    if(RCP.mode==='normal'){rcHide();bootCollab()}else{const hm=location.hash.match(/room=([\w-]+)/);rcStart(hm?hm[1]:localStorage.getItem('affinity-rc-room'))}}}
+function rcEl(){let el=document.getElementById('rcui');if(!el){el=document.createElement('div');el.id='rcui';document.body.appendChild(el)}return el}
+function rcHide(){document.body.classList.remove('rcm');const el=document.getElementById('rcui');if(el)el.className='';RCP.on=false}
+function rcStart(room){RCP.on=true;document.body.classList.add('rcm');RCP.pair=null;RCP.ctx={n:0};RCP.d=null;
+  if(room)rcConnect(room);else{RCP.state='code';rcRender()}}
+async function rcLeave(){if(RCP.room$){try{await RCP.room$.leave()}catch{}}RCP.room$=null;RCP.send=null;RCP.desks=new Map();RCP.pair=null}
+async function rcConnect(room){
+  await rcLeave();RCP.room=room;RCP.state='connecting';rcRender();localStorage.setItem('affinity-rc-room',room);
+  let m;try{m=await loadTrys()}catch(e){RCP.state='error';RCP.msg='Could not reach the sync network.';rcRender();return}
+  const r=m.joinRoom({appId:APPID,relayRedundancy:7},room);RCP.room$=r;
+  const [send,get]=r.makeAction('rc'),[,getCur]=r.makeAction('cur');RCP.send=send;
+  r.onPeerJoin(id=>{send({t:'hi',n:me.name},id)});
+  r.onPeerLeave(id=>{RCP.desks.delete(id);if(RCP.pair===id){RCP.pair=null;RCP.state='lost';RCP.msg=(RCP.pairName||'The desktop')+' disconnected.'}rcRender()});
+  getCur((d,id)=>{if(d.ph)return;if(d.n&&(!RCP.desks.has(id)||RCP.desks.get(id).name!==d.n)){RCP.desks.set(id,{name:d.n,color:d.c||'#999'});if(RCP.state==='connecting'||RCP.state==='pick')RCP.state='pick';rcRender()}});
+  get((d,id)=>rcClient(d,id));
+  send({t:'hi',n:me.name});
+  RCP.state='connecting';rcRender();
+  setTimeout(()=>{if(RCP.state==='connecting'){RCP.state='pick';rcRender()}},6000)}
+function rcClient(d,id){
+  if(d.t==='ok'&&RCP.pend===id){RCP.pair=id;RCP.pairName=d.n||(RCP.desks.get(id)||{}).name||'desktop';RCP.state='paired';rcRender()}
+  else if(d.t==='no'&&RCP.pend===id){RCP.state='pick';RCP.msg='Request declined.';rcRender()}
+  else if(d.t==='busy'&&RCP.pend===id){RCP.state='pick';RCP.msg='That desktop is already paired with another phone.';rcRender()}
+  else if(d.t==='bye'&&RCP.pair===id){RCP.pair=null;RCP.state='pick';RCP.msg='Disconnected by the desktop.';rcRender()}
+  else if(d.t==='ctx'&&RCP.pair===id){
+    const had=RCP.ctx;RCP.ctx=d;
+    if(d.draw){if(!RCP.d||RCP.d.id!==d.draw.id)RCP.d={strokes:[]};Object.assign(RCP.d,d.draw);if(d.sv&&!RCP.pen)RCP.d.strokes=d.sv}else RCP.d=null;
+    rcRender()}}
+const rcTx=(d,to)=>{try{RCP.send&&RCP.send(d,to===undefined?RCP.pair:to)}catch{}};
+let rcRQ=0;
+function rcRender(){if(rcRQ)return;rcRQ=requestAnimationFrame(()=>{rcRQ=0;rcDraw()})}
+function rcDraw(){
+  if(!RCP.on)return;const el=rcEl();
+  if(document.activeElement&&el.contains(document.activeElement)&&document.activeElement.type==='color')return;
+  const hd=(sub)=>`<div class="rch"><div><b>Remote control</b><span>${sub}</span></div><span class="sp"></span><button class="rcb" data-a="normal">Use phone on its own</button></div>`;
+  let h='';
+  if(RCP.state==='code')h=hd('Join a desktop')+`<div class="rcwrap"><h2>Enter the room code</h2><p class="note">On your desktop open <b>Share → Pair a phone</b> and type the code shown, or scan its QR code.</p><input id="rcCode" class="fld" placeholder="e.g. k3x9a2bq" autocapitalize="off" autocomplete="off" spellcheck="false"><button class="rcc go" data-a="join"><b>Connect</b></button></div>`;
+  else if(RCP.state==='connecting')h=hd('Connecting…')+`<div class="rcwrap"><div class="rcspin"></div><h2>Looking for desktops</h2><p class="note">Room ${esc(RCP.room||'')} · this can take up to 20 seconds</p><button class="rcb" data-a="code">Change room</button></div>`;
+  else if(RCP.state==='pick'||RCP.state==='lost'||RCP.state==='error'){const l=[...RCP.desks.entries()];
+    h=hd('Room '+esc(RCP.room||''))+`<div class="rcwrap"><h2>Pair with a desktop</h2>${RCP.msg?`<p class="rcmsg">${esc(RCP.msg)}</p>`:''}`+(l.length?l.map(([id,x])=>`<button class="rcc" data-pair="${id}"><i style="background:${esc(x.color)}"></i><b>${esc(x.name)}</b><span>Tap to pair</span></button>`).join(''):`<p class="note">No desktop found yet. Keep this page open — it appears here as soon as it joins.</p><div class="rcspin"></div>`)+`<button class="rcb" data-a="code">Change room</button></div>`}
+  else if(RCP.state==='waiting')h=hd('Waiting…')+`<div class="rcwrap"><div class="rcspin"></div><h2>Waiting for ${esc((RCP.desks.get(RCP.pend)||{}).name||'the desktop')}</h2><p class="note">Tap <b>Allow</b> on the desktop.</p><button class="rcb" data-a="cancel">Cancel</button></div>`;
+  else if(RCP.state==='paired')h=rcCtrl(hd);
+  el.className='';el.classList.add('on');
+  const keep=RCP.state==='paired'&&el._pairedBuilt&&RCP._sig===JSON.stringify([RCP.ctx.n,!!RCP.ctx.text,RCP.ctx.draw&&RCP.ctx.draw.id]);
+  if(keep){rcSync()}else{el.innerHTML=h;el._pairedBuilt=RCP.state==='paired';RCP._sig=JSON.stringify([RCP.ctx.n,!!RCP.ctx.text,RCP.ctx.draw&&RCP.ctx.draw.id]);if(RCP.state==='paired')rcSync();const ci=el.querySelector('#rcCode');if(ci)ci.focus()}
+}
+function rcCtrl(hd){
+  const c=RCP.ctx;let b='';
+  if(!c.n)b=`<div class="rcidle"><div class="rcpulse"></div><h2>Select a block on your desktop</h2><p class="note">Its format controls will appear here.</p></div>`;
+  else{
+    b+=`<div class="rcsec"><span class="sbl">Fill</span><div class="sbgrid">${COLORS.map(x=>`<i class="swt" data-fc="${x}" style="background:${x}"></i>`).join('')}<i class="swt none" data-fc="" title="Default"></i><label class="swt custom"><input type="color" value="#f29b62" data-fx="c"></label></div></div>`;
+    if(c.text)b+=`<div class="rcsec"><span class="sbl">Text</span><div class="sbrow"><button class="sbb" data-fd="-1">A−</button><b class="rcfs" id="rcfs"></b><button class="sbb" data-fd="1">A+</button><span class="sbsep"></span>${['left','center','right'].map(a=>`<button class="sbb" data-al="${a}"><svg viewBox="0 0 24 24">${P['align'+a[0]]}</svg></button>`).join('')}</div><div class="sbgrid">${TCOLS.map(x=>`<i class="swt" data-tcc="${x}" style="background:${x}"></i>`).join('')}<i class="swt none" data-tcc=""></i><label class="swt custom"><input type="color" value="#f29b62" data-fx="tc"></label></div></div>`;
+    if(c.draw)b+=`<div class="rcsec rcdraw"><span class="sbl">Draw here</span><div class="rcpad"><svg id="rcpad" preserveAspectRatio="xMidYMid meet"></svg></div><div class="rctools">${PENCOLS.map(x=>`<i class="pc" data-pc="${x}" style="background:${x==='auto'?'var(--ink)':x}"></i>`).join('')}<span class="dsep"></span>${[1.5,3,6].map(w=>`<i class="pw" data-pw="${w}"><b style="width:${3+w*1.6}px;height:${3+w*1.6}px"></b></i>`).join('')}<span class="dsep"></span><button data-dt="erase">${ico('eraser')}</button><button data-dt="clear">${ico('trash')}</button></div></div>`;
+    b+=`<div class="rcundo"><button class="rcb" data-a="un">${phIco('undo')} Undo</button><button class="rcb" data-a="rd">Redo</button></div>`}
+  return hd('Paired with '+esc(RCP.pairName))+`<div class="rcbody">${b}</div><div class="rcfoot"><button class="rcb" data-a="unpair">Unpair</button></div>`}
+function rcSync(){
+  const el=rcEl(),c=RCP.ctx;if(!c.n)return;
+  el.querySelectorAll('[data-fc]').forEach(s=>s.classList.toggle('act',c.fill!=='*'&&c.fill===s.dataset.fc));
+  if(c.text){el.querySelectorAll('[data-tcc]').forEach(s=>s.classList.toggle('act',c.text.tc!=='*'&&c.text.tc===s.dataset.tcc));
+    el.querySelectorAll('[data-al]').forEach(s=>s.classList.toggle('on',c.text.al===s.dataset.al));const f=el.querySelector('#rcfs');if(f)f.textContent=c.text.fs==null?'–':c.text.fs}
+  if(c.draw&&RCP.d){const d=RCP.d,svg=el.querySelector('#rcpad');if(svg){svg.setAttribute('viewBox',`0 0 ${d.vw} ${d.vh}`);svg.style.aspectRatio=d.vw+'/'+d.vh;svg.style.background=d.bg||'rgba(var(--ovc),.06)';if(!RCP.pen)svg.innerHTML=d.strokes.map(strokeSvg).join('')}
+    el.querySelectorAll('.pc').forEach(x=>x.classList.toggle('on',!d.er&&x.dataset.pc===d.pc));el.querySelectorAll('.pw').forEach(x=>x.classList.toggle('on',+x.dataset.pw===d.pw));el.querySelector('[data-dt=erase]')?.classList.toggle('on',!!d.er)}}
+/* phone input */
+document.addEventListener('click',e=>{
+  const el=document.getElementById('rcui');if(!el||!el.contains(e.target))return;const t=e.target;
+  const a=t.closest('[data-a]'),p=t.closest('[data-pair]');
+  if(p){RCP.pend=p.dataset.pair;RCP.msg='';RCP.state='waiting';rcTx({t:'pr',n:me.name},RCP.pend);rcRender();return}
+  if(a){const k=a.dataset.a;
+    if(k==='normal'){rcLeave();RCP.mode='normal';localStorage.setItem('affinity-phone-mode','normal');rcHide();bootCollab()}
+    else if(k==='code'){rcLeave();RCP.state='code';RCP.msg='';rcRender()}
+    else if(k==='join'){const v=(el.querySelector('#rcCode').value||'').trim().replace(/^.*room=/,'');if(v){history.replaceState(null,'','#room='+v);rcConnect(v)}}
+    else if(k==='cancel'){RCP.state='pick';RCP.pend=null;rcRender()}
+    else if(k==='unpair'){rcTx({t:'unpair'});RCP.pair=null;RCP.state='pick';RCP.msg='';rcRender()}
+    else if(k==='un')rcTx({t:'un'});else if(k==='rd')rcTx({t:'rd'});return}
+  const fc=t.closest('[data-fc]');if(fc){RCP.ctx.fill=fc.dataset.fc;rcTx({t:'f',k:'c',v:fc.dataset.fc});rcSync();return}
+  const tc=t.closest('[data-tcc]');if(tc){RCP.ctx.text.tc=tc.dataset.tcc;rcTx({t:'f',k:'tc',v:tc.dataset.tcc});rcSync();return}
+  const fd=t.closest('[data-fd]');if(fd){const s=+fd.dataset.fd,f=RCP.ctx.text.fs||14;RCP.ctx.text.fs=clamp(f+s*(f>=40?4:f>=20?2:1),8,160);rcTx({t:'f',k:'fd',v:s});rcSync();return}
+  const al=t.closest('[data-al]');if(al){RCP.ctx.text.al=al.dataset.al;rcTx({t:'f',k:'al',v:al.dataset.al});rcSync();return}
+  const d=RCP.d;if(!d)return;
+  const pc=t.closest('[data-pc]');if(pc){d.pc=pc.dataset.pc;d.er=false;rcTx({t:'dp',id:d.id,pc:d.pc});rcSync();return}
+  const pw=t.closest('[data-pw]');if(pw){d.pw=+pw.dataset.pw;rcTx({t:'dp',id:d.id,pw:d.pw});rcSync();return}
+  const dt=t.closest('[data-dt]');if(dt){if(dt.dataset.dt==='erase'){d.er=!d.er;rcTx({t:'dp',id:d.id,er:d.er})}else{d.strokes=[];rcTx({t:'dc',id:d.id})}rcSync()}
+});
+document.addEventListener('input',e=>{const i=e.target;if(!i.dataset||!i.dataset.fx||!RCP.pair)return;
+  if(i.dataset.fx==='c'){RCP.ctx.fill=i.value;rcTx({t:'f',k:'c',v:i.value,x:1})}else{RCP.ctx.text.tc=i.value;rcTx({t:'f',k:'tc',v:i.value,x:1})}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='rcCode')document.querySelector('#rcui [data-a=join]')?.click()});
+/* drawing pad: strokes stream to the desktop as you draw */
+(function(){let cur=null,buf=[],T=0,sid=0;
+  const pHit=(s,x,y)=>{for(let i=0;i+1<s.p.length;i+=2){const nx=s.p[i+2]??s.p[i],ny=s.p[i+3]??s.p[i+1];if(segDist(x,y,s.p[i],s.p[i+1],nx,ny)<9+s.w/2)return false}return true};   /* keep stroke? (same rule as the desktop eraser) */
+  const flush=()=>{T=0;if(!cur||!buf.length)return;const d=RCP.d;if(cur.er)rcTx({t:'er',id:d.id,sid:cur.sid,p:buf});else rcTx({t:'ds',id:d.id,sid:cur.sid,c:cur.first?cur.c:undefined,w:cur.first?cur.w:undefined,p:buf});cur.first=false;buf=[]};
+  document.addEventListener('pointerdown',e=>{const svg=e.target.closest&&e.target.closest('#rcpad');if(!svg||!RCP.d)return;e.preventDefault();
+    const d=RCP.d,r=svg.getBoundingClientRect(),pt=ev=>[+((ev.clientX-r.left)/r.width*d.vw).toFixed(1),+((ev.clientY-r.top)/r.height*d.vh).toFixed(1)];
+    RCP.pen=true;cur={sid:'p'+Date.now().toString(36)+(sid++),first:true,er:d.er,c:d.pc,w:d.pw};
+    let tmp=null,pts=[];const [x0,y0]=pt(e);
+    if(!cur.er){const s={c:d.pc,w:d.pw,p:[x0,y0]};d.strokes.push(s);pts=s.p;tmp=document.createElementNS(SVGNS,'path');tmp.setAttribute('fill','none');tmp.setAttribute('stroke-linecap','round');tmp.setAttribute('stroke-linejoin','round');if(d.pc==='auto')tmp.style.stroke='var(--ink)';else tmp.setAttribute('stroke',d.pc);tmp.setAttribute('stroke-width',d.pw);tmp.setAttribute('d',strokeD(pts));svg.appendChild(tmp)}
+    buf.push(x0,y0);if(cur.er){d.strokes=d.strokes.filter(s=>pHit(s,x0,y0));svg.innerHTML=d.strokes.map(strokeSvg).join('')}
+    try{svg.setPointerCapture(e.pointerId)}catch{}
+    const mv=ev=>{const [x,y]=pt(ev),lx=cur.er?x0:pts[pts.length-2],ly=cur.er?y0:pts[pts.length-1];if(!cur.er&&Math.hypot(x-lx,y-ly)<1.5)return;
+      buf.push(x,y);if(cur.er){d.strokes=d.strokes.filter(s=>pHit(s,x,y));svg.innerHTML=d.strokes.map(strokeSvg).join('')}else{pts.push(x,y);tmp.setAttribute('d',strokeD(pts))}
+      if(!T)T=setTimeout(flush,50)};
+    const up=()=>{svg.removeEventListener('pointermove',mv);svg.removeEventListener('pointerup',up);svg.removeEventListener('pointercancel',up);clearTimeout(T);flush();rcTx({t:'de',id:d.id,sid:cur.sid});cur=null;setTimeout(()=>{RCP.pen=false},200)};
+    svg.addEventListener('pointermove',mv);svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up)});
+})();
+
 
 /* ---------- themes ---------- */
 const THEMES={night:['#161519','#f29b62','#ffffff'],day:['#f4f1ea','#2f4f45','#1c1b18'],sakura:['#fdf0f2','#d6567a','#3a2128'],mono:['#e8e8e6','#111111','#111111'],ocean:['#0b1826','#5bc0eb','#e6f1ff'],forest:['#101a15','#9bd47f','#e9f5e4'],midnight:['#000000','#a78bfa','#f0eefc'],sunset:['#1a1012','#ff8a5b','#ffeee6'],glitch:['#020504','#00ff9c','#00ff9c']};
@@ -3214,7 +3487,7 @@ function renderPin(n){
   const cm=n.cm||[];if(!cm.length)return;
   const d=document.createElement('div');d.className='cpin'+(el._pinOpen?' open':'');
   d.style.animation='none';
-  d.innerHTML=`<button class="cpb" title="Comments">${phIco('comment')}<span>${cm.length}</span></button><div class="cpl glass">${cm.map(c=>`<div class="cr" data-k="${esc(String(c.id||c.at))}"><i style="background:${esc(c.c||'#999')}"></i><div style="flex:1;min-width:0"><b>${esc(c.n||'?')}</b>${esc(c.t)}</div><button title="Delete comment">${phIco('x')}</button></div>`).join('')}</div>`;
+  d.innerHTML=`<button class="cpb" title="Comments">${ico('comment')}<span>${cm.length}</span></button><div class="cpl glass">${cm.map(c=>`<div class="cr" data-k="${esc(String(c.id||c.at))}"><i style="background:${esc(c.c||'#999')}"></i><div style="flex:1;min-width:0"><b>${esc(c.n||'?')}</b>${esc(c.t)}</div><button title="Delete comment">${ico('x')}</button></div>`).join('')}</div>`;
   d.addEventListener('pointerdown',e=>e.stopPropagation());
   d.addEventListener('dblclick',e=>e.stopPropagation());
   d.querySelector('.cpb').onclick=e=>{e.stopPropagation();el._pinOpen=!d.classList.contains('open');d.classList.toggle('open',el._pinOpen)};
@@ -4520,6 +4793,7 @@ window.addEventListener('resize',()=>{if(SM.looping)fxSize()});
   }catch(e){console.error(e);fileId=null;$('#status').textContent='Not saving — storage unavailable';view={x:innerWidth/2,y:innerHeight/2,z:1}}
   $('#bSnap').classList.toggle('on',snap);rebuild();applyView();updHist();
   try{const e=await navigator.storage.estimate();if(e.quota&&e.usage/e.quota>.8)toast('Browser storage is almost full — export your maps')}catch{}
+  if(await rcBoot())return;
   if(!(await joinFromHash())&&S.room)connect(S.room);
 })();
 function fitBar(){const t=$('#toolbar');t.style.setProperty('--k',1);const k=Math.min(1,(innerWidth-24)/t.scrollWidth);t.style.setProperty('--k',k)}
@@ -4601,7 +4875,7 @@ function syncCoarse(){const p=PHONE();document.body.classList.toggle('phone',p);
   const h=document.getElementById('hint');if(h){if(p&&!h._p){h._o=h.innerHTML;h._p=1;h.innerHTML='<h1>Start mapping</h1><p>Tap <b>Add</b>, then tap or drag a block onto the board · pinch to zoom</p>'}else if(!p&&h._p){h.innerHTML=h._o;h._p=0}}}
 syncCoarse();
 
-window.__affinity={cloneArea,renderArea,pdfFromJpeg,setArea:a=>{area=a;updArea()},addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{const t=performance.now();drawEdges();return Math.round(performance.now()-t)},get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},alignBlocks,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
+window.__affinity={RCP,RC,phones,cloneArea,renderArea,pdfFromJpeg,setArea:a=>{area=a;updArea()},addJourney,jmSnap,jmSoon,jmRefresh,applyOps,applyCur,applyState,fakeCollab:cb=>{collab={room:{leave(){}},roomId:'sim',sendOps:cb||(()=>{}),sendCur(){},sendSm(){}};baseline();clearInterval(tickT);tickT=setInterval(tick,100)},_db:drawBoss,BOSSES,_dm:drawMan,_sx:sx,_smc:smc,SM,onSm,renderPin,ensureLoop,specActive,smEnter,smExit,setSmTool,WEAPONS,setWeapon,fireSM:fire,redrawMs:()=>{const t=performance.now();drawEdges();return Math.round(performance.now()-t)},get collab(){return collab},get peers(){return peers},connect,disconnect,setView:v=>{Object.assign(view,v);applyView()},alignBlocks,groupSel,tidySel,exportMd,copySel,pasteClip,toggleColors,get colorsOn(){return colorsOn},get S(){return S},addNode,addFromTool,prepPrint,setArea:a=>{area=a;updArea()},get metas(){return metas}};
 })();
 </script>
 </body>

@@ -21,3 +21,5 @@ Open `index.html`, or visit the published site. Press `/` for all commands and `
 | `⇧E` | Export area to PDF |
 
 **Phones and tablets** get a simplified toolbar: Select (box-select), Add (tap or drag Text / Canvas / Heading / Image / Drawing onto the board), Undo, More. Pinch to zoom, one finger to pan, tap a selected text block to edit it.
+
+**Phone as a remote control (optional)** — on the desktop open *More → Pair a phone…* (or Share) to get a QR code / room code. On the phone choose *Remote control*, pick a desktop from the list and the desktop taps *Allow*. The phone then shows only the format bar (fill, text size, alignment, text colour, undo/redo) for whatever is selected on the desktop, and when a drawing block is selected you can draw on the phone and the strokes appear live. Choosing *Use on its own* keeps the normal phone interface; you can switch back from the More menu.
