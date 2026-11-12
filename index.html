@@ -736,7 +736,10 @@ body.zm #world{pointer-events:none}
 #mx .mxst{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:rgba(var(--ovc),.08);color:var(--t1);transition:all .2s var(--ease)}
 #mx .mxst:hover{background:var(--accent);color:var(--on-accent)}
 #mx .mxrow b{width:22px;text-align:center;color:var(--t1)}
-#mx .mxf{display:flex;justify-content:flex-end}
+#mx .mxf{display:flex;justify-content:flex-end;gap:8px}
+#mx #mxcount{width:62px;text-align:center}
+#mxg{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:60}
+#mxg i{position:absolute;border:1.5px dashed var(--accent);background:var(--accent-soft);box-sizing:border-box}
 .pghost{position:fixed;left:0;top:0;z-index:300;pointer-events:none;border:2px dashed var(--accent);background:var(--accent-soft);border-radius:14px;display:grid;place-items:center;color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.04em;animation:pgin .22s var(--bounce);transition:opacity .16s,border-color .2s,filter .2s;min-width:90px;min-height:56px}
 .pghost.bad{border-color:var(--t3);color:var(--t3);filter:grayscale(1);opacity:.55}
 .pghost.drop{opacity:0}
@@ -812,11 +815,12 @@ body.zm .node,body.zm .node *,body.zm .port{transition:none!important}
 <div id="stylebar" class="glass"></div>
 <canvas id="mini" class="glass" width="380" height="252"></canvas>
 <div id="pal"><div class="pcard glass"><input id="pin" placeholder="Search blocks or run a command…" spellcheck="false" autocomplete="off"><div id="plist"></div></div></div>
-<div id="mx" class="glass"><div class="mxh"><b>Matrix</b><span id="mxn"></span><button class="mxx" id="mxcancel" title="Cancel (Esc)">×</button></div>
-  <div class="mxseg" id="mxseg"><button data-m="row" title="One row"><svg viewBox="0 0 24 24"><rect x="3" y="9" width="5" height="6"/><rect x="10" y="9" width="5" height="6"/><rect x="17" y="9" width="4" height="6"/></svg>Row</button><button data-m="col" title="One column"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="5"/><rect x="9" y="10" width="6" height="5"/><rect x="9" y="17" width="6" height="4"/></svg>Column</button><button data-m="grid" title="Grid"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg>Grid</button></div>
+<div id="mx" class="glass"><div class="mxh"><b>Matrix</b><span id="mxn"></span><button class="mxx" id="mxcancel" title="Close (Esc)">×</button></div>
+  <div class="mxseg" id="mxseg"><button data-m="row" title="Copies go to the right"><svg viewBox="0 0 24 24"><rect x="3" y="9" width="5" height="6"/><rect x="10" y="9" width="5" height="6"/><rect x="17" y="9" width="4" height="6"/></svg>Row</button><button data-m="col" title="Copies go downward"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="5"/><rect x="9" y="10" width="6" height="5"/><rect x="9" y="17" width="6" height="4"/></svg>Column</button><button data-m="grid" title="Copies fill a grid"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg>Grid</button></div>
+  <div class="mxrow"><span>Copies</span><button class="mxst" data-n="-1">−</button><input type="number" id="mxcount" min="1" max="200"><button class="mxst" data-n="1">+</button></div>
+  <div class="mxrow" id="mxcl"><span>Columns</span><button class="mxst" data-c="-1">−</button><b id="mxcv">3</b><button class="mxst" data-c="1">+</button></div>
   <div class="mxrow"><span>Gap</span><input type="range" id="mxgap" min="0" max="240" step="2"><input type="number" id="mxgapn" min="0" max="999"><em>px</em></div>
-  <div class="mxrow" id="mxcl"><span>Columns</span><button class="mxst" data-c="-1">−</button><b id="mxcv">2</b><button class="mxst" data-c="1">+</button></div>
-  <div class="mxf"><button class="btn pri" id="mxok">Apply</button></div></div>
+  <div class="mxf"><button class="btn" id="mxclose">Close</button><button class="btn pri" id="mxok">Create</button></div></div>
 <div id="areabar" class="glass"><span id="asize"></span>
   <button class="btn pri" id="aexp">Export PDF</button>
   <button class="btn sq" id="acancel" title="Cancel"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1003,6 +1007,7 @@ function applyView(){
   world.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.z})`;queueBar();updArea();if(typeof updCursors==='function')updCursors();
   const g=24*view.z,bs=`${g}px ${g}px`;if(bs!==lastBS){lastBS=bs;vp.style.backgroundSize=bs}const bp=`${view.x}px ${view.y}px`;if(bp!==lastBP){lastBP=bp;vp.style.backgroundPosition=bp}
   const zl=Math.round(view.z*100)+'%';if(zl!==lastZL){lastZL=zl;zlbl.textContent=zl}
+  if(MX&&MX.on)mxPos();
   if(view.z!==lastZ){lastZ=view.z;clearTimeout(rrT);rrT=setTimeout(rerast,220)}
 }
 /* will-change keeps panning/zooming on the GPU but freezes the text raster scale; re-raster once zooming settles so text is crisp */
@@ -1406,6 +1411,7 @@ function select(ids,add){
   if(!add)sel.clear();ids.forEach(i=>sel.add(i));selEdge=null;
   if(ids.length===1){const n=byId(ids[0]);if(n&&n.type!=='canvas'&&n.type!=='journey'){n.z=++zTop}}
   S.nodes.forEach(sync);drawEdges();
+  if(MX&&MX.on&&ids.length)mxRebase();
 }
 /* E: remove every block that has nothing in it (blank text, image without a picture, empty drawing, unconnected combine, empty canvas) */
 function isEmptyNode(n){
@@ -1421,48 +1427,55 @@ function deleteEmpty(){
   const pool=sel.size?[...sel].map(byId).filter(Boolean):S.nodes,ids=pool.filter(isEmptyNode).map(n=>n.id);
   if(!ids.length){toast('No empty blocks');return}
   removeNodes(ids);toast(`Deleted ${ids.length} empty block${ids.length>1?'s':''} · ⌘Z to undo`)}
-/* ---------- matrix: arrange the selection in a row, column or grid with an adjustable gap (live) ---------- */
-const MX={on:false,ns:[],kids:new Map(),orig:[],o:new Map(),mode:'row',gap:24,cols:2,ids:''};
-function mxPlace(){
-  const ns=MX.ns,n=ns.length,x0=Math.min(...ns.map(m=>MX.o.get(m)[0])),y0=Math.min(...ns.map(m=>MX.o.get(m)[1]));
-  const ord=[...ns],g=MX.gap;let pos=new Map();
-  if(MX.mode==='row'){ord.sort((a,b)=>(MX.o.get(a)[0]+a.w/2)-(MX.o.get(b)[0]+b.w/2));const mid=ord.reduce((s,m)=>s+MX.o.get(m)[1]+m.h/2,0)/n;let x=x0;ord.forEach(m=>{pos.set(m,[x,Math.round(mid-m.h/2)]);x+=m.w+g})}
-  else if(MX.mode==='col'){ord.sort((a,b)=>(MX.o.get(a)[1]+a.h/2)-(MX.o.get(b)[1]+b.h/2));const mid=ord.reduce((s,m)=>s+MX.o.get(m)[0]+m.w/2,0)/n;let y=y0;ord.forEach(m=>{pos.set(m,[Math.round(mid-m.w/2),y]);y+=m.h+g})}
-  else{const band=Math.max(80,Math.min(...ns.map(m=>m.h))*.7);ord.sort((a,b)=>Math.round(MX.o.get(a)[1]/band)-Math.round(MX.o.get(b)[1]/band)||MX.o.get(a)[0]-MX.o.get(b)[0]);
-    const c=Math.max(1,Math.min(n,MX.cols)),r=Math.ceil(n/c),cw=Array(c).fill(0),rh=Array(r).fill(0);
-    ord.forEach((m,i)=>{cw[i%c]=Math.max(cw[i%c],m.w);rh[Math.floor(i/c)]=Math.max(rh[Math.floor(i/c)],m.h)});
-    const cx=[],ry=[];let x=x0,y=y0;cw.forEach(w=>{cx.push(x);x+=w+g});rh.forEach(h=>{ry.push(y);y+=h+g});
-    ord.forEach((m,i)=>pos.set(m,[Math.round(cx[i%c]+(cw[i%c]-m.w)/2),Math.round(ry[Math.floor(i/c)]+(rh[Math.floor(i/c)]-m.h)/2)]))}
-  pos.forEach(([x,y],m)=>{const dx=x-m.x,dy=y-m.y;m.x=x;m.y=y;sync(m);(MX.kids.get(m)||[]).forEach(k=>{k.x+=dx;k.y+=dy;sync(k)})});
-  drawEdges();jmSoon();mxPos()}
+/* ---------- matrix: spawn a pattern of copies of the selection (row / column / grid) with a gap; the panel stays until Create or Close ---------- */
+var MX={on:false,u:null,mode:'row',gap:24,count:3,cols:3};const mxg=document.createElement('div');mxg.id='mxg';world.appendChild(mxg);
+function mxUnit(){
+  const tg=[...sel].map(byId).filter(Boolean),ns=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(innerCanvas(n)&&tg.includes(innerCanvas(n))));
+  if(!ns.length)return null;
+  const kids=ns.filter(n=>n.type==='canvas').flatMap(c=>S.nodes.filter(m=>m!==c&&!ns.includes(m)&&m.type!=='journey'&&inside(m,c))),all=[...new Set([...ns,...kids])];
+  const x1=Math.min(...ns.map(n=>n.x)),y1=Math.min(...ns.map(n=>n.y)),x2=Math.max(...ns.map(n=>n.x+n.w)),y2=Math.max(...ns.map(n=>n.y+n.h));
+  return{ns,all,box:{x:x1,y:y1,w:x2-x1,h:y2-y1}}}
+function mxOffsets(){
+  const b=MX.u.box,o=[],c=Math.max(1,MX.cols);
+  for(let i=1;i<=MX.count;i++){
+    if(MX.mode==='row')o.push([i*(b.w+MX.gap),0]);else if(MX.mode==='col')o.push([0,i*(b.h+MX.gap)]);
+    else o.push([(i%c)*(b.w+MX.gap),Math.floor(i/c)*(b.h+MX.gap)])}
+  return o}
+let mxQ=0;
+function mxDraw(){if(mxQ)return;mxQ=requestAnimationFrame(()=>{mxQ=0;if(!MX.on)return;
+  const off=mxOffsets(),all=MX.u.all;let h='';
+  if(off.length*all.length>600){off.length=Math.max(1,Math.floor(600/all.length))}
+  off.forEach(([dx,dy])=>all.forEach(n=>{h+=`<i style="left:${n.x+dx}px;top:${n.y+dy}px;width:${n.w}px;height:${n.h}px"></i>`}));
+  if(mxg._h!==h){mxg._h=h;mxg.innerHTML=h}})}
 function mxPos(){
-  const p=$('#mx');if(!MX.on)return;const ns=MX.ns,z=view.z,x1=Math.min(...ns.map(n=>n.x)),x2=Math.max(...ns.map(n=>n.x+n.w)),y1=Math.min(...ns.map(n=>n.y)),y2=Math.max(...ns.map(n=>n.y+n.h));
-  const bw=p.offsetWidth,bh=p.offsetHeight;let cx=clamp((x1+x2)/2*z+view.x,bw/2+10,innerWidth-bw/2-10),top=y1*z+view.y-bh-16;if(top<70)top=y2*z+view.y+16;top=clamp(top,70,Math.max(70,innerHeight-bh-100));
-  p.style.transform=`translate(${cx-bw/2}px,${top}px)`}
+  const p=$('#mx');if(!MX.on)return;const b=MX.u.box,z=view.z,bw=p.offsetWidth,bh=p.offsetHeight;
+  let x=b.x*z+view.x-bw-18;if(x<10)x=Math.min(innerWidth-bw-10,(b.x+b.w)*z+view.x+18);
+  const y=clamp(b.y*z+view.y,70,Math.max(70,innerHeight-bh-100));p.style.transform=`translate(${clamp(x,10,innerWidth-bw-10)}px,${y}px)`}
 function mxUi(){
   document.querySelectorAll('#mxseg button').forEach(b=>b.classList.toggle('on',b.dataset.m===MX.mode));
-  $('#mxgap').value=Math.min(240,MX.gap);$('#mxgapn').value=MX.gap;$('#mxcl').style.display=MX.mode==='grid'?'flex':'none';$('#mxcv').textContent=MX.cols;
-  $('#mxn').textContent=MX.ns.length+' blocks';mxPos()}
+  $('#mxgap').value=Math.min(240,MX.gap);$('#mxgapn').value=MX.gap;$('#mxcount').value=MX.count;$('#mxcl').style.display=MX.mode==='grid'?'flex':'none';$('#mxcv').textContent=MX.cols;
+  $('#mxn').textContent=MX.u.ns.length+(MX.u.ns.length>1?' blocks':' block')+' · '+MX.count+(MX.count>1?' copies':' copy')}
 function openMatrix(){
-  if(MX.on)mxClose(true);
-  const tg=[...sel].map(byId).filter(Boolean),ns=tg.filter(n=>n.type!=='journey'&&!jmHolds(n)&&!(innerCanvas(n)&&tg.includes(innerCanvas(n))));
-  if(ns.length<2){toast('Select 2+ blocks, then press M');return}
-  MX.ns=ns;MX.kids=new Map(ns.filter(n=>n.type==='canvas').map(c=>[c,S.nodes.filter(m=>m!==c&&!ns.includes(m)&&inside(m,c))]));
-  MX.o=new Map(ns.map(n=>[n,[n.x,n.y]]));MX.orig=[...ns,...[...MX.kids.values()].flat()].map(n=>({n,x:n.x,y:n.y}));
-  const ng=nearGapsXY(ns);MX.gap=Math.min(64,Math.max(16,modeGap([...ng.h,...ng.v],24)));MX.cols=Math.ceil(Math.sqrt(ns.length));MX.ids=ns.map(n=>n.id).join();
-  MX.mode='row';pushHist();MX.on=true;$('#mx').classList.add('on');mxUi();mxPlace()}
-function mxClose(commit){
-  if(!MX.on)return;MX.on=false;$('#mx').classList.remove('on');setTimeout(()=>{if(!MX.on)$('#mx').style.transform='translate(-9999px,0)'},230);
-  if(!commit){MX.orig.forEach(o=>{o.n.x=o.x;o.n.y=o.y;sync(o.n)});hist.pop();updHist();drawEdges();jmSoon()}
-  else{jmDropped(MX.ns);save()}
-  MX.o.clear()}
-$('#mxseg').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&MX.on){MX.mode=b.dataset.m;mxUi();mxPlace()}});
-$('#mxgap').addEventListener('input',e=>{MX.gap=+e.target.value;mxUi();mxPlace()});
-$('#mxgapn').addEventListener('input',e=>{MX.gap=Math.max(0,Math.min(999,+e.target.value||0));$('#mxgap').value=Math.min(240,MX.gap);mxPlace()});
-document.querySelectorAll('#mx .mxst').forEach(b=>b.addEventListener('click',()=>{MX.cols=Math.max(1,Math.min(MX.ns.length,MX.cols+ +b.dataset.c));mxUi();mxPlace()}));
-$('#mxok').onclick=()=>mxClose(true);$('#mxcancel').onclick=()=>mxClose(false);
-addEventListener('keydown',e=>{if(!MX.on)return;if(e.key==='Escape'){e.stopImmediatePropagation();mxClose(false)}else if(e.key==='Enter'&&!e.target.closest('input')){e.stopImmediatePropagation();mxClose(true)}},true);
-addEventListener('pointerdown',e=>{if(MX.on&&!e.target.closest('#mx'))mxClose(true)},true);
+  const u=mxUnit();if(!u){toast('Select a block, then press M');return}
+  const first=!MX.on;MX.u=u;
+  if(first){const ng=nearGapsXY(u.ns);MX.gap=Math.min(64,Math.max(16,modeGap([...ng.h,...ng.v],24)));MX.mode='row';MX.count=3;MX.cols=3;MX.on=true;$('#mx').classList.add('on')}
+  mxUi();mxPos();mxDraw()}
+function mxRebase(){if(!MX.on)return;const u=mxUnit();if(!u)return;MX.u=u;mxUi();mxPos();mxDraw()}
+function mxClose(){if(!MX.on)return;MX.on=false;MX.u=null;mxg.innerHTML='';mxg._h='';$('#mx').classList.remove('on');setTimeout(()=>{if(!MX.on)$('#mx').style.transform='translate(-9999px,0)'},230)}
+function mxApply(){
+  if(!MX.on)return;const off=mxOffsets(),all=MX.u.all,ids=new Set(all.map(n=>n.id));pushHist();const made=[];
+  off.forEach(([dx,dy])=>{const map={};
+    all.forEach(o=>{const c=JSON.parse(JSON.stringify(o));c.id=uid();c.x+=dx;c.y+=dy;delete c.jm;delete c.cm;delete c.ai;if(c.type!=='canvas'&&c.type!=='journey')c.z=++zTop;map[o.id]=c.id;S.nodes.push(c);build(c,true);made.push(c)});
+    S.edges.filter(e=>ids.has(e.from)&&ids.has(e.to)).forEach(e=>S.edges.push({id:uid(),from:map[e.from],to:map[e.to]}))});
+  jmDropped(made);select(made.map(n=>n.id));refreshAll();save();toast(`${made.length} block${made.length>1?'s':''} created`);mxClose()}
+$('#mxseg').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&MX.on){MX.mode=b.dataset.m;mxUi();mxDraw()}});
+$('#mxgap').addEventListener('input',e=>{MX.gap=+e.target.value;$('#mxgapn').value=MX.gap;mxDraw()});
+$('#mxgapn').addEventListener('input',e=>{MX.gap=Math.max(0,Math.min(999,+e.target.value||0));$('#mxgap').value=Math.min(240,MX.gap);mxDraw()});
+$('#mxcount').addEventListener('input',e=>{MX.count=Math.max(1,Math.min(200,Math.round(+e.target.value||1)));mxUi();mxDraw()});
+document.querySelectorAll('#mx [data-n]').forEach(b=>b.addEventListener('click',()=>{MX.count=Math.max(1,Math.min(200,MX.count+ +b.dataset.n));mxUi();mxDraw()}));
+document.querySelectorAll('#mx [data-c]').forEach(b=>b.addEventListener('click',()=>{MX.cols=Math.max(1,Math.min(50,MX.cols+ +b.dataset.c));mxUi();mxDraw()}));
+$('#mxok').onclick=mxApply;$('#mxclose').onclick=mxClose;$('#mxcancel').onclick=mxClose;
+addEventListener('keydown',e=>{if(!MX.on)return;if(e.key==='Escape'){e.stopImmediatePropagation();mxClose()}else if(e.key==='Enter'&&!e.target.closest('input[type=number]')){e.stopImmediatePropagation();mxApply()}},true);
 function removeNodes(ids){
   pushHist();
   ids.forEach(id=>{const el=els.get(id);if(el){el.classList.add('dying');setTimeout(()=>el.remove(),180);els.delete(id)}});
@@ -2372,7 +2385,7 @@ const ACTIONS=[
   {t:'Arrange in a column (Y)',id:'arry',f:()=>arrangeLine(false)},
   {t:'Group selection into a canvas',id:'group',f:()=>groupSel()},
   {t:'Tidy selection into a grid',id:'tidy',f:()=>tidySel()},
-  {t:'Matrix: arrange selection (M)',id:'matrix',f:()=>openMatrix()},
+  {t:'Matrix: spawn a pattern (M)',id:'matrix',f:()=>openMatrix()},
   {t:'Toggle format bar (colour, text size, align)',id:'format',f:()=>toggleColors()},
   {t:'Toggle minimap',id:'minimap',f:()=>toggleMini()},
   {t:'Stickman mode (play on your blocks)',id:'stickman',f:()=>ACT.stickman()},
@@ -2644,7 +2657,7 @@ const IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform);
 const KEYDEFS=[
  ['Tools',[['stickman','Stickman mode',['P']],['select','Select tool',['V']],['hand','Pan tool',['H']],['pencil','Magic pencil',['B']],['journey','New Journey Map',['Shift+J']],['area','Export area to PDF',['Shift+E']],['empty','Delete empty blocks',['E']]]],
  ['Add blocks',[['text','Text',['T']],['draw','Drawing',['D']],['image','Image',['I']],['canvas','Canvas (wraps selection)',['Shift+C']],['combine','Combine',['C']],['label','Heading',['L']]]],
- ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['matrix','Matrix: arrange selection with a gap',['M']],['cluster','Align blocks (x with x, y with y)',['J']],['organize','Organise a messy board',['O']],['arrx','Arrange in a row',['X']],['arry','Arrange in a column',['Y']],['del','Delete',['Delete','Backspace']]]],
+ ['Edit',[['undo','Undo',['Mod+Z']],['redo','Redo',['Mod+Shift+Z','Mod+Y']],['dup','Duplicate',['Mod+D']],['selall','Select all',['Mod+A']],['group','Group selection into canvas',['Mod+G']],['tidy','Tidy selection into grid',['A']],['matrix','Matrix: spawn a pattern of the selection',['M']],['cluster','Align blocks (x with x, y with y)',['J']],['organize','Organise a messy board',['O']],['arrx','Arrange in a row',['X']],['arry','Arrange in a column',['Y']],['del','Delete',['Delete','Backspace']]]],
  ['View',[['fit','Fit all / selection',['Shift+1']],['zoomin','Zoom in',['=','Shift+=']],['zoomout','Zoom out',['-']],['snap','Snap to grid',['G']],['format','Format bar (colour, text)',['K']],['minimap','Minimap',['N']],['themes','Theme',['Shift+D']],['palette','Command palette',['/','Mod+K']],['keys','Keyboard shortcuts',['Shift+/']]]]
 ];
 const PUNCT={Slash:'/',Equal:'=',Minus:'-',Period:'.',Comma:',',Semicolon:';',Quote:"'",BracketLeft:'[',BracketRight:']',Backslash:'\\',Backquote:'`'};

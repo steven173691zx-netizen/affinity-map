@@ -9,7 +9,7 @@ Open `index.html`, or visit the published site. Press `/` for all commands and `
 | `J` | Align blocks: x with x, y with y (same kind and size only) |
 | `O` | Organise a messy board into tidy grids |
 | `X` / `Y` | Arrange selection in a row / column |
-| `M` | Matrix: arrange selection as row / column / grid with a live gap |
+| `M` | Matrix: spawn a row / column / grid of copies of the selection (count + gap, live preview) |
 | `C` / `⇧C` | Combine block / canvas |
 | `⌘G` | Group into a canvas |
 | `⇧J` | New journey map |
