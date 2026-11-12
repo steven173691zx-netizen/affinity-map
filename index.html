@@ -716,7 +716,8 @@ html.glb{background:#0a0014!important}
 [data-theme="glitch"] #hint{color:var(--m)}
 [data-theme="glitch"] .toast,[data-theme="glitch"] #toast{background:var(--m)!important;color:#000!important;text-shadow:none}
 /* while the view moves nothing may react to the pointer (no hover flicker on frames passing under the cursor) */
-body.zm #world{pointer-events:none}
+#zshield{position:absolute;inset:0;z-index:5;display:none}
+#world.lod .node>*{display:none!important}
 #mx{position:fixed;left:0;top:0;z-index:98;width:268px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:11px;opacity:0;pointer-events:none;transform:translate(-9999px,0);transition:opacity .22s var(--ease)}
 #mx.on{opacity:1;pointer-events:auto}
 #mx .mxh{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t1)}
@@ -745,7 +746,6 @@ body.zm #world{pointer-events:none}
 .pghost.drop{opacity:0}
 @keyframes pgin{from{scale:.6;opacity:0}to{scale:1;opacity:1}}
 body.placing,body.placing *{cursor:grabbing!important}
-body.zm .node,body.zm .node *,body.zm .port{transition:none!important}
 @media (prefers-reduced-motion:reduce){[data-theme="glitch"] *{animation:none!important}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
@@ -972,7 +972,7 @@ const imgTok=v=>{let k=imgIdx.get(v);if(k===undefined){k=imgTab.length;imgTab.pu
 const isBig=v=>typeof v==='string'&&v.length>1500&&v.charCodeAt(0)===100&&v.startsWith('data:');
 function snapshot(){return JSON.stringify(S,(k,v)=>k==='src'&&isBig(v)?imgTok(v):v)}
 function hydrate(o){(o.nodes||[]).forEach(n=>{if(typeof n.src==='string'&&n.src.startsWith('@i'))n.src=imgTab[+n.src.slice(2)]||''});return o}
-function pushHist(){hist.push(snapshot());if(hist.length>120)hist.shift();redo=[];updHist()}
+function pushHist(){hist.push(snapshot());let tot=0;for(const h of hist)tot+=h.length;while(hist.length>120||(hist.length>8&&tot>60e6)){tot-=hist.shift().length}redo=[];updHist()}
 function updHist(){$('#bUndo').classList.toggle('dis',!hist.length);$('#bRedo').classList.toggle('dis',!redo.length)}
 function undo(){if(!hist.length)return;redo.push(snapshot());S=hydrate(JSON.parse(hist.pop()));sel.clear();selEdge=null;rebuild();updHist();save()}
 function doRedo(){if(!redo.length)return;hist.push(snapshot());S=hydrate(JSON.parse(redo.pop()));sel.clear();selEdge=null;rebuild();updHist();save()}
@@ -1001,9 +1001,27 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clea
 
 /* ---------- view ---------- */
 const zlbl=$('#zoomlbl');let lastBS='',lastBP='',lastZL='',viewT=0;
+/* ---- culling: blocks and wires outside the screen are not rendered at all ---- */
+let cullQ=0;
+const cullSoon=()=>{if(!cullQ)cullQ=requestAnimationFrame(cullNow)};
+function cullNow(){
+  cullQ=0;if(typeof SM!=='undefined'&&SM.on&&!SM.cullOff){S.nodes.forEach(n=>{const el=els.get(n.id);if(el&&el._cv===false){el._cv=true;el.style.display=''}});wireEls.forEach(g=>{if(g._cv===false){g._cv=true;g.style.display='';g._d=null}});return}
+  const z=view.z,w=innerWidth/z,h=innerHeight/z,X1=-view.x/z-w*.6,X2=-view.x/z+w*1.6,Y1=-view.y/z-h*.6,Y2=-view.y/z+h*1.6,act=document.activeElement&&document.activeElement.closest?document.activeElement.closest('.node'):null;
+  S.nodes.forEach(n=>{const el=els.get(n.id);if(!el)return;
+    const vis=(n.x<X2&&n.x+n.w>X1&&n.y<Y2&&n.y+n.h>Y1)||sel.has(n.id)||el===act||n.type==='canvas'&&false;
+    if(el._cv!==vis){const was=el._cv===false;el._cv=vis;el.style.display=vis?'':'none';if(vis&&was&&el._ng){el._ng=0;autoGrow(n)}}});
+  let rev=false;
+  S.edges.forEach(e=>{const g=wireEls.get(e.id),a=byId(e.from),b=byId(e.to);if(!g||!a||!b)return;
+    const x1=Math.min(a.x,b.x),x2=Math.max(a.x+a.w,b.x+b.w),y1=Math.min(a.y,b.y),y2=Math.max(a.y+a.h,b.y+b.h),vis=x1<X2&&x2>X1&&y1<Y2&&y2>Y1;
+    if(g._cv!==vis){g._cv=vis;g.style.display=vis?'':'none';if(vis){g._d=null;rev=true}}});
+  if(rev)drawEdges();
+  const lod=z<.28;if(world._lod!==lod){world._lod=lod;world.classList.toggle('lod',lod)}
+}
+/* while the view moves a transparent shield sits over the board, so blocks sliding under a still cursor never flip hover states (one element, no style recalculation) */
+const zsh=document.createElement('div');zsh.id='zshield';vp.appendChild(zsh);
 let zmT=0;
 function applyView(){
-  if(!document.body.classList.contains('zm'))document.body.classList.add('zm');clearTimeout(zmT);zmT=setTimeout(()=>document.body.classList.remove('zm'),160);
+  if(zsh.style.display!=='block')zsh.style.display='block';clearTimeout(zmT);zmT=setTimeout(()=>{zsh.style.display='none'},160);cullSoon();
   world.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.z})`;queueBar();updArea();if(typeof updCursors==='function')updCursors();
   const g=24*view.z,bs=`${g}px ${g}px`;if(bs!==lastBS){lastBS=bs;vp.style.backgroundSize=bs}const bp=`${view.x}px ${view.y}px`;if(bp!==lastBP){lastBP=bp;vp.style.backgroundPosition=bp}
   const zl=Math.round(view.z*100)+'%';if(zl!==lastZL){lastZL=zl;zlbl.textContent=zl}
@@ -1016,11 +1034,12 @@ let rasterZ=1,qv=0;const queueView=()=>{if(!qv)qv=requestAnimationFrame(()=>{qv=
 function rerast(){if(view.z<rasterZ*1.3&&view.z>rasterZ/2.5)return;rasterZ=view.z;world.style.willChange='auto';requestAnimationFrame(()=>requestAnimationFrame(()=>{world.style.willChange='transform'}))}
 /* view position is tiny: keep it out of the (large) document write */
 function saveView(){if(!fileId)return;clearTimeout(viewT);viewT=setTimeout(()=>{try{localStorage.setItem('affinity-view-'+fileId,JSON.stringify(view))}catch{}},400)}
-const toWorld=(cx,cy)=>{const r=vp.getBoundingClientRect();return{x:(cx-r.left-view.x)/view.z,y:(cy-r.top-view.y)/view.z}};
+const VPR={left:0,top:0};   /* #vp is fixed to the window: reading its rect would force a layout every call */
+const toWorld=(cx,cy)=>{const r=VPR;return{x:(cx-r.left-view.x)/view.z,y:(cy-r.top-view.y)/view.z}};
 const ZT={z:1,cx:0,cy:0,wx:0,wy:0,on:false,raf:0,t:0};
 function stopZoom(){ZT.on=false;cancelAnimationFrame(ZT.raf)}
 function zoomAt(cx,cy,nz){
-  nz=clamp(nz,.1,3);const r=vp.getBoundingClientRect(),px=cx-r.left,py=cy-r.top;
+  nz=clamp(nz,.1,3);const r=VPR,px=cx-r.left,py=cy-r.top;
   if(!ZT.on)ZT.z=view.z;
   ZT.wx=(px-view.x)/view.z;ZT.wy=(py-view.y)/view.z;ZT.cx=px;ZT.cy=py;ZT.z=nz;
   if(!ZT.on){ZT.on=true;ZT.t=performance.now();ZT.raf=requestAnimationFrame(zstep)}
@@ -1114,10 +1133,9 @@ function build(n,spawn){
 }
 function sync(n){
   const el=els.get(n.id);if(!el)return;
-  el.style.left=n.x+'px';el.style.top=n.y+'px';el.style.width=n.w+'px';el.style.height=n.h+'px';
-  el.style.zIndex=(n.type==='canvas'||n.type==='journey')?0:2+(n.z||0);
-  el.classList.toggle('sel',sel.has(n.id));
-  if(n.type==='draw')drawView(n,el);
+  const z=(n.type==='canvas'||n.type==='journey')?0:2+(n.z||0),sg=n.x+'|'+n.y+'|'+n.w+'|'+n.h+'|'+z;
+  if(el._sg!==sg){el._sg=sg;const s=el.style;s.left=n.x+'px';s.top=n.y+'px';s.width=n.w+'px';s.height=n.h+'px';s.zIndex=z;if(n.type==='draw')drawView(n,el);cullSoon()}
+  const sl=sel.has(n.id);if(el._sl!==sl){el._sl=sl;el.classList.toggle('sel',sl);cullSoon()}
   queueBar();
 }
 /* ---------- text styling ---------- */
@@ -1390,6 +1408,7 @@ function drawEdges(){
   S.edges.forEach(e=>{
     const a=byId(e.from),b=byId(e.to);if(!a||!b)return;keep.add(e.id);usedIn.add(e.to);usedOut.add(e.from);
     let g=wireEls.get(e.id);
+    if(g&&g._cv===false)return;
     if(!g||!g.isConnected){g=document.createElementNS(SVGNS,'g');g.setAttribute('class','wire-g');g.dataset.e=e.id;
       g.innerHTML='<path class="wire wnew" pathLength="1"/><path class="wire-hit"/>';wires.appendChild(g);wireEls.set(e.id,g);setTimeout(()=>g.children[0]?.classList.remove('wnew'),800)}
     const d=pathD(portPos(a,'out'),portPos(b,'in'));
@@ -1442,7 +1461,7 @@ function mxOffsets(){
     else o.push([(i%c)*(b.w+MX.gap),Math.floor(i/c)*(b.h+MX.gap)])}
   return o}
 let mxQ=0;
-function mxDraw(){if(mxQ)return;mxQ=requestAnimationFrame(()=>{mxQ=0;if(!MX.on)return;
+function mxDraw(){if(mxQ||!MX.on)return;mxQ=requestAnimationFrame(()=>{mxQ=0;if(!MX.on)return;
   const off=mxOffsets(),all=MX.u.all;let h='';
   if(off.length*all.length>600){off.length=Math.max(1,Math.floor(600/all.length))}
   off.forEach(([dx,dy])=>all.forEach(n=>{h+=`<i style="left:${n.x+dx}px;top:${n.y+dy}px;width:${n.w}px;height:${n.h}px"></i>`}));
@@ -1452,6 +1471,7 @@ function mxPos(){
   let x=b.x*z+view.x-bw-18;if(x<10)x=Math.min(innerWidth-bw-10,(b.x+b.w)*z+view.x+18);
   const y=clamp(b.y*z+view.y,70,Math.max(70,innerHeight-bh-100));p.style.transform=`translate(${clamp(x,10,innerWidth-bw-10)}px,${y}px)`}
 function mxUi(){
+  if(!MX.u)return;
   document.querySelectorAll('#mxseg button').forEach(b=>b.classList.toggle('on',b.dataset.m===MX.mode));
   $('#mxgap').value=Math.min(240,MX.gap);$('#mxgapn').value=MX.gap;$('#mxcount').value=MX.count;$('#mxcl').style.display=MX.mode==='grid'?'flex':'none';$('#mxcv').textContent=MX.cols;
   $('#mxn').textContent=MX.u.ns.length+(MX.u.ns.length>1?' blocks':' block')+' · '+MX.count+(MX.count>1?' copies':' copy')}
@@ -1597,7 +1617,7 @@ vp.addEventListener('pointermove',e=>{
     Object.assign(n,{x,y,w,h});if(n.type==='journey')jmScale(n,drag,drag.d);sync(n);drawEdges();
   }
   else if(drag.k==='marq'){
-    const r=vp.getBoundingClientRect(),x1=Math.min(drag.sx,e.clientX),y1=Math.min(drag.sy,e.clientY),x2=Math.max(drag.sx,e.clientX),y2=Math.max(drag.sy,e.clientY);
+    const r=VPR,x1=Math.min(drag.sx,e.clientX),y1=Math.min(drag.sy,e.clientY),x2=Math.max(drag.sx,e.clientX),y2=Math.max(drag.sy,e.clientY);
     if(x2-x1+y2-y1<4)return;
     Object.assign(marquee.style,{display:'block',left:x1-r.left+'px',top:y1-r.top+'px',width:x2-x1+'px',height:y2-y1+'px'});
     const a=toWorld(x1,y1),b=toWorld(x2,y2);sel=new Set(drag.base);
@@ -1967,7 +1987,7 @@ function cloneArea(theme,bg){
   inner.appendChild(svg);
   S.nodes.filter(n=>n.x<a.x+a.w&&n.x+n.w>a.x&&n.y<a.y+a.h&&n.y+n.h>a.y).forEach(n=>{
     const c=els.get(n.id).cloneNode(true);
-    c.classList.remove('sel','spawn','dragging','dying','jfit');c.style.animation='none';
+    c.classList.remove('sel','spawn','dragging','dying','jfit');c.style.animation='none';c.style.display='';
     c.querySelectorAll('.port,.rz,.hbtn,.ctag,.dtools,.cpin,.jtools,.jdp,.jadd,.jhit').forEach(x=>x.remove());
     const ct=c.querySelector('.ctitle');if(ct)ct.setAttribute('value',n.title||'');
     c.querySelectorAll('input').forEach(i=>i.setAttribute('value',i.value));
@@ -3755,13 +3775,19 @@ function jmScale(n,d,handle){
     m.x=Math.round(cx-m.w/2);m.y=Math.round(cy-m.h/2);sync(m)});
   jmRefresh(n)}
 /* every text-like block grows to show all its text; a block inside a journey map makes the map grow */
-function autoGrow(n){
-  const el=els.get(n.id);if(!el)return;
-  const box=n.type==='combine'?el.querySelector('.clist'):el.querySelector('.edit');if(!box)return;
-  const dh=box.scrollHeight-box.clientHeight,dw=box.scrollWidth-box.clientWidth;let ch=false;
-  if(dh>1){const h=Math.min(n.type==='combine'?1000:1600,Math.round(n.h+dh+(n.type==='combine'?6:2)));if(h>n.h){n.h=h;ch=true}}
-  if(dw>1&&n.type!=='combine'){n.w=Math.min(900,Math.round(n.w+dw+2));ch=true}
-  if(ch){sync(n);drawEdges();if(n.jm){const j=byId(n.jm.m);if(j)jmArrange(j)}else jmSoon()}}
+let growQ=new Set(),growT=0;
+function autoGrow(n){growQ.add(n.id);if(!growT)growT=requestAnimationFrame(flushGrow)}
+function flushGrow(){
+  growT=0;const ids=[...growQ];growQ.clear();const jobs=[];
+  ids.forEach(id=>{const n=byId(id),el=n&&els.get(id);if(!el)return;if(el.style.display==='none'){el._ng=1;return}
+    const box=n.type==='combine'?el.querySelector('.clist'):el.querySelector('.edit');if(!box)return;
+    jobs.push({n,dh:box.scrollHeight-box.clientHeight,dw:box.scrollWidth-box.clientWidth})});   // reads first: one layout for all
+  const js=new Set();let any=false;
+  jobs.forEach(({n,dh,dw})=>{let ch=false;
+    if(dh>1){const h=Math.min(n.type==='combine'?1000:1600,Math.round(n.h+dh+(n.type==='combine'?6:2)));if(h>n.h){n.h=h;ch=true}}
+    if(dw>1&&n.type!=='combine'){n.w=Math.min(900,Math.round(n.w+dw+2));ch=true}
+    if(ch){any=true;sync(n);if(n.jm){const j=byId(n.jm.m);if(j)js.add(j)}}});
+  if(any){drawEdges();jmSoon()}js.forEach(jmArrange)}
 /* Blender-style auto connect: drag a loose block onto a wire and it is inserted into that wire */
 let spl=null,splQ=0;
 function spliceClear(){if(spl){const g=wireEls.get(spl.id);g&&g.classList.remove('splice');spl=null}}
@@ -3838,14 +3864,16 @@ function jmRefresh(n){
   g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('on',(n.em||{})[b.dataset.r+'|'+b.dataset.p]===+b.dataset.l||ends.has(b.dataset.r+'|'+b.dataset.p+'|'+b.dataset.l)));
 }
 let jmQ=0;function jmSoon(){if(jmQ)return;jmQ=requestAnimationFrame(()=>{jmQ=0;S.nodes.forEach(n=>{if(n.type==='journey')jmRefresh(n)})})}
-/* graph dots only show for the row under the mouse */
-addEventListener('pointermove',e=>{
-  S.nodes.forEach(n=>{if(n.type!=='journey')return;const el=els.get(n.id),g=el&&el.querySelector('.jg');if(!g||g._keep)return;
-    const r=g.getBoundingClientRect();let inside=false;
-    if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){const y=(e.clientY-r.top)/view.z;let acc=n.hh;for(const row of n.rows){if(y>=acc&&y<acc+row.h){inside=row.k==='graph';break}acc+=row.h}}
-    const nr=el.getBoundingClientRect(),near=e.clientX>nr.left-60&&e.clientX<nr.right+60&&e.clientY>nr.top-20&&e.clientY<nr.bottom+60;if(el._nr!==near){el._nr=near;el.classList.toggle('jnear',near)}
+/* graph dots only show for the graph row under the mouse (computed from data: no DOM reads), once per frame */
+let jmPM=null,jmPQ=0;
+addEventListener('pointermove',e=>{jmPM=e;if(!jmPQ)jmPQ=requestAnimationFrame(()=>{jmPQ=0;const e=jmPM,z=view.z;
+  S.nodes.forEach(n=>{if(n.type!=='journey')return;const el=els.get(n.id),g=el&&el.querySelector('.jg');if(!g||g._keep||el.style.display==='none')return;
+    const wx=(e.clientX-view.x)/z-(n.x+JM_OX),wy=(e.clientY-view.y)/z-(n.y+JM_HD),W=n.hw+n.ph.length*n.cw,H=n.hh+n.rows.reduce((a,r)=>a+r.h,0);
+    let inside=false;if(wx>=0&&wx<=W&&wy>=0&&wy<=H){let acc=n.hh;for(const row of n.rows){if(wy>=acc&&wy<acc+row.h){inside=row.k==='graph';break}acc+=row.h}}
+    const near=(e.clientX-view.x)/z>n.x-60/z&&(e.clientX-view.x)/z<n.x+n.w+60/z&&(e.clientY-view.y)/z>n.y-20/z&&(e.clientY-view.y)/z<n.y+n.h+60/z;
+    if(el._nr!==near){el._nr=near;el.classList.toggle('jnear',near)}
     const k=inside?jmStruct(n):null;
-    if(g._hs!==k){g._hs=k;g.classList.toggle('hov',inside);g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('hot',inside))}})},true);
+    if(g._hs!==k){g._hs=k;g.classList.toggle('hov',inside);g.querySelectorAll('.jdp').forEach(b=>b.classList.toggle('hot',inside))}})})},true);
 document.addEventListener('pointerleave',()=>document.querySelectorAll('.jg.hov').forEach(g=>{g._hs=null;g.classList.remove('hov');g.querySelectorAll('.jdp.hot').forEach(b=>b.classList.remove('hot'))}));
 const JM_PLUS='<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
 function jmWire(n,el){
