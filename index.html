@@ -2764,8 +2764,9 @@ function rcAsk(id){
   el.innerHTML=`<b>${esc(n)}</b> wants to use this screen as a remote<span class="sp"></span><button class="btn" data-a="no">Deny</button><button class="btn pri" data-a="ok">Allow</button>`;
   el.classList.add('on');RC.ask=id;
   el.onclick=e=>{const b=e.target.closest('button');if(!b)return;el.classList.remove('on');RC.ask=null;
-    if(b.dataset.a==='ok'){RC.id=id;RC.last='';RC.did=null;rcSend({t:'ok',n:me.name},id);rcPush(true);toast('Phone paired');}else rcSend({t:'no'},id);
+    if(b.dataset.a==='ok'){RC.id=id;RC.last='';RC.did=null;rcSend({t:'ok',n:me.name},id);rcSend({t:'th',v:curTheme()},id);rcPush(true);toast('Phone paired');}else rcSend({t:'no'},id);
     rcPairUI()}}
+function rcThemeOut(t){if(RC.id&&collab)rcSend({t:'th',v:t},RC.id);else if(RCP.pair)rcTx({t:'th',v:t})}
 function rcHost(d,id){
   if(d.t==='hi'){phones.set(id,{n:d.n||'Phone'});sendPresence(id);const p=peers.get(id);if(p){p.el&&p.el.remove();peers.delete(id);paintRemoteSel();updPeers()}rcPairUI();return}
   if(!phones.has(id))phones.set(id,{n:d.n||'Phone'});
@@ -2774,6 +2775,7 @@ function rcHost(d,id){
     else if(RC.id||RC.ask)rcSend({t:'busy'},id);
     else rcAsk(id);rcPairUI();return}
   if(RC.id!==id)return;
+  if(d.t==='th'){setTheme(d.v,true);return}
   RC.lastPhoneOp=performance.now();
   if(d.t==='unpair'){RC.id=null;toast('Phone disconnected');rcPairUI();return}
   if(d.t==='un'||d.t==='rd'){const keep=[...sel];d.t==='un'?undo():doRedo();keep.forEach(i=>{if(byId(i))sel.add(i)});S.nodes.forEach(sync);queueBar();return}
@@ -2847,6 +2849,7 @@ async function rcConnect(room){
   RCP.state='connecting';rcRender();
   setTimeout(()=>{if(RCP.state==='connecting'){RCP.state='pick';rcRender()}},6000)}
 function rcClient(d,id){
+  if(d.t==='th'&&RCP.pair===id){setTheme(d.v,true);document.querySelectorAll('#rcthemes [data-th]').forEach(x=>x.classList.toggle('on',x.dataset.th===d.v));return}
   if(d.t==='ok'&&RCP.pend===id){RCP.pair=id;RCP.pairName=d.n||(RCP.desks.get(id)||{}).name||'desktop';RCP.state='paired';rcAwake(true);rcRender()}
   else if(d.t==='no'&&RCP.pend===id){RCP.state='pick';RCP.msg='Request declined.';rcRender()}
   else if(d.t==='busy'&&RCP.pend===id){RCP.state='pick';RCP.msg='That desktop is already paired with another phone.';rcRender()}
@@ -2969,9 +2972,10 @@ let MM={};
 function readMM(){SM.ink=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#fff';const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();MM={node:g('--t3'),cv:g('--line2'),acc:g('--accent'),accSoft:g('--accent-soft')}}
 function updThemeUI(){const t=document.documentElement.dataset.theme;$('#mTheme span').textContent='Theme · '+t[0].toUpperCase()+t.slice(1);
   document.querySelectorAll('.tc').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
-function setTheme(t){
+function setTheme(t,remote){
   if(!THEMES[t])t='night';const h=document.documentElement;
-  h.classList.add('tswap');h.dataset.theme=t;localStorage.setItem('affinity-theme',t);
+  h.classList.add('tswap');h.dataset.theme=t;
+  if(!remote){localStorage.setItem('affinity-theme',t);rcThemeOut(t)}   /* a theme you pick is saved and sent to the paired device; one received from it is applied but not saved */
   setTimeout(()=>h.classList.remove('tswap'),480);
   document.querySelector('meta[name=theme-color]')?.setAttribute('content',THEMES[t][0]);
   readMM();updMini();updThemeUI();glFx(t==='glitch');
