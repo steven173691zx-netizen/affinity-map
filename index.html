@@ -886,6 +886,29 @@ body.rcm #vp,body.rcm #toolbar,body.rcm #brand,body.rcm #topright,body.rcm #hint
 #rcthemes .rcthg button.on span{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft,rgba(var(--ovc),.15));transform:scale(1.04)}
 #rcthemes .rcb{all:unset;box-sizing:border-box;height:46px;border-radius:14px;background:rgba(var(--ovc),.08);display:flex;align-items:center;justify-content:center;font-weight:650;font-size:14px;cursor:pointer;margin-top:10px}
 @media (prefers-reduced-motion:reduce){#rcui *,#rcui,#rcthemes,#rcthemes *{animation:none!important;transition-duration:.01ms!important}}
+
+/* ---- hidden theme: Miami Hotline (Mono, then Shift-click Night) ---- flat colour, hard offsets, no glow */
+[data-theme="miami"]{--font:"Futura","Avenir Next","Trebuchet MS",system-ui,sans-serif;--bg:#1b0a33;--surface:#2a1050;--elev:#33135f;--elev2:#421a78;--ovc:255,236,255;--line:rgba(255,45,149,.45);--line2:rgba(0,229,255,.7);--dot:rgba(255,45,149,.3);--t1:#fff4ff;--t2:rgba(255,226,255,.84);--t3:rgba(0,229,255,.78);--accent:#ff2d95;--accent-soft:rgba(255,45,149,.24);--on-accent:#1b0a33;--gl:42,16,80;--veil:20,5,40;--combine:#3a1670;--tipbg:#00e5ff;--tipfg:#1b0a33;--ink:#ffe14a;--fonttext:inherit;--mc:#00e5ff;--my:#ffe14a}
+[data-theme="miami"] #vp{background-color:var(--bg);background-image:repeating-linear-gradient(135deg,transparent 0 46px,rgba(255,45,149,.07) 46px 92px),radial-gradient(circle,var(--dot) 1.2px,transparent 1.6px);background-size:auto,24px 24px}
+[data-theme="miami"] .glass{background:rgba(var(--gl),.97);backdrop-filter:none;-webkit-backdrop-filter:none;border:2px solid var(--mc);border-radius:8px;box-shadow:4px 4px 0 var(--accent)!important}
+[data-theme="miami"] .node{background:var(--elev);border:2px solid var(--accent);border-radius:6px;box-shadow:5px 5px 0 var(--mc)!important}
+[data-theme="miami"] .node:nth-child(3n+2){border-color:var(--mc);box-shadow:5px 5px 0 var(--accent)!important}
+[data-theme="miami"] .node:nth-child(3n){border-color:var(--my);box-shadow:5px 5px 0 var(--accent)!important}
+[data-theme="miami"] .node.sel{border-color:var(--my);box-shadow:6px 6px 0 var(--accent)!important}
+[data-theme="miami"] .node[data-type=sticky]{border-color:#1b0a33;box-shadow:5px 5px 0 var(--accent)!important}
+[data-theme="miami"] .node[data-type=canvas],[data-theme="miami"] .node[data-type=journey]{background:rgba(255,45,149,.06);border:2px dashed var(--mc);box-shadow:none!important}
+[data-theme="miami"] .hd,[data-theme="miami"] .sbl,[data-theme="miami"] .tc{font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+[data-theme="miami"] .hd{color:var(--mc)}
+[data-theme="miami"] .wire{stroke:var(--mc);stroke-width:3}
+[data-theme="miami"] .wire-g.sel .wire{stroke:var(--my)}
+[data-theme="miami"] .port{background:var(--my);border:2px solid #1b0a33;border-radius:50%}
+[data-theme="miami"] .tb.on,[data-theme="miami"] .btn.pri{background:var(--accent);color:#1b0a33}
+[data-theme="miami"] .tb:hover{background:var(--mc);color:#1b0a33}
+[data-theme="miami"] #hint{color:var(--accent)}
+[data-theme="miami"] #hint h1{color:var(--my);text-transform:uppercase;letter-spacing:.06em;font-weight:900}
+[data-theme="miami"] #toast{background:var(--my)!important;color:#1b0a33!important;border:2px solid #1b0a33;box-shadow:4px 4px 0 var(--accent)}
+[data-theme="miami"] .edit{caret-color:var(--accent)}
+[data-theme="miami"]::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:400;background:repeating-linear-gradient(0deg,rgba(0,0,0,.17) 0 1px,transparent 1px 3px)}
 </style>
 </head>
 <body>
@@ -2908,7 +2931,7 @@ function rcTheme(){
   let sh=document.getElementById('rcthemes');if(!sh){sh=document.createElement('div');sh.id='rcthemes';document.body.appendChild(sh);
     sh.onclick=e=>{const b=e.target.closest('[data-th]');if(b){setTheme(b.dataset.th);sh.querySelectorAll('[data-th]').forEach(x=>x.classList.toggle('on',x.dataset.th===b.dataset.th));return}if(e.target===sh||e.target.closest('[data-x]'))sh.classList.remove('on')}}
   const cur=document.documentElement.dataset.theme;
-  sh.innerHTML=`<div class="rcsheet"><div class="rcgrab"></div><b>Theme</b><p class="note">Saved on this phone only.</p><div class="rcthg">${Object.keys(THEMES).filter(t=>t!=='glitch').map(t=>`<button data-th="${t}" class="${t===cur?'on':''}"><span style="background:${THEMES[t][0]}"><i style="background:${THEMES[t][1]}"></i><i style="background:${THEMES[t][2]};opacity:.7"></i></span>${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div><button class="rcb" data-x style="margin-top:6px">Done</button></div>`;
+  sh.innerHTML=`<div class="rcsheet"><div class="rcgrab"></div><b>Theme</b><p class="note">Saved on this phone only.</p><div class="rcthg">${Object.keys(THEMES).filter(t=>t!=='glitch'&&t!=='miami').map(t=>`<button data-th="${t}" class="${t===cur?'on':''}"><span style="background:${THEMES[t][0]}"><i style="background:${THEMES[t][1]}"></i><i style="background:${THEMES[t][2]};opacity:.7"></i></span>${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div><button class="rcb" data-x style="margin-top:6px">Done</button></div>`;
   requestAnimationFrame(()=>sh.classList.add('on'))}
 let rcWake=null;
 async function rcAwake(on){try{if(on&&navigator.wakeLock&&!rcWake){rcWake=await navigator.wakeLock.request('screen');rcWake.addEventListener('release',()=>{rcWake=null})}else if(!on&&rcWake){await rcWake.release();rcWake=null}}catch{}}
@@ -2967,10 +2990,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='rcCod
 
 
 /* ---------- themes ---------- */
-const THEMES={night:['#161519','#f29b62','#ffffff'],day:['#f4f1ea','#2f4f45','#1c1b18'],sakura:['#fdf0f2','#d6567a','#3a2128'],mono:['#e8e8e6','#111111','#111111'],ocean:['#0b1826','#5bc0eb','#e6f1ff'],forest:['#101a15','#9bd47f','#e9f5e4'],midnight:['#000000','#a78bfa','#f0eefc'],sunset:['#1a1012','#ff8a5b','#ffeee6'],glitch:['#020504','#00ff9c','#00ff9c']};
+const THEMES={night:['#161519','#f29b62','#ffffff'],day:['#f4f1ea','#2f4f45','#1c1b18'],sakura:['#fdf0f2','#d6567a','#3a2128'],mono:['#e8e8e6','#111111','#111111'],ocean:['#0b1826','#5bc0eb','#e6f1ff'],forest:['#101a15','#9bd47f','#e9f5e4'],midnight:['#000000','#a78bfa','#f0eefc'],sunset:['#1a1012','#ff8a5b','#ffeee6'],glitch:['#020504','#00ff9c','#00ff9c'],miami:['#1b0a33','#ff2d95','#fff4ff']};
 let MM={};
 function readMM(){SM.ink=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#fff';const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();MM={node:g('--t3'),cv:g('--line2'),acc:g('--accent'),accSoft:g('--accent-soft')}}
-function updThemeUI(){const t=document.documentElement.dataset.theme;$('#mTheme span').textContent='Theme · '+t[0].toUpperCase()+t.slice(1);
+function updThemeUI(){const t=document.documentElement.dataset.theme;$('#mTheme span').textContent='Theme · '+(t==='miami'?'Miami Hotline':t[0].toUpperCase()+t.slice(1));
   document.querySelectorAll('.tc').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
 function setTheme(t,remote){
   if(!THEMES[t])t='night';const h=document.documentElement;
@@ -3036,8 +3059,9 @@ function glSmPost(dpr){
   if(Math.random()<.15){sx.fillStyle=rnd(GLC);sx.fillRect(Math.random()*innerWidth,Math.random()*innerHeight,20+Math.random()*160,2+Math.random()*8)}
 }
 $('#mTheme').onclick=()=>openThemes();
-$('#tgrid').innerHTML=Object.entries(THEMES).filter(([k])=>k!=='glitch').map(([k,[bg,a,ink]])=>`<button class="tc" data-t="${k}"><i style="background:${bg};--a:${a};--f:${ink}"></i>${k}</button>`).join('');
-$('#tgrid').addEventListener('click',e=>{const b=e.target.closest('.tc');if(!b)return;if(e.shiftKey&&b.dataset.t==='mono'&&document.documentElement.dataset.theme==='night'){setTheme('glitch');closeModal();return}setTheme(b.dataset.t)});
+$('#tgrid').innerHTML=Object.entries(THEMES).filter(([k])=>k!=='glitch'&&k!=='miami').map(([k,[bg,a,ink]])=>`<button class="tc" data-t="${k}"><i style="background:${bg};--a:${a};--f:${ink}"></i>${k}</button>`).join('');
+$('#tgrid').addEventListener('click',e=>{const b=e.target.closest('.tc');if(!b)return;if(e.shiftKey&&b.dataset.t==='mono'&&document.documentElement.dataset.theme==='night'){setTheme('glitch');closeModal();return}
+  if(e.shiftKey&&b.dataset.t==='night'&&document.documentElement.dataset.theme==='mono'){setTheme('miami');closeModal();toast('Miami Hotline');return}setTheme(b.dataset.t)});
 function openThemes(){updThemeUI();$('#tmodal').classList.add('on')}
 $('#tmodal').addEventListener('pointerdown',e=>{if(e.target.id==='tmodal')closeModal()});
 document.addEventListener('selectstart',e=>{const t=e.target.nodeType===3?e.target.parentElement:e.target;if(t?.closest?.('.edit.on,input,textarea'))return;e.preventDefault()});
