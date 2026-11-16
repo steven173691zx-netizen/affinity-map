@@ -909,6 +909,27 @@ body.rcm #vp,body.rcm #toolbar,body.rcm #brand,body.rcm #topright,body.rcm #hint
 [data-theme="miami"] #toast{background:var(--my)!important;color:#1b0a33!important;border:2px solid #1b0a33;box-shadow:4px 4px 0 var(--accent)}
 [data-theme="miami"] .edit{caret-color:var(--accent)}
 [data-theme="miami"]::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:400;background:repeating-linear-gradient(0deg,rgba(0,0,0,.17) 0 1px,transparent 1px 3px)}
+
+/* ---- hidden theme: Persona 3 (Day, then Shift-click Sakura) ---- flat blues, angled panels, no glow */
+[data-theme="persona"]{--font:"Avenir Next Condensed","Futura","Arial Narrow",system-ui,sans-serif;--bg:#04122e;--surface:#0a2150;--elev:#0d2b66;--elev2:#123a82;--ovc:220,240,255;--line:rgba(47,209,255,.4);--line2:rgba(47,209,255,.8);--dot:rgba(47,209,255,.2);--t1:#f2fbff;--t2:rgba(220,244,255,.86);--t3:rgba(47,209,255,.85);--accent:#2fd1ff;--accent-soft:rgba(47,209,255,.22);--on-accent:#04122e;--gl:10,33,80;--veil:2,10,30;--combine:#0f3278;--tipbg:#f2fbff;--tipfg:#04122e;--ink:#f2fbff;--fonttext:inherit;--pw:#f2fbff;--pb:#0a4fb5}
+[data-theme="persona"] #vp{background-color:var(--bg);background-image:repeating-linear-gradient(115deg,transparent 0 60px,rgba(47,209,255,.06) 60px 64px),radial-gradient(circle,var(--dot) 1.2px,transparent 1.6px);background-size:auto,24px 24px}
+[data-theme="persona"] .glass{background:rgba(var(--gl),.97);backdrop-filter:none;-webkit-backdrop-filter:none;border:2px solid var(--accent);border-radius:0;box-shadow:5px 5px 0 var(--pb)!important;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+[data-theme="persona"] .node{background:var(--elev);border:2px solid var(--accent);border-left:7px solid var(--pw);border-radius:0;box-shadow:6px 6px 0 var(--pb)!important}
+[data-theme="persona"] .node.sel{border-color:var(--pw);border-left-color:var(--accent);box-shadow:7px 7px 0 var(--accent)!important}
+[data-theme="persona"] .node[data-type=sticky]{border-color:#04122e;border-left-color:var(--pw)}
+[data-theme="persona"] .node[data-type=canvas],[data-theme="persona"] .node[data-type=journey]{background:rgba(47,209,255,.05);border:2px dashed var(--accent);box-shadow:none!important}
+[data-theme="persona"] *{border-radius:0!important}
+[data-theme="persona"] .hd,[data-theme="persona"] .sbl,[data-theme="persona"] .tc,[data-theme="persona"] .btn,[data-theme="persona"] #hint h1{font-style:italic;font-weight:800;text-transform:uppercase;letter-spacing:.09em}
+[data-theme="persona"] .hd{color:var(--accent)}
+[data-theme="persona"] .wire{stroke:var(--accent);stroke-width:3}
+[data-theme="persona"] .wire-g.sel .wire{stroke:var(--pw)}
+[data-theme="persona"] .port{background:var(--pw);border:2px solid #04122e;transform:rotate(45deg)}
+[data-theme="persona"] .tb.on,[data-theme="persona"] .btn.pri{background:var(--accent);color:#04122e}
+[data-theme="persona"] .tb:hover{background:var(--pw);color:#04122e}
+[data-theme="persona"] #hint{color:var(--accent)}
+[data-theme="persona"] #hint h1{color:var(--pw);font-size:26px}
+[data-theme="persona"] #toast{background:var(--pw)!important;color:#04122e!important;font-style:italic;font-weight:800;text-transform:uppercase;letter-spacing:.08em;border:0;box-shadow:5px 5px 0 var(--accent);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+[data-theme="persona"] .edit{caret-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -2931,7 +2952,7 @@ function rcTheme(){
   let sh=document.getElementById('rcthemes');if(!sh){sh=document.createElement('div');sh.id='rcthemes';document.body.appendChild(sh);
     sh.onclick=e=>{const b=e.target.closest('[data-th]');if(b){setTheme(b.dataset.th);sh.querySelectorAll('[data-th]').forEach(x=>x.classList.toggle('on',x.dataset.th===b.dataset.th));return}if(e.target===sh||e.target.closest('[data-x]'))sh.classList.remove('on')}}
   const cur=document.documentElement.dataset.theme;
-  sh.innerHTML=`<div class="rcsheet"><div class="rcgrab"></div><b>Theme</b><p class="note">Saved on this phone only.</p><div class="rcthg">${Object.keys(THEMES).filter(t=>t!=='glitch'&&t!=='miami').map(t=>`<button data-th="${t}" class="${t===cur?'on':''}"><span style="background:${THEMES[t][0]}"><i style="background:${THEMES[t][1]}"></i><i style="background:${THEMES[t][2]};opacity:.7"></i></span>${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div><button class="rcb" data-x style="margin-top:6px">Done</button></div>`;
+  sh.innerHTML=`<div class="rcsheet"><div class="rcgrab"></div><b>Theme</b><p class="note">Saved on this phone only.</p><div class="rcthg">${Object.keys(THEMES).filter(t=>!['glitch','miami','persona'].includes(t)).map(t=>`<button data-th="${t}" class="${t===cur?'on':''}"><span style="background:${THEMES[t][0]}"><i style="background:${THEMES[t][1]}"></i><i style="background:${THEMES[t][2]};opacity:.7"></i></span>${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div><button class="rcb" data-x style="margin-top:6px">Done</button></div>`;
   requestAnimationFrame(()=>sh.classList.add('on'))}
 let rcWake=null;
 async function rcAwake(on){try{if(on&&navigator.wakeLock&&!rcWake){rcWake=await navigator.wakeLock.request('screen');rcWake.addEventListener('release',()=>{rcWake=null})}else if(!on&&rcWake){await rcWake.release();rcWake=null}}catch{}}
@@ -2990,10 +3011,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='rcCod
 
 
 /* ---------- themes ---------- */
-const THEMES={night:['#161519','#f29b62','#ffffff'],day:['#f4f1ea','#2f4f45','#1c1b18'],sakura:['#fdf0f2','#d6567a','#3a2128'],mono:['#e8e8e6','#111111','#111111'],ocean:['#0b1826','#5bc0eb','#e6f1ff'],forest:['#101a15','#9bd47f','#e9f5e4'],midnight:['#000000','#a78bfa','#f0eefc'],sunset:['#1a1012','#ff8a5b','#ffeee6'],glitch:['#020504','#00ff9c','#00ff9c'],miami:['#1b0a33','#ff2d95','#fff4ff']};
+const THEMES={night:['#161519','#f29b62','#ffffff'],day:['#f4f1ea','#2f4f45','#1c1b18'],sakura:['#fdf0f2','#d6567a','#3a2128'],mono:['#e8e8e6','#111111','#111111'],ocean:['#0b1826','#5bc0eb','#e6f1ff'],forest:['#101a15','#9bd47f','#e9f5e4'],midnight:['#000000','#a78bfa','#f0eefc'],sunset:['#1a1012','#ff8a5b','#ffeee6'],glitch:['#020504','#00ff9c','#00ff9c'],miami:['#1b0a33','#ff2d95','#fff4ff'],persona:['#04122e','#2fd1ff','#f2fbff']};
 let MM={};
 function readMM(){SM.ink=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#fff';const cs=getComputedStyle(document.documentElement),g=k=>cs.getPropertyValue(k).trim();MM={node:g('--t3'),cv:g('--line2'),acc:g('--accent'),accSoft:g('--accent-soft')}}
-function updThemeUI(){const t=document.documentElement.dataset.theme;$('#mTheme span').textContent='Theme · '+(t==='miami'?'Miami Hotline':t[0].toUpperCase()+t.slice(1));
+function updThemeUI(){const t=document.documentElement.dataset.theme;$('#mTheme span').textContent='Theme · '+({miami:'Miami Hotline',persona:'Persona 3'}[t]||t[0].toUpperCase()+t.slice(1));
   document.querySelectorAll('.tc').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
 function setTheme(t,remote){
   if(!THEMES[t])t='night';const h=document.documentElement;
@@ -3059,8 +3080,9 @@ function glSmPost(dpr){
   if(Math.random()<.15){sx.fillStyle=rnd(GLC);sx.fillRect(Math.random()*innerWidth,Math.random()*innerHeight,20+Math.random()*160,2+Math.random()*8)}
 }
 $('#mTheme').onclick=()=>openThemes();
-$('#tgrid').innerHTML=Object.entries(THEMES).filter(([k])=>k!=='glitch'&&k!=='miami').map(([k,[bg,a,ink]])=>`<button class="tc" data-t="${k}"><i style="background:${bg};--a:${a};--f:${ink}"></i>${k}</button>`).join('');
+$('#tgrid').innerHTML=Object.entries(THEMES).filter(([k])=>!['glitch','miami','persona'].includes(k)).map(([k,[bg,a,ink]])=>`<button class="tc" data-t="${k}"><i style="background:${bg};--a:${a};--f:${ink}"></i>${k}</button>`).join('');
 $('#tgrid').addEventListener('click',e=>{const b=e.target.closest('.tc');if(!b)return;if(e.shiftKey&&b.dataset.t==='mono'&&document.documentElement.dataset.theme==='night'){setTheme('glitch');closeModal();return}
+  if(e.shiftKey&&b.dataset.t==='sakura'&&document.documentElement.dataset.theme==='day'){setTheme('persona');closeModal();toast('Persona 3 · Dark Hour');return}
   if(e.shiftKey&&b.dataset.t==='night'&&document.documentElement.dataset.theme==='mono'){setTheme('miami');closeModal();toast('Miami Hotline');return}setTheme(b.dataset.t)});
 function openThemes(){updThemeUI();$('#tmodal').classList.add('on')}
 $('#tmodal').addEventListener('pointerdown',e=>{if(e.target.id==='tmodal')closeModal()});
