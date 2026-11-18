@@ -1,0 +1,17 @@
+# Portainer: Stacks > Add stack > Repository
+#   URL: https://github.com/steven173691zx-netizen/affinity-map   Compose path: deploy/docker-compose.yml
+# No host ports are published, so nothing can clash with your other sites.
+# NPM reaches it by container name over the network NPM is already on (set NPM_NET below).
+services:
+  affinity-map:
+    build:
+      context: ..
+    image: affinity-map:local
+    container_name: affinity-map
+    restart: unless-stopped
+    networks: [npm]
+    mem_limit: 64m
+networks:
+  npm:
+    name: ${NPM_NET:-npm_default}
+    external: true
